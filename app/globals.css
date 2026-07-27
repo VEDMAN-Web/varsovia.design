@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+:root {
+  --maroon: #6b2c3a;
+  --maroon-deep: #4a1c28;
+  --maroon-soft: #8a4554;
+  --blush: #faf4f4;
+  --blush-deep: #f3e6e7;
+  --cream: #fffbfb;
+  --ink: #2a1a1e;
+  --muted: #6e555b;
+  --gold: #c4a484;
+  --background: var(--cream);
+  --foreground: var(--ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-maroon: var(--maroon);
+  --color-maroon-deep: var(--maroon-deep);
+  --color-maroon-soft: var(--maroon-soft);
+  --color-blush: var(--blush);
+  --color-blush-deep: var(--blush-deep);
+  --color-cream: var(--cream);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-gold: var(--gold);
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-cormorant);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-outfit), system-ui, sans-serif;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--maroon) 25%, white);
+  color: var(--maroon-deep);
+}
+
+.font-display {
+  font-family: var(--font-cormorant), Georgia, serif;
+}
+
+.section-pad {
+  padding-inline: clamp(1.25rem, 4vw, 2rem);
+}
+
+.container-1240 {
+  width: 100%;
+  max-width: 1240px;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 2rem);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--maroon);
+  color: white;
+  padding: 0.85rem 1.75rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.btn-primary:hover {
+  background: var(--maroon-deep);
+  transform: translateY(-1px);
+}
+
+.heading-section {
+  font-family: var(--font-cormorant), Georgia, serif;
+  color: var(--maroon);
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.15;
+}
+
+.input-field {
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--maroon) 22%, white);
+  background: white;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-field:focus {
+  border-color: var(--maroon);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--maroon) 12%, transparent);
+}
+
+.input-field::placeholder {
+  color: color-mix(in srgb, var(--muted) 70%, white);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--maroon) 30%, white);
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.dot[data-active="true"] {
+  background: var(--maroon);
+  transform: scale(1.2);
+}
