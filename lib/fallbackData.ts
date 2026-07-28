@@ -1,0 +1,157 @@
+import { MEDIA } from "./mediaAssets";
+
+export const fallbackHomeData = {
+  site: {
+    heroEyebrow: "VARSOVIA DESIGN",
+    heroHeadline: "CHOOSE FROM A RANGE OF HIGH-QUALITY MODULAR KITCHENS.",
+    heroSubtitle: "",
+    heroImage: MEDIA.hero,
+    heroPrimaryCtaLabel: "Explore Kitchens",
+    heroPrimaryCtaHref: "#products",
+    heroSecondaryCtaLabel: "Free Consultation",
+    heroSecondaryCtaHref: "#contact",
+    aboutTitle: "ABOUT VARSOVIA",
+    aboutText:
+      "Varsovia started in a rented one-room studio in Warsaw's Praga district, with a simple belief: a beautiful room only earns that word once someone has lived in it for a year and still loves it. We still work that way — measuring twice, drawing by hand before we draw on screen, and choosing materials that age instead of wear out.\n\nEvery project starts with how you move through a space, not how it will photograph. The result is interiors that feel inevitable, as if they couldn't have been arranged any other way.",
+    aboutImages: [...MEDIA.about, MEDIA.featured[4]],
+    stats: [
+      { value: "+12",  label: "Years Experience" },
+      { value: "+140", label: "Projects Completed" },
+      { value: "+6",   label: "Cities Served" },
+    ],
+    statsImage: MEDIA.stats,
+    aboutIntro:
+      "At Varsovia Design, we believe every space tells a story. We specialize in creating elegant, functional, and personalized interiors that reflect your lifestyle. From modular kitchens to complete home and commercial interiors, we combine creativity, craftsmanship, and premium materials to deliver spaces that stand the test of time.",
+    aboutStory:
+      "Founded with a passion for thoughtful design and exceptional craftsmanship, Varsovia Design has grown into a trusted name in premium interior solutions. Every project begins with understanding our clients' vision and ends with beautifully crafted spaces that balance aesthetics, comfort, and functionality.",
+    aboutHeroSubtitle: "TWELVE YEARS OF ROOMS BUILT TO LAST",
+    vision: {
+      title: "Our Vision",
+      text: "To become a leading interior design brand known for creating inspiring spaces that enrich everyday living through innovation, quality, and timeless design.",
+    },
+    mission: {
+      title: "Our Mission",
+      text: "To deliver personalized interior solutions with exceptional craftsmanship, premium materials, and a seamless customer experience from concept to completion.",
+    },
+    values: {
+      title: "Our Values",
+      text: "Great interiors begin with quality, creativity, trust, and innovation. We design and craft spaces tailored to your lifestyle, blending elegance, functionality, and lasting value.",
+    },
+    processSteps: [
+      {
+        step: "01",
+        title: "Consultation",
+        text: "Understanding your lifestyle, needs, and design preferences.",
+      },
+      {
+        step: "02",
+        title: "Product Design",
+        text: "Creating layouts, concepts, material selections, and realistic 3D visualizations.",
+      },
+      {
+        step: "03",
+        title: "Develop",
+        text: "Refining designs, coordinating production, and preparing for flawless execution.",
+      },
+      {
+        step: "04",
+        title: "Execution",
+        text: "Expert craftsmanship, timely delivery, and professional installation.",
+      },
+    ],
+    contactImages: [...MEDIA.contact],
+    footerBio:
+      "Varsovia Kitchen designs and builds premium modular kitchens with precision, warmth, and lasting quality.",
+    phone: "+91 98765 43210",
+    email: "hello@varsoviakitchen.com",
+    address: "12 Design Avenue, Mumbai, India",
+  },
+  products: [
+    {
+      _id: "1",
+      slug: "kitchen-cabinet",
+      title: "Kitchen Cabinet",
+      description:
+        "Our kitchen cabinets are thoughtfully crafted to combine timeless design, premium materials, and practical functionality.",
+      image: MEDIA.products[0],
+      category: "Kitchen",
+    },
+    {
+      _id: "2",
+      slug: "bedroom-interior",
+      title: "Bedroom Interior",
+      description:
+        "Soft lighting, tailored storage, and calm materials come together in bedrooms designed for rest.",
+      image: MEDIA.products[1],
+      category: "Bedroom",
+    },
+    {
+      _id: "3",
+      slug: "bedroom-suite",
+      title: "Bedroom Suite",
+      description:
+        "From wardrobes to bedside finishes, our bedroom interiors balance quiet luxury with everyday ease.",
+      image: MEDIA.products[2],
+      category: "Bedroom",
+    },
+  ],
+  projects: [
+    { _id: "1", slug: "kitchen-cabinet", title: "Kitchen Cabinet", description: "Warm open-plan kitchen with island seating.", location: "Mumbai", coverImage: MEDIA.featured[0], category: "Kitchen" },
+    { _id: "2", slug: "modern-island", title: "Modern Island", description: "Compact luxury with full-height storage.", location: "Pune", coverImage: MEDIA.featured[1], category: "Kitchen" },
+    { _id: "3", slug: "warm-walnut", title: "Warm Walnut", description: "Rich walnut tones with marble accents.", location: "Bangalore", coverImage: MEDIA.featured[2], category: "Kitchen" },
+    { _id: "4", slug: "ivory-luxe", title: "Ivory Luxe", description: "Bright ivory finishes with soft ambient lighting.", location: "Ahmedabad", coverImage: MEDIA.featured[3], category: "Bedroom" },
+    { _id: "5", slug: "graphite-studio", title: "Graphite Studio", description: "Dark graphite palette with brass hardware.", location: "Delhi", coverImage: MEDIA.featured[4], category: "Bathroom" },
+    { _id: "6", slug: "coastal-oak", title: "Coastal Oak", description: "Light oak with coastal-inspired tones.", location: "Goa", coverImage: MEDIA.featured[5], category: "Door & Windows" },
+    { _id: "7", slug: "midnight-suite", title: "Midnight Suite", description: "Deep tones with layered textures.", location: "Hyderabad", coverImage: MEDIA.featured[6], category: "Whole House Solutions" },
+    { _id: "8", slug: "open-living", title: "Open Living", description: "Open kitchen and living integration.", location: "Chennai", coverImage: MEDIA.featured[7], category: "Furniture" },
+  ],
+  catalogues: [
+    { _id: "1", title: "Classic Collection 2026", coverImage: MEDIA.catalogues[0], downloadUrl: "" },
+    { _id: "2", title: "Modern Living 2026", coverImage: MEDIA.catalogues[1], downloadUrl: "" },
+    { _id: "3", title: "Explore Modern Design", coverImage: MEDIA.catalogues[2], downloadUrl: "" },
+    { _id: "4", title: "Warm Neutrals", coverImage: MEDIA.catalogues[3], downloadUrl: "" },
+    { _id: "5", title: "Urban Kitchens", coverImage: MEDIA.catalogues[4], downloadUrl: "" },
+  ],
+  testimonials: [
+    {
+      _id: "1",
+      name: "Ananya Mehta",
+      role: "Homeowner, Mumbai",
+      quote:
+        "Varsovia transformed our outdated kitchen into a calm, beautiful space we actually love cooking in every day.",
+      rating: 5,
+      image: MEDIA.stories[0],
+    },
+    {
+      _id: "2",
+      name: "Rohan Kapoor",
+      role: "Architect Partner",
+      quote:
+        "Their attention to detail and finish quality is exceptional. Clients always notice the difference.",
+      rating: 5,
+      image: MEDIA.stories[1],
+    },
+    {
+      _id: "3",
+      name: "Priya Shah",
+      role: "Homeowner, Bangalore",
+      quote:
+        "From consultation to installation, the team was thoughtful, precise, and a pleasure to work with.",
+      rating: 5,
+      image: MEDIA.stories[2],
+    },
+  ],
+  showrooms: [
+    { _id: "1", name: "Varsovia Flagship", location: "Bandra, Mumbai", image: MEDIA.showrooms[0] },
+    { _id: "2", name: "Design Studio", location: "Koregaon Park, Pune", image: MEDIA.showrooms[1] },
+    { _id: "3", name: "Experience Centre", location: "Indiranagar, Bangalore", image: MEDIA.showrooms[2] },
+  ],
+  partners: [
+    { _id: "1", name: "Hettich" },
+    { _id: "2", name: "Blum" },
+    { _id: "3", name: "Häfele" },
+    { _id: "4", name: "Bosch" },
+    { _id: "5", name: "Siemens" },
+    { _id: "6", name: "Grohe" },
+  ],
+};

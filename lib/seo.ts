@@ -1,0 +1,37 @@
+import type { Metadata } from "next";
+
+const SITE_NAME = "Varsovia Design";
+const DEFAULT_DESCRIPTION =
+  "Premium modular kitchens and interiors — timeless design, expert craftsmanship, and spaces built to last.";
+
+export function pageMetadata({
+  title,
+  description = DEFAULT_DESCRIPTION,
+  path = "",
+}: {
+  title: string;
+  description?: string;
+  path?: string;
+}): Metadata {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://varsoviadesign.com";
+  const url = `${baseUrl.replace(/\/$/, "")}${path}`;
+
+  return {
+    title: `${title} | ${SITE_NAME}`,
+    description,
+    openGraph: {
+      title: `${title} | ${SITE_NAME}`,
+      description,
+      url,
+      siteName: SITE_NAME,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | ${SITE_NAME}`,
+      description,
+    },
+  };
+}
+
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://varsoviadesign.com";

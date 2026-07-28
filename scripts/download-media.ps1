@@ -1,0 +1,63 @@
+﻿# Downloads self-hosted media into public/
+$root = Join-Path $PSScriptRoot "..\public"
+$downloads = @{
+  "$root\home\hero.jpg" = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1800&q=80"
+  "$root\home\stats.jpg" = "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=1600&q=80"
+  "$root\home\about-1.jpg" = "https://images.unsplash.com/photo-1600210492493-0946911123ea?auto=format&fit=crop&w=900&q=80"
+  "$root\home\about-2.jpg" = "https://images.unsplash.com/photo-1600607687644-c7171b42498b?auto=format&fit=crop&w=900&q=80"
+  "$root\home\about-3.jpg" = "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=80"
+  "$root\home\core\core-1.jpg" = "https://images.unsplash.com/photo-1600607687644-c7171b42498b?auto=format&fit=crop&w=1200&q=80"
+  "$root\home\core\core-2.jpg" = "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80"
+  "$root\home\core\core-3.jpg" = "https://images.unsplash.com/photo-1600210492493-0946911123ea?auto=format&fit=crop&w=1200&q=80"
+  "$root\home\core\core-4.jpg" = "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1200&q=80"
+  "$root\home\core\core-5.jpg" = "https://images.unsplash.com/photo-1600585152220-90363fe7e115?auto=format&fit=crop&w=1200&q=80"
+  "$root\home\core\core-6.jpg" = "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?auto=format&fit=crop&w=1200&q=80"
+  "$root\home\product\product-1.jpg" = "https://images.unsplash.com/photo-1600047509800-ba049702a1bf?auto=format&fit=crop&w=900&q=80"
+  "$root\home\product\product-2.jpg" = "https://images.unsplash.com/photo-1600121848594-a7844984459c?auto=format&fit=crop&w=900&q=80"
+  "$root\home\product\product-3.jpg" = "https://images.unsplash.com/photo-1600566753190-17f19bb0c243?auto=format&fit=crop&w=900&q=80"
+  "$root\home\catalog\catalog-1.jpg" = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80"
+  "$root\home\catalog\catalog-2.jpg" = "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=800&q=80"
+  "$root\home\catalog\catalog-3.jpg" = "https://images.unsplash.com/photo-1600585152220-90363fe7e115?auto=format&fit=crop&w=800&q=80"
+  "$root\home\catalog\catalog-4.jpg" = "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?auto=format&fit=crop&w=800&q=80"
+  "$root\home\catalog\catalog-5.jpg" = "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=800&q=80"
+  "$root\home\featured\feature-1.jpg" = "https://images.unsplash.com/photo-1600607687644-c7171b42498b?auto=format&fit=crop&w=1200&q=80"
+  "$root\home\featured\feature-2.jpg" = "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80"
+  "$root\home\featured\feature-3.jpg" = "https://images.unsplash.com/photo-1600210492493-0946911123ea?auto=format&fit=crop&w=1200&q=80"
+  "$root\home\featured\feature-4.jpg" = "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1200&q=80"
+  "$root\home\featured\feature-5.jpg" = "https://images.unsplash.com/photo-1600585152220-90363fe7e115?auto=format&fit=crop&w=1200&q=80"
+  "$root\home\featured\feature-6.jpg" = "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?auto=format&fit=crop&w=1200&q=80"
+  "$root\home\featured\feature-7.jpg" = "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=1200&q=80"
+  "$root\home\featured\feature-8.jpg" = "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80"
+  "$root\home\stories\story-1.jpg" = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80"
+  "$root\home\stories\story-2.jpg" = "https://images.unsplash.com/photo-1600047509800-ba049702a1bf?auto=format&fit=crop&w=1000&q=80"
+  "$root\home\stories\story-3.jpg" = "https://images.unsplash.com/photo-1600121848594-a7844984459c?auto=format&fit=crop&w=1000&q=80"
+  "$root\home\stories\story-4.jpg" = "https://images.unsplash.com/photo-1600566753190-17f19bb0c243?auto=format&fit=crop&w=1000&q=80"
+  "$root\home\stories\story-5.jpg" = "https://images.unsplash.com/photo-1600585152220-90363fe7e115?auto=format&fit=crop&w=1000&q=80"
+  "$root\home\stories\story-6.jpg" = "https://images.unsplash.com/photo-1600210492493-0946911123ea?auto=format&fit=crop&w=1000&q=80"
+  "$root\home\stories\story-7.jpg" = "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=80"
+  "$root\home\contact\contact-1.jpg" = "https://images.unsplash.com/photo-1600607687644-c7171b42498b?auto=format&fit=crop&w=800&q=80"
+  "$root\home\contact\contact-2.jpg" = "https://images.unsplash.com/photo-1600210492493-0946911123ea?auto=format&fit=crop&w=800&q=80"
+  "$root\home\contact\contact-3.jpg" = "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=800&q=80"
+  "$root\home\contact\contact-4.jpg" = "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80"
+  "$root\home\contact\contact-5.jpg" = "https://images.unsplash.com/photo-1600585152220-90363fe7e115?auto=format&fit=crop&w=800&q=80"
+  "$root\home\contact\contact-6.jpg" = "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?auto=format&fit=crop&w=800&q=80"
+  "$root\home\contact\contact-7.jpg" = "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=800&q=80"
+  "$root\Interior-kitchen\kitchen1.jpg" = "https://images.unsplash.com/photo-1600607687644-c7171b42498b?auto=format&fit=crop&w=1000&q=80"
+  "$root\Interior-kitchen\kitchen2.jpg" = "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1000&q=80"
+  "$root\team\team.jpg" = "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80"
+  "$root\blog\blog1.jpg" = "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1200&q=80"
+  "$root\quality-sale\support-1.jpg" = "https://images.unsplash.com/photo-1600210492493-0946911123ea?auto=format&fit=crop&w=800&q=80"
+  "$root\quality-sale\support-2.jpg" = "https://images.unsplash.com/photo-1600585152220-90363fe7e115?auto=format&fit=crop&w=800&q=80"
+  "$root\quality-sale\support-3.jpg" = "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?auto=format&fit=crop&w=800&q=80"
+  "$root\quality-sale\support-4.jpg" = "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=800&q=80"
+}
+
+foreach ($entry in $downloads.GetEnumerator()) {
+  $dir = Split-Path $entry.Key -Parent
+  if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+  Write-Host "Downloading $($entry.Key)"
+  Invoke-WebRequest -Uri $entry.Value -OutFile $entry.Key -UseBasicParsing
+}
+
+Write-Host "Done. Downloaded $($downloads.Count) assets."
+

@@ -1,0 +1,288 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { motion, useReducedMotion, type PanInfo } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getRelativeOffset } from "@/lib/carousel";
+import DownloadCatalogueModal from "@/components/forms/DownloadCatalogueModal";
+import SectionHeading from "@/components/ui/SectionHeading";
+import { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
+import { CATALOGUE_CONTENT_WIDTH, CATALOGUE_SECTION_SHELL } from "@/components/catalogue/catalogueLayoutShared";
+import { fallbackHomeData } from "@/lib/fallbackData";
+import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
+
+const FALLBACK_CATALOGUES = [
+  { id: "1", image: MEDIA.catalogues[0], title: "Classic Collection 2026", downloadUrl: "" },
+  { id: "2", image: MEDIA.catalogues[1], title: "Modern Living 2026", downloadUrl: "" },
+  { id: "3", image: MEDIA.catalogues[2], title: "Explore Modern Design", downloadUrl: "" },
+  { id: "4", image: MEDIA.catalogues[3], title: "Warm Neutrals", downloadUrl: "" },
+  { id: "5", image: MEDIA.catalogues[4], title: "Urban Kitchens", downloadUrl: "" },
+];
+
+type CatalogueItem = {
+  _id?: string;
+  id?: string;
+  title: string;
+  coverImage?: string;
+  image?: string;
+  downloadUrl?: string;
+};
+
+type CatalogueProps = {
+  catalogues?: CatalogueItem[];
+  contactImages?: string[];
+};
+
+const CARD_WIDTH = 221;
+const CARD_HEIGHT = 324;
+const MAX_VISIBLE_OFFSET = 2;
+const DRAG_THRESHOLD = 60;
+const AUTOPLAY_MS = 5500;
+
+/** 3D coverflow arc — spaced cards on a circular loop track */
+function getCoverflowStyle(offset: number) {
+  const abs = Math.min(Math.abs(offset), MAX_VISIBLE_OFFSET);
+  const sign = offset === 0 ? 0 : offset < 0 ? -1 : 1;
+
+  if (abs === 0) {
+    return { rotateY: 0, rotateZ: 0, scale: 1.08, z: 40, y: 0, opacity: 1, blur: 0 };
+  }
+
+  const t = abs / MAX_VISIBLE_OFFSET;
+
+  return {
+    rotateY: sign * (18 + t * 22),
+    rotateZ: sign * (4 + t * 6),
+    scale: 1.02 - t * 0.14,
+    z: -abs * 90,
+    y: abs * 10 + t * 8,
+    opacity: 1 - t * 0.22,
+    blur: t * 1.1,
+  };
+}
+
+function catalogueImage(item: CatalogueItem, index: number) {
+  const cover = item.coverImage ?? item.image;
+  return resolveMediaUrl(cover, MEDIA.catalogues[index % MEDIA.catalogues.length]);
+}
+
+export default function Catalogue({ catalogues, contactImages = fallbackHomeData.site.contactImages }: CatalogueProps) {
+  const raw: CatalogueItem[] = catalogues && catalogues.length > 0 ? catalogues : FALLBACK_CATALOGUES;
+  const CATALOGUES = raw.map((c, index) => ({
+    id: c._id || c.id || c.title,
+    image: catalogueImage(c, index),
+    title: c.title,
+    downloadUrl: c.downloadUrl || "",
+  }));
+  const length = CATALOGUES.length;
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [step, setStep] = useState(CARD_WIDTH + 56);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedDownloadUrl, setSelectedDownloadUrl] = useState("");
+  const trackRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      const gap = w < 640 ? 36 : w < 1024 ? 52 : 68;
+      setStep(CARD_WIDTH + gap);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  useEffect(() => {
+    if (paused || prefersReducedMotion) return;
+    const timer = setInterval(() => {
+      setActive((prev) => (prev + 1) % length);
+    }, AUTOPLAY_MS);
+    return () => clearInterval(timer);
+  }, [paused, prefersReducedMotion, length]);
+
+  function prev() {
+    setActive((p) => (p - 1 + length) % length);
+  }
+
+  function next() {
+    setActive((p) => (p + 1) % length);
+  }
+
+  function goTo(index: number) {
+    setActive(((index % length) + length) % length);
+  }
+
+  function handleDragEnd(_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) {
+    setPaused(false);
+    if (info.offset.x <= -DRAG_THRESHOLD || info.velocity.x < -400) {
+      next();
+    } else if (info.offset.x >= DRAG_THRESHOLD || info.velocity.x > 400) {
+      prev();
+    }
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      prev();
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      next();
+    }
+  }
+
+  function openDownload(item: (typeof CATALOGUES)[number]) {
+    setSelectedDownloadUrl(item.downloadUrl || item.image);
+    setModalOpen(true);
+  }
+
+  const springTransition = prefersReducedMotion
+    ? { duration: 0.2 }
+    : { type: "spring" as const, stiffness: 210, damping: 28, mass: 0.85 };
+
+  return (
+    <>
+      <section id="catalogue" className="bg-transparent py-16 md:py-20">
+        <div className={CATALOGUE_SECTION_SHELL}>
+          <div className={CATALOGUE_CONTENT_WIDTH}>
+            <SectionHeading
+              title="Free Catalogue"
+              subtitle="Inspiration for Your Dream Kitchen"
+              className={SECTION_HEADING_WIDE}
+            />
+          </div>
+
+          <div
+            ref={trackRef}
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="Free catalogue previews"
+            tabIndex={0}
+            className="relative mt-4 w-full cursor-grab overflow-x-hidden overflow-y-visible bg-transparent outline-none focus-visible:outline-none active:cursor-grabbing md:mt-8"
+            style={{ height: 430, perspective: 1400 }}
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+            onKeyDown={handleKeyDown}
+          >
+            <motion.div
+              className="relative mx-auto h-full w-full touch-pan-y overflow-visible"
+              style={{ transformStyle: "preserve-3d" }}
+              drag="x"
+              dragElastic={0.1}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragMomentum={false}
+              onDragStart={() => setPaused(true)}
+              onDragEnd={handleDragEnd}
+            >
+              {CATALOGUES.map((item, index) => {
+                const offset = getRelativeOffset(index, active, length);
+                if (Math.abs(offset) > MAX_VISIBLE_OFFSET) return null;
+
+                const isCenter = offset === 0;
+                const style = getCoverflowStyle(offset);
+
+                return (
+                  <motion.button
+                    key={item.id}
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() => {
+                      if (isCenter) openDownload(item);
+                      else goTo(index);
+                    }}
+                    aria-label={`Show catalogue ${item.title}${isCenter ? " (current)" : ""}`}
+                    aria-current={isCenter}
+                    className="absolute left-1/2 top-4 bg-transparent p-0 outline-none"
+                    style={{
+                      width: CARD_WIDTH,
+                      height: CARD_HEIGHT,
+                      marginLeft: -CARD_WIDTH / 2,
+                      borderRadius: "6px 24px 24px 6px",
+                      overflow: "hidden",
+                      borderLeft: "4.6px solid #251B1E",
+                      boxShadow: isCenter
+                        ? "0 22px 48px rgba(70,40,50,0.24)"
+                        : "0 12px 32px rgba(70,40,50,0.14)",
+                      transformOrigin: "center center",
+                      transformStyle: "preserve-3d",
+                      backfaceVisibility: "hidden",
+                      willChange: "transform, filter, opacity",
+                      pointerEvents: "auto",
+                    }}
+                    initial={false}
+                    animate={{
+                      x: offset * step,
+                      y: style.y,
+                      z: style.z,
+                      rotateY: prefersReducedMotion ? 0 : -style.rotateY,
+                      rotateZ: prefersReducedMotion ? 0 : style.rotateZ,
+                      scale: style.scale,
+                      zIndex: 30 - Math.abs(offset),
+                      filter: `blur(${style.blur}px)`,
+                      opacity: style.opacity,
+                    }}
+                    transition={springTransition}
+                  >
+                    <img
+                      src={item.image}
+                      alt={`Catalogue ${item.title}`}
+                      className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                      draggable={false}
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-black/20" />
+
+                    <div className="relative z-10 flex h-full flex-col items-center justify-center px-3 text-center text-white">
+                      <p className="text-[0.65rem] tracking-[0.28em] opacity-90">2026</p>
+                      <p className="mt-2 text-[1.15rem] font-bold leading-[1.15] tracking-[0.04em] md:text-[1.3rem]">
+                        EXPLORE
+                        <br />
+                        KITCHEN
+                        <br />
+                        DESIGN
+                      </p>
+                      <span className="mt-4 inline-flex items-center gap-1.5 text-[0.75rem] underline decoration-white/70 underline-offset-4">
+                        Download
+                        <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/80 text-[9px] leading-none">
+                          ↓
+                        </span>
+                      </span>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </motion.div>
+          </div>
+
+          <div className="mt-4 flex items-center justify-center gap-4 pb-2">
+            <button
+              type="button"
+              aria-label="Previous catalogue"
+              onClick={prev}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#c9a4ab] text-[#6b3d48] transition hover:scale-105 hover:bg-[#b88f97] active:scale-95"
+            >
+              <ChevronLeft size={20} strokeWidth={2.2} />
+            </button>
+
+            <button
+              type="button"
+              aria-label="Next catalogue"
+              onClick={next}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#c9a4ab] text-[#6b3d48] transition hover:scale-105 hover:bg-[#b88f97] active:scale-95"
+            >
+              <ChevronRight size={20} strokeWidth={2.2} />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <DownloadCatalogueModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        downloadUrl={selectedDownloadUrl}
+        images={contactImages}
+      />
+    </>
+  );
+}
