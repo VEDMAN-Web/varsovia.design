@@ -10,6 +10,13 @@ const SiteContent = require("../models/SiteContent");
 const Blog = require("../models/Blog");
 const TeamMember = require("../models/TeamMember");
 const FAQ = require("../models/FAQ");
+const {
+  getRequestLocale,
+  isAdminRequest,
+  localizeSiteContent,
+  localizeModelDoc,
+  localizeModelDocs,
+} = require("../utils/locale");
 
 async function getHomeData(req, res) {
   try {
@@ -24,14 +31,19 @@ async function getHomeData(req, res) {
         SiteContent.findOne({ key: "main" }),
       ]);
 
+    if (isAdminRequest(req)) {
+      return res.json({ site, products, projects, testimonials, catalogues, partners, showrooms });
+    }
+
+    const locale = getRequestLocale(req);
     res.json({
-      site,
-      products,
-      projects,
-      testimonials,
-      catalogues,
-      partners,
-      showrooms,
+      site: localizeSiteContent(site, locale),
+      products: localizeModelDocs("Product", products, locale),
+      projects: localizeModelDocs("Project", projects, locale),
+      testimonials: localizeModelDocs("Testimonial", testimonials, locale),
+      catalogues: localizeModelDocs("Catalogue", catalogues, locale),
+      partners: localizeModelDocs("Partner", partners, locale),
+      showrooms: localizeModelDocs("Showroom", showrooms, locale),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -75,7 +87,7 @@ async function updateContactStatus(req, res) {
     const contact = await Contact.findByIdAndUpdate(
       req.params.id,
       { status: req.body.status },
-      { new: true }
+      { new: true },
     );
     if (!contact) return res.status(404).json({ message: "Not found" });
     res.json(contact);
@@ -84,22 +96,25 @@ async function updateContactStatus(req, res) {
   }
 }
 
-function crud(Model) {
+function crud(Model, modelName) {
   return {
     list: async (req, res) => {
       try {
-        const page  = Math.max(1, parseInt(req.query.page)  || 0);
+        const page = Math.max(1, parseInt(req.query.page) || 0);
         const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 0));
         const paginate = page > 0 && limit > 0 && (req.query.page || req.query.limit);
 
         if (paginate) {
-          const skip  = (page - 1) * limit;
+          const skip = (page - 1) * limit;
           const [items, total] = await Promise.all([
             Model.find().sort({ order: 1, createdAt: -1 }).skip(skip).limit(limit),
             Model.countDocuments(),
           ]);
+          const payload = isAdminRequest(req)
+            ? items
+            : localizeModelDocs(modelName, items, getRequestLocale(req));
           return res.json({
-            data: items,
+            data: payload,
             pagination: {
               total,
               page,
@@ -111,9 +126,9 @@ function crud(Model) {
           });
         }
 
-        // No pagination params — return flat array (backward compatible)
         const items = await Model.find().sort({ order: 1, createdAt: -1 });
-        res.json(items);
+        if (isAdminRequest(req)) return res.json(items);
+        res.json(localizeModelDocs(modelName, items, getRequestLocale(req)));
       } catch (error) {
         res.status(500).json({ message: error.message });
       }
@@ -155,11 +170,11 @@ function crud(Model) {
 async function getProjectById(req, res) {
   try {
     const { id } = req.params;
-    // Try by ObjectId first, then by slug
-    const project = await Project.findById(id).catch(() => null)
-      || await Project.findOne({ slug: id });
+    const project =
+      (await Project.findById(id).catch(() => null)) || (await Project.findOne({ slug: id }));
     if (!project) return res.status(404).json({ message: "Project not found" });
-    res.json(project);
+    if (isAdminRequest(req)) return res.json(project);
+    res.json(localizeModelDoc("Project", project, getRequestLocale(req)));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -168,19 +183,22 @@ async function getProjectById(req, res) {
 async function getProductBySlug(req, res) {
   try {
     const { slug } = req.params;
-    // Try by slug first, then by ObjectId
-    const product = await Product.findOne({ slug }).catch(() => null)
-      || await Product.findById(slug).catch(() => null);
+    const product =
+      (await Product.findOne({ slug }).catch(() => null)) ||
+      (await Product.findById(slug).catch(() => null));
     if (!product) return res.status(404).json({ message: "Product not found" });
-    res.json(product);
+    if (isAdminRequest(req)) return res.json(product);
+    res.json(localizeModelDoc("Product", product, getRequestLocale(req)));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 }
+
 async function getSite(req, res) {
   try {
     const site = await SiteContent.findOne({ key: "main" });
-    res.json(site);
+    if (isAdminRequest(req)) return res.json(site);
+    res.json(localizeSiteContent(site, getRequestLocale(req)));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -188,7 +206,6 @@ async function getSite(req, res) {
 
 async function updateSite(req, res) {
   try {
-    // Strip key field — must never be overwritten via API
     const { key: _key, _id: _id2, __v, ...update } = req.body;
     const site = await SiteContent.findOneAndUpdate({ key: "main" }, update, {
       new: true,
@@ -202,15 +219,19 @@ async function updateSite(req, res) {
 
 async function getBlogById(req, res) {
   try {
-    // Try MongoDB ObjectId lookup first
     const blog = await Blog.findById(req.params.id).catch(() => null);
-    if (blog) return res.json(blog);
+    if (blog) {
+      if (isAdminRequest(req)) return res.json(blog);
+      return res.json(localizeModelDoc("Blog", blog, getRequestLocale(req)));
+    }
 
-    // Fallback: numeric order lookup
     const parsed = parseInt(req.params.id, 10);
     if (!isNaN(parsed)) {
       const blogByOrder = await Blog.findOne({ order: parsed });
-      if (blogByOrder) return res.json(blogByOrder);
+      if (blogByOrder) {
+        if (isAdminRequest(req)) return res.json(blogByOrder);
+        return res.json(localizeModelDoc("Blog", blogByOrder, getRequestLocale(req)));
+      }
     }
 
     return res.status(404).json({ message: "Blog not found" });
@@ -229,14 +250,14 @@ module.exports = {
   getBlogById,
   getProjectById,
   getProductBySlug,
-  products: crud(Product),
-  projects: crud(Project),
-  testimonials: crud(Testimonial),
-  catalogues: crud(Catalogue),
-  partners: crud(Partner),
-  showrooms: crud(Showroom),
-  showcases: crud(Showcase),
-  blogs: crud(Blog),
-  teamMembers: crud(TeamMember),
-  faqs: crud(FAQ),
+  products: crud(Product, "Product"),
+  projects: crud(Project, "Project"),
+  testimonials: crud(Testimonial, "Testimonial"),
+  catalogues: crud(Catalogue, "Catalogue"),
+  partners: crud(Partner, "Partner"),
+  showrooms: crud(Showroom, "Showroom"),
+  showcases: crud(Showcase, "Showcase"),
+  blogs: crud(Blog, "Blog"),
+  teamMembers: crud(TeamMember, "TeamMember"),
+  faqs: crud(FAQ, "FAQ"),
 };

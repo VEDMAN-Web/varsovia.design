@@ -1,21 +1,22 @@
 const mongoose = require("mongoose");
+const { localizedField } = require("../schemas/localizedField");
 
 const blogSchema = new mongoose.Schema(
   {
-    title:    { type: String, required: true },
-    excerpt:  { type: String, default: "" },
-    content:  { type: String, default: "" },
-    date:     { type: String, default: "" },
-    readTime: { type: String, default: "" },
+    title: { ...localizedField(), required: true },
+    excerpt: localizedField(),
+    content: localizedField(),
+    date: { type: String, default: "" },
+    readTime: localizedField(),
     author: {
-      name:   { type: String, default: "" },
+      name: mongoose.Schema.Types.Mixed,
       avatar: { type: String, default: "" },
     },
-    image:  { type: String, default: "" },
-    views:  { type: Number, default: 0 },
-    order:  { type: Number, default: 0 },
+    image: { type: String, default: "" },
+    views: { type: Number, default: 0 },
+    order: { type: Number, default: 0 },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Blog", blogSchema);

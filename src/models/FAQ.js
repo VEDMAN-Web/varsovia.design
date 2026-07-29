@@ -1,13 +1,14 @@
 const mongoose = require("mongoose");
+const { localizedField } = require("../schemas/localizedField");
 
 const faqSchema = new mongoose.Schema(
   {
-    question: { type: String, required: true },
-    answer: { type: String, required: true },
-    category: { type: String, required: true },
+    question: { ...localizedField(), required: true },
+    answer: { ...localizedField(), required: true },
+    category: localizedField("Kitchen Interior"),
     order: { type: Number, default: 0 },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("FAQ", faqSchema);

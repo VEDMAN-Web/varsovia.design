@@ -1,13 +1,14 @@
 const mongoose = require("mongoose");
+const { localizedField } = require("../schemas/localizedField");
 
 const partnerSchema = new mongoose.Schema(
   {
-    name:    { type: String, required: true },
-    logo:    { type: String, default: "" },
+    name: { ...localizedField(), required: true },
+    logo: { type: String, default: "" },
     website: { type: String, default: "" },
-    order:   { type: Number, default: 0 },
+    order: { type: Number, default: 0 },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Partner", partnerSchema);

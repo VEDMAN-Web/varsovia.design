@@ -1,55 +1,56 @@
 const mongoose = require("mongoose");
+const { localizedField } = require("../schemas/localizedField");
 
 const siteContentSchema = new mongoose.Schema(
   {
     key: { type: String, required: true, unique: true },
-    heroEyebrow: { type: String, default: "" },
-    heroHeadline: { type: String, default: "" },
-    heroSubtitle: { type: String, default: "" },
+    heroEyebrow: localizedField(),
+    heroHeadline: localizedField(),
+    heroSubtitle: localizedField(),
     heroImage: { type: String, default: "" },
-    heroPrimaryCtaLabel: { type: String, default: "" },
+    heroPrimaryCtaLabel: localizedField(),
     heroPrimaryCtaHref: { type: String, default: "" },
-    heroSecondaryCtaLabel: { type: String, default: "" },
+    heroSecondaryCtaLabel: localizedField(),
     heroSecondaryCtaHref: { type: String, default: "" },
-    aboutTitle: { type: String, default: "" },
-    aboutText: { type: String, default: "" },
+    aboutTitle: localizedField(),
+    aboutText: localizedField(),
     aboutImages: [{ type: String }],
     stats: [
       {
-        label: String,
-        value: String,
+        label: mongoose.Schema.Types.Mixed,
+        value: mongoose.Schema.Types.Mixed,
       },
     ],
     statsImage: { type: String, default: "" },
-    aboutIntro: { type: String, default: "" },
-    aboutStory: { type: String, default: "" },
-    aboutHeroSubtitle: { type: String, default: "" },
+    aboutIntro: localizedField(),
+    aboutStory: localizedField(),
+    aboutHeroSubtitle: localizedField(),
     vision: {
-      title: { type: String, default: "" },
-      text: { type: String, default: "" },
+      title: mongoose.Schema.Types.Mixed,
+      text: mongoose.Schema.Types.Mixed,
     },
     mission: {
-      title: { type: String, default: "" },
-      text: { type: String, default: "" },
+      title: mongoose.Schema.Types.Mixed,
+      text: mongoose.Schema.Types.Mixed,
     },
     values: {
-      title: { type: String, default: "" },
-      text: { type: String, default: "" },
+      title: mongoose.Schema.Types.Mixed,
+      text: mongoose.Schema.Types.Mixed,
     },
     processSteps: [
       {
         step: String,
-        title: String,
-        text: String,
+        title: mongoose.Schema.Types.Mixed,
+        text: mongoose.Schema.Types.Mixed,
       },
     ],
     contactImages: [{ type: String }],
-    footerBio: { type: String, default: "" },
+    footerBio: localizedField(),
     phone: { type: String, default: "" },
     email: { type: String, default: "" },
-    address: { type: String, default: "" },
+    address: localizedField(),
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("SiteContent", siteContentSchema);

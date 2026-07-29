@@ -1,16 +1,17 @@
 const mongoose = require("mongoose");
+const { localizedField } = require("../schemas/localizedField");
 
 const productSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true },
+    title: { ...localizedField(), required: true },
     slug: { type: String, unique: true, sparse: true },
-    description: { type: String, default: "" },
+    description: localizedField(),
     image: { type: String, default: "" },
     category: { type: String, default: "Kitchen" },
     featured: { type: Boolean, default: false },
     order: { type: Number, default: 0 },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Product", productSchema);
