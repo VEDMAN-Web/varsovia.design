@@ -9,8 +9,11 @@ async function connectDB() {
     console.warn("Failed to configure DNS fallback:", err.message);
   }
 
+  // Strip __v (Mongoose version key) from all documents globally
+  mongoose.set("toJSON", { versionKey: false });
+  mongoose.set("toObject", { versionKey: false });
+
   const uri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/varsovia";
-  // Mask password for secure, production-grade logging
   const maskedUri = uri.replace(/:([^@:]+)@/, ":*****@");
   console.log(`Connecting to database at ${maskedUri}...`);
   await mongoose.connect(uri);

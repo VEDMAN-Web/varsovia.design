@@ -65,13 +65,33 @@ function validate(schema) {
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
 
+const nameField = z
+  .string()
+  .min(1, "Name is required.")
+  .max(100)
+  .trim()
+  .refine((val) => /^[\p{L}][\p{L}\s'.-]*$/u.test(val), "Name contains invalid characters.");
+
+const placeField = z
+  .string()
+  .max(100)
+  .trim()
+  .refine((val) => val === "" || (/^[\p{L}][\p{L}\s'.-]*$/u.test(val) && val.length >= 2), {
+    message: "Use letters only (no numbers or symbols).",
+  });
+
 const contactSchema = z.object({
-  name:        z.string().min(1, "Name is required.").max(100).trim(),
+  name:        nameField,
   email:       z.string().email("Invalid email address.").max(200).trim(),
   phone:       z.string().min(6, "Phone is required.").max(30).trim(),
-  whatsapp:    z.string().max(30).trim().optional(),
-  city:        z.string().max(100).trim().optional(),
-  country:     z.string().max(100).trim().optional(),
+  whatsapp:    z
+    .string()
+    .max(30)
+    .trim()
+    .optional()
+    .refine((val) => !val || /^\d{6,15}$/.test(val.replace(/\D/g, "")), "Invalid WhatsApp number."),
+  city:        placeField.optional(),
+  country:     placeField.optional(),
   projectType: z.string().max(100).trim().optional(),
   budget:      z.custom((val) => typeof val === "string").optional(),
   message:     z.string().max(2000).trim().optional(),
