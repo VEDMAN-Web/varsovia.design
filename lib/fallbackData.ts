@@ -24,7 +24,7 @@ export const fallbackHomeData = {
       "At Varsovia Design, we believe every space tells a story. We specialize in creating elegant, functional, and personalized interiors that reflect your lifestyle. From modular kitchens to complete home and commercial interiors, we combine creativity, craftsmanship, and premium materials to deliver spaces that stand the test of time.",
     aboutStory:
       "Founded with a passion for thoughtful design and exceptional craftsmanship, Varsovia Design has grown into a trusted name in premium interior solutions. Every project begins with understanding our clients' vision and ends with beautifully crafted spaces that balance aesthetics, comfort, and functionality.",
-    aboutHeroSubtitle: "TWELVE YEARS OF ROOMS BUILT TO LAST",
+    aboutHeroSubtitle: "TWELVE YEARS OF ROOMS BUILT TO LAST.",
     vision: {
       title: "Our Vision",
       text: "To become a leading interior design brand known for creating inspiring spaces that enrich everyday living through innovation, quality, and timeless design.",

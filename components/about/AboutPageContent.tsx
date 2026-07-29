@@ -141,7 +141,7 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
       <section className={`${COMPANY_SHELL} mb-20 md:mb-28`}>
         <CompanySectionHeading
           title="Vision. Mission. Value."
-          subtitle="The foundation of everything we create"
+          subtitle="The foundation of everything we create."
           subtitleSentenceCase={false}
           className="mb-10 md:mb-14"
         />
@@ -209,7 +209,7 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
       <section className={`${COMPANY_SHELL} mb-20 md:mb-28`}>
         <CompanySectionHeading
           title="Our Process"
-          subtitle="A seamless journey from vision to reality"
+          subtitle="A seamless journey from vision to reality."
           subtitleSentenceCase={false}
           className="mb-12 md:mb-16"
         />

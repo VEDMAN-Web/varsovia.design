@@ -51,7 +51,7 @@ export default function About({ title = "ABOUT VARSOVIA", text, images }: AboutP
         >
           <SectionHeading
             title={title}
-            subtitle="Twelve years of rooms built to last"
+            subtitle="Twelve years of rooms built to last."
             className={SECTION_HEADING_WIDE}
           />
         </motion.div>
