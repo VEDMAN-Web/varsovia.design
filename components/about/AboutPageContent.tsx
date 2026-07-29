@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Eye, Flag, Gem, MessagesSquare, PenTool, Hammer, Wrench } from "lucide-react";
+import { MessagesSquare, PenTool, Hammer, Wrench } from "lucide-react";
 import { fallbackHomeData } from "@/lib/fallbackData";
 import { aboutHeroGalleryImages, aboutStoryCollageImages } from "@/lib/companyData";
 import CompanySectionHeading from "@/components/company/CompanySectionHeading";
@@ -32,7 +32,6 @@ export type AboutSite = {
   processSteps?: ProcessStep[];
 };
 
-const ICONS = [Eye, Flag, Gem] as const;
 const PROCESS_ICONS = [MessagesSquare, PenTool, Hammer, Wrench] as const;
 
 const FB = fallbackHomeData.site;
@@ -76,9 +75,9 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
       : aboutStoryCollageImages;
 
   const valueBlocks = [
-    { title: site?.vision?.title || FB.vision.title, text: site?.vision?.text || FB.vision.text, icon: ICONS[0] },
-    { title: site?.mission?.title || FB.mission.title, text: site?.mission?.text || FB.mission.text, icon: ICONS[1] },
-    { title: site?.values?.title || FB.values.title, text: site?.values?.text || FB.values.text, icon: ICONS[2] },
+    { title: site?.vision?.title || FB.vision.title, text: site?.vision?.text || FB.vision.text, iconPath: "/vision/visionIcon.png" },
+    { title: site?.mission?.title || FB.mission.title, text: site?.mission?.text || FB.mission.text, iconPath: "/vision/missionIcon.png" },
+    { title: site?.values?.title || FB.values.title, text: site?.values?.text || FB.values.text, iconPath: "/vision/valuesIcon.png" },
   ];
 
   const processSteps = [
@@ -149,7 +148,6 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
           {valueBlocks.map((item, i) => {
-            const Icon = item.icon;
             return (
               <motion.article
                 key={item.title}
@@ -157,10 +155,10 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.55, delay: i * 0.1 }}
-                className="group rounded-[16px] border border-[#e5dcd3]/20 bg-[#F6EAEA] p-8 md:p-10 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-300 ease-out hover:-translate-y-[6px] hover:shadow-[0_12px_36px_rgba(107,44,58,0.06)]"
+                className="group rounded-[16px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 md:p-10 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-300 ease-out hover:-translate-y-[6px] hover:shadow-[0_12px_36px_rgba(107,44,58,0.06)]"
               >
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#E5D2D5]/70 text-[#6a414d] shadow-[0_4px_14px_rgba(107,44,58,0.04)]">
-                  <Icon size={26} strokeWidth={1.5} />
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#E5D2D5]/70 shadow-[0_4px_14px_rgba(107,44,58,0.04)]">
+                  <img src={item.iconPath} alt={item.title} className="w-11 h-11 object-contain" />
                 </div>
                 <h3 className={`mt-6 ${SUBSECTION_TITLE_CLASS} !text-black`}>{item.title}</h3>
                 <div className="mt-3.5 h-[2px] w-[30px] bg-[#C94A5B] transition-all duration-[350ms] ease-out group-hover:w-[80px]" />
@@ -172,14 +170,14 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
       </section>
       {/* Our Story */}
       <section className={`${COMPANY_SHELL} mb-20 md:mb-28`}>
-        <CompanySectionHeading title="Our Story" subtitle={heroSubtitle || undefined} className="mb-10" />
+        <CompanySectionHeading title="Our Story" subtitle={heroSubtitle || undefined} subtitleSentenceCase={false} className="mb-10" />
 
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className={`mx-auto mb-12 max-w-4xl px-4 text-center md:mb-16 md:px-6 ${COMPANY_BODY}`}
+          className={`mx-auto mb-12 max-w-4xl px-4 text-center md:mb-16 md:px-6 ${COMPANY_BODY} !text-black`}
         >
           {storyText}
         </motion.p>
@@ -223,16 +221,13 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.55, delay: 0 }}
-            className="group relative flex-1 rounded-[16px] border border-[#e5dcd3]/20 bg-[#F6EAEA] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-2 hover:shadow-[0_16px_40px_rgba(107,44,58,0.06)]"
+            className="group relative flex-1 rounded-[16px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-2 hover:shadow-[0_16px_40px_rgba(107,44,58,0.06)]"
             onMouseEnter={() => setHoveredProcessIndex(0)}
             onMouseLeave={() => setHoveredProcessIndex(null)}
           >
             {/* Decorative background Icon */}
-            <div className="absolute top-8 right-8 text-[#C94A5B] opacity-15 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-35 group-hover:scale-105">
-              {(() => {
-                const Icon = PROCESS_ICONS[0] || Wrench;
-                return <Icon size={52} strokeWidth={1} />;
-              })()}
+            <div className="absolute top-8 right-8 text-[#C94A5B] opacity-85 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-100 group-hover:scale-105">
+              <img src="/ourprocess/ourprocessStep1.png" alt="Consultation" className="w-[52px] h-[52px] object-contain partner-logo-img" />
             </div>
 
             {/* Step Label with vertical line */}
@@ -244,12 +239,12 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
             </div>
 
             {/* Card Title */}
-            <h3 className="font-outfit text-[20px] font-semibold text-[#6a414d] mt-7">
+            <h3 className="font-outfit text-[20px] font-semibold !text-black mt-7">
               {processSteps[0].title}
             </h3>
 
             {/* Card Description */}
-            <p className={`mt-4 ${SECTION_BODY_CLASS} leading-7 text-[#6a414d]/80`}>
+            <p className={`mt-4 ${SECTION_BODY_CLASS} leading-7 !text-black`}>
               {processSteps[0].text}
             </p>
           </motion.article>
@@ -263,16 +258,13 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.55, delay: 0.15 }}
-            className="group relative flex-1 rounded-[16px] border border-[#e5dcd3]/20 bg-[#F6EAEA] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-2 hover:shadow-[0_16px_40px_rgba(107,44,58,0.06)]"
+            className="group relative flex-1 rounded-[16px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-2 hover:shadow-[0_16px_40px_rgba(107,44,58,0.06)]"
             onMouseEnter={() => setHoveredProcessIndex(1)}
             onMouseLeave={() => setHoveredProcessIndex(null)}
           >
             {/* Decorative background Icon */}
-            <div className="absolute top-8 right-8 text-[#C94A5B] opacity-15 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-35 group-hover:scale-105">
-              {(() => {
-                const Icon = PROCESS_ICONS[1] || Wrench;
-                return <Icon size={52} strokeWidth={1} />;
-              })()}
+            <div className="absolute top-8 right-8 text-[#C94A5B] opacity-85 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-100 group-hover:scale-105">
+              <img src="/ourprocess/ourprocessStep2.png" alt="Planning & Design" className="w-[52px] h-[52px] object-contain partner-logo-img" />
             </div>
 
             {/* Step Label with vertical line */}
@@ -284,12 +276,12 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
             </div>
 
             {/* Card Title */}
-            <h3 className="font-outfit text-[20px] font-semibold text-[#6a414d] mt-7">
+            <h3 className="font-outfit text-[20px] font-semibold !text-black mt-7">
               {processSteps[1].title}
             </h3>
 
             {/* Card Description */}
-            <p className={`mt-4 ${SECTION_BODY_CLASS} leading-7 text-[#6a414d]/80`}>
+            <p className={`mt-4 ${SECTION_BODY_CLASS} leading-7 !text-black`}>
               {processSteps[1].text}
             </p>
           </motion.article>
@@ -303,12 +295,12 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.55, delay: 0.3 }}
-            className="group relative flex-1 rounded-[16px] border border-[#e5dcd3]/20 bg-[#F6EAEA] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-2 hover:shadow-[0_16px_40px_rgba(107,44,58,0.06)]"
+            className="group relative flex-1 rounded-[16px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-2 hover:shadow-[0_16px_40px_rgba(107,44,58,0.06)]"
             onMouseEnter={() => setHoveredProcessIndex(2)}
             onMouseLeave={() => setHoveredProcessIndex(null)}
           >
             {/* Decorative background Icon */}
-            <div className="absolute top-8 right-8 text-[#C94A5B] opacity-15 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-35 group-hover:scale-105">
+            <div className="absolute top-8 right-8 text-[#C94A5B] opacity-85 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-100 group-hover:scale-105">
               {(() => {
                 const Icon = PROCESS_ICONS[2] || Wrench;
                 return <Icon size={52} strokeWidth={1} />;
@@ -324,12 +316,12 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
             </div>
 
             {/* Card Title */}
-            <h3 className="font-outfit text-[20px] font-semibold text-[#6a414d] mt-7">
+            <h3 className="font-outfit text-[20px] font-semibold !text-black mt-7">
               {processSteps[2].title}
             </h3>
 
             {/* Card Description */}
-            <p className={`mt-4 ${SECTION_BODY_CLASS} leading-7 text-[#6a414d]/80`}>
+            <p className={`mt-4 ${SECTION_BODY_CLASS} leading-7 !text-black`}>
               {processSteps[2].text}
             </p>
           </motion.article>
