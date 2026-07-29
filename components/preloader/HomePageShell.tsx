@@ -3,12 +3,7 @@
 import { useLayoutEffect, type ReactNode } from "react";
 import IntroProvider, { useIntroComplete } from "@/components/preloader/IntroProvider";
 import { HomePreloaderGate } from "@/components/preloader/HomePreloader";
-
-const INTRO_CLASS = "intro-pending";
-
-export function clearIntroPending() {
-  document.documentElement.classList.remove(INTRO_CLASS);
-}
+import { clearIntroPending } from "@/lib/introUtils";
 
 /** Keep page unmounted during preloader — avoids main-thread jank mid-zoom */
 function IntroContent({ children }: { children: ReactNode }) {
