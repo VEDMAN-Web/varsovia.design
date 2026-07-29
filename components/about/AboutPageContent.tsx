@@ -110,7 +110,7 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
             expanded
             className="w-full rounded-[16px]"
           >
-            <p className={`mx-auto mt-8 max-w-4xl px-2 md:px-4 ${PAGE_BODY_LEAD_CLASS} !font-bold !text-black`}>{intro}</p>
+            <p className={`mx-auto mt-8 max-w-4xl px-2 md:px-4 ${PAGE_BODY_LEAD_CLASS} !text-black`}>{intro}</p>
           </SectionHeading>
         </FadeInView>
       </section>
