@@ -162,7 +162,21 @@
     "successMessage": "Your request has been submitted successfully.",
     "successFollowUp": "Our design expert will review your requirements and get in touch with you within 24 business hours to discuss your project.",
     "downloadPdf": "Download PDF",
-    "apiUnavailable": "We could not reach our server right now. Please try again shortly or contact us directly."
+    "apiUnavailable": "We could not reach our server right now. Please try again shortly or contact us directly.",
+    "fixErrors": "Please fix the highlighted fields before submitting.",
+    "validation": {
+      "nameRequired": "Full name is required.",
+      "nameMin": "Name must be at least 2 characters.",
+      "nameInvalid": "Name can only contain letters, spaces, hyphens, and apostrophes.",
+      "emailRequired": "Email address is required.",
+      "emailInvalid": "Enter a valid email address.",
+      "phoneRequired": "Phone number is required.",
+      "phoneInvalid": "Enter a valid phone number for your selected region.",
+      "whatsappInvalid": "WhatsApp number can only contain digits (6–15 digits).",
+      "cityInvalid": "City can only contain letters — no numbers or symbols.",
+      "countryInvalid": "Country can only contain letters — no numbers or symbols.",
+      "messageMax": "Message cannot exceed 2000 characters."
+    }
   },
   "faq": {
     "heroTitle": "FAQ",

@@ -17,38 +17,15 @@ import {
   MODAL_LABEL,
   type InquiryPurpose,
 } from "@/components/forms/contactFormShared";
+import {
+  PHONE_CONFIG,
+  sanitizeNameInput,
+  sanitizePhoneDigits,
+  sanitizePlaceInput,
+  validateContactForm,
+  type ContactField,
+} from "@/lib/contactFormValidation";
 import type { Locale } from "@/lib/i18n/routing";
-
-// ─── Phone config per locale ──────────────────────────────────────────────────
-const PHONE_CONFIG: Record<Locale, {
-  flag: string;
-  dialCode: string;
-  maxDigits: number;
-  pattern: string;      // HTML input pattern for native validation
-  placeholder: string;  // digit-only placeholder
-}> = {
-  en: {
-    flag: "/icon/flag-english.svg",
-    dialCode: "+91",
-    maxDigits: 10,
-    pattern: "[0-9]{10}",
-    placeholder: "9876543210",
-  },
-  th: {
-    flag: "/icon/flag-thailand.svg",
-    dialCode: "+66",
-    maxDigits: 9,
-    pattern: "[0-9]{8,9}",
-    placeholder: "812345678",
-  },
-  pl: {
-    flag: "/icon/flag-polish.svg",
-    dialCode: "+48",
-    maxDigits: 9,
-    pattern: "[0-9]{9}",
-    placeholder: "512345678",
-  },
-};
 
 type ContactInquiryFormProps = {
   purpose?: InquiryPurpose;
@@ -72,7 +49,14 @@ export default function ContactInquiryForm({
 
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<ContactField, string>>>({});
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [phoneDigits, setPhoneDigits] = useState("");
+  const [whatsappDigits, setWhatsappDigits] = useState("");
+  const [city, setCity] = useState("");
+  const [country, setCountry] = useState("");
+  const [formMessage, setFormMessage] = useState("");
   const [formKey, setFormKey] = useState(0);
 
   const copy = INQUIRY_COPY[purpose];
@@ -82,35 +66,79 @@ export default function ContactInquiryForm({
   const rowClass = isModal ? MODAL_FIELD_ROW : CONTACT_FIELD_ROW;
   const formGapClass = isModal ? MODAL_FORM_GAP : CONTACT_FORM_GAP;
 
-  function handlePhoneInput(e: React.ChangeEvent<HTMLInputElement>) {
-    // Strip everything except digits
-    const digits = e.target.value.replace(/\D/g, "").slice(0, phoneConfig.maxDigits);
-    setPhoneDigits(digits);
+  function fieldErrorClass(field: ContactField) {
+    return fieldErrors[field] ? "ring-2 ring-red-500/60" : "";
+  }
+
+  function clearFieldError(field: ContactField) {
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  }
+
+  function resetForm() {
+    setName("");
+    setEmail("");
+    setPhoneDigits("");
+    setWhatsappDigits("");
+    setCity("");
+    setCountry("");
+    setFormMessage("");
+    setFieldErrors({});
+    setFormKey((k) => k + 1);
   }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const data = new FormData(form);
-    const payload = Object.fromEntries(data.entries()) as Record<string, string>;
 
-    // Prefix dial code so the lead shows full international number
-    if (payload.phone) {
-      payload.phone = `${phoneConfig.dialCode} ${payload.phone}`;
+    const values = {
+      name,
+      email,
+      phone: phoneDigits,
+      whatsapp: whatsappDigits,
+      city,
+      country,
+      message: formMessage,
+    };
+
+    const errors = validateContactForm(values, phoneConfig);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setStatus("error");
+      setMessage(t("fixErrors"));
+      return;
     }
 
-    if (purpose === "catalogue") {
-      payload.source = "catalogue-download";
-    }
+    const payload: Record<string, string> = {
+      name: values.name.trim(),
+      email: values.email.trim(),
+      phone: `${phoneConfig.dialCode} ${phoneDigits}`,
+    };
+
+    if (whatsappDigits.trim()) payload.whatsapp = whatsappDigits;
+    if (city.trim()) payload.city = city.trim();
+    if (country.trim()) payload.country = country.trim();
+    if (formMessage.trim()) payload.message = formMessage.trim();
+
+    const projectType = String(data.get("projectType") ?? "").trim();
+    const budget = String(data.get("budget") ?? "").trim();
+    if (projectType) payload.projectType = projectType;
+    if (budget) payload.budget = budget;
+    if (purpose === "catalogue") payload.source = "catalogue-download";
 
     setStatus("loading");
     setMessage("");
+    setFieldErrors({});
     try {
       const res = await submitContact(payload);
       setStatus("success");
       setMessage(res.message || copy.successLead);
-      setPhoneDigits("");
-      setFormKey((k) => k + 1); // remount form to reset all uncontrolled fields
+      resetForm();
       onSubmitted?.();
     } catch (err) {
       setStatus("error");
@@ -159,25 +187,76 @@ export default function ContactInquiryForm({
   }
 
   return (
-    <form key={formKey} onSubmit={onSubmit} className={`${formGapClass} ${className}`.trim()}>
+    <form key={formKey} onSubmit={onSubmit} noValidate className={`${formGapClass} ${className}`.trim()}>
       <div>
-        <label className={labelClass}>{t("fullName")}</label>
-        <input name="name" required placeholder={t("fullNamePh")} className={fieldClass} />
+        <label className={labelClass} htmlFor="contact-name">
+          {t("fullName")}
+        </label>
+        <input
+          id="contact-name"
+          name="name"
+          required
+          value={name}
+          onChange={(e) => {
+            setName(sanitizeNameInput(e.target.value));
+            clearFieldError("name");
+          }}
+          placeholder={t("fullNamePh")}
+          className={`${fieldClass} ${fieldErrorClass("name")}`}
+        />
+        {fieldErrors.name ? (
+          <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{t(`validation.${fieldErrors.name}`)}</p>
+        ) : null}
       </div>
 
       <div>
-        <label className={labelClass}>{t("email")}</label>
-        <input name="email" type="email" required placeholder={t("emailPh")} className={fieldClass} />
+        <label className={labelClass} htmlFor="contact-email">
+          {t("email")}
+        </label>
+        <input
+          id="contact-email"
+          name="email"
+          type="email"
+          required
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            clearFieldError("email");
+          }}
+          placeholder={t("emailPh")}
+          className={`${fieldClass} ${fieldErrorClass("email")}`}
+        />
+        {fieldErrors.email ? (
+          <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{t(`validation.${fieldErrors.email}`)}</p>
+        ) : null}
       </div>
 
       <div className={rowClass}>
         <div>
-          <label className={labelClass}>{t("whatsapp")}</label>
-          <input name="whatsapp" placeholder={t("whatsappPh")} className={fieldClass} />
+          <label className={labelClass} htmlFor="contact-whatsapp">
+            {t("whatsapp")}
+          </label>
+          <input
+            id="contact-whatsapp"
+            name="whatsapp"
+            inputMode="numeric"
+            value={whatsappDigits}
+            onChange={(e) => {
+              setWhatsappDigits(sanitizePhoneDigits(e.target.value, 15));
+              clearFieldError("whatsapp");
+            }}
+            placeholder={t("whatsappPh")}
+            className={`${fieldClass} ${fieldErrorClass("whatsapp")}`}
+          />
+          {fieldErrors.whatsapp ? (
+            <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{t(`validation.${fieldErrors.whatsapp}`)}</p>
+          ) : null}
         </div>
         <div>
-          <label className={labelClass}>{t("phone")}</label>
-          <div className={`${fieldClass} flex items-center gap-2 px-3`}>
+          <label className={labelClass} htmlFor="contact-phone">
+            {t("phone")}
+          </label>
+          <div className={`${fieldClass} flex items-center gap-2 px-3 ${fieldErrorClass("phone")}`}>
             <img
               src={phoneConfig.flag}
               alt=""
@@ -187,37 +266,74 @@ export default function ContactInquiryForm({
             <span className="shrink-0 text-[14px] font-medium text-[#251b1e]">{phoneConfig.dialCode}</span>
             <span className="h-4 w-px shrink-0 bg-[#6a414d]/20" aria-hidden />
             <input
+              id="contact-phone"
               name="phone"
               required
-              value={phoneDigits ?? ""}
-              onChange={handlePhoneInput}
+              value={phoneDigits}
+              onChange={(e) => {
+                setPhoneDigits(sanitizePhoneDigits(e.target.value, phoneConfig.maxDigits));
+                clearFieldError("phone");
+              }}
               inputMode="numeric"
-              pattern={phoneConfig.pattern}
-              maxLength={phoneConfig.maxDigits}
               placeholder={phoneConfig.placeholder}
-              title={t("phonePh")}
               className="min-w-0 flex-1 bg-transparent text-[14px] text-[#251b1e] outline-none placeholder:text-[rgba(37,27,30,0.45)]"
             />
           </div>
+          {fieldErrors.phone ? (
+            <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{t(`validation.${fieldErrors.phone}`)}</p>
+          ) : null}
         </div>
       </div>
 
       <div className={rowClass}>
         <div>
-          <label className={labelClass}>{t("city")}</label>
-          <input name="city" placeholder={t("cityPh")} className={fieldClass} />
+          <label className={labelClass} htmlFor="contact-city">
+            {t("city")}
+          </label>
+          <input
+            id="contact-city"
+            name="city"
+            value={city}
+            onChange={(e) => {
+              setCity(sanitizePlaceInput(e.target.value));
+              clearFieldError("city");
+            }}
+            placeholder={t("cityPh")}
+            className={`${fieldClass} ${fieldErrorClass("city")}`}
+          />
+          {fieldErrors.city ? (
+            <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{t(`validation.${fieldErrors.city}`)}</p>
+          ) : null}
         </div>
         <div>
-          <label className={labelClass}>{t("country")}</label>
-          <input name="country" placeholder={t("countryPh")} className={fieldClass} />
+          <label className={labelClass} htmlFor="contact-country">
+            {t("country")}
+          </label>
+          <input
+            id="contact-country"
+            name="country"
+            value={country}
+            onChange={(e) => {
+              setCountry(sanitizePlaceInput(e.target.value));
+              clearFieldError("country");
+            }}
+            placeholder={t("countryPh")}
+            className={`${fieldClass} ${fieldErrorClass("country")}`}
+          />
+          {fieldErrors.country ? (
+            <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{t(`validation.${fieldErrors.country}`)}</p>
+          ) : null}
         </div>
       </div>
 
       <div className={rowClass}>
         <div>
-          <label className={labelClass}>{t("projectType")}</label>
+          <label className={labelClass} htmlFor="contact-project-type">
+            {t("projectType")}
+          </label>
           <div className="relative">
             <select
+              id="contact-project-type"
               name="projectType"
               defaultValue=""
               className={`${fieldClass} cursor-pointer appearance-none pr-10`}
@@ -240,9 +356,12 @@ export default function ContactInquiryForm({
         </div>
 
         <div>
-          <label className={labelClass}>{t("budgetRange")}</label>
+          <label className={labelClass} htmlFor="contact-budget">
+            {t("budgetRange")}
+          </label>
           <div className="relative">
             <select
+              id="contact-budget"
               name="budget"
               defaultValue=""
               className={`${fieldClass} cursor-pointer appearance-none pr-10`}
@@ -266,12 +385,23 @@ export default function ContactInquiryForm({
       </div>
 
       <div className={`flex min-h-0 flex-col ${isModal ? "" : "min-h-[146px] flex-1"}`}>
-        <label className={labelClass}>{t("message")}</label>
+        <label className={labelClass} htmlFor="contact-message">
+          {t("message")}
+        </label>
         <textarea
+          id="contact-message"
           name="message"
+          value={formMessage}
+          onChange={(e) => {
+            setFormMessage(e.target.value.slice(0, 2000));
+            clearFieldError("message");
+          }}
           placeholder={t("messagePh")}
-          className={`resize-none ${isModal ? `${fieldClass} h-[118px] py-3` : CONTACT_TEXTAREA}`}
+          className={`resize-none ${fieldErrorClass("message")} ${isModal ? `${fieldClass} h-[118px] py-3` : CONTACT_TEXTAREA}`}
         />
+        {fieldErrors.message ? (
+          <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{t(`validation.${fieldErrors.message}`)}</p>
+        ) : null}
       </div>
 
       {message ? (
