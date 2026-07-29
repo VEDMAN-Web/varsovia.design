@@ -10,6 +10,9 @@ const { globalLimiter } = require("./middleware/rateLimiter");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Required behind Render/Railway/Vercel proxy — otherwise rate limits apply to one shared IP
+app.set("trust proxy", 1);
+
 // ─── Security headers ─────────────────────────────────────────────────────────
 app.use(helmet());
 
@@ -31,16 +34,16 @@ app.use(
   })
 );
 
-// ─── Global rate limiter ──────────────────────────────────────────────────────
-app.use(globalLimiter);
-
 // ─── Body parser ──────────────────────────────────────────────────────────────
 app.use(express.json({ limit: "2mb" }));
 
-// ─── Health check ─────────────────────────────────────────────────────────────
+// ─── Health check (no rate limit) ─────────────────────────────────────────────
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", brand: "Varsovia Kitchen" });
 });
+
+// ─── Global rate limiter (API routes only) ────────────────────────────────────
+app.use("/api", globalLimiter);
 
 // ─── API routes ───────────────────────────────────────────────────────────────
 app.use("/api", apiRoutes);
