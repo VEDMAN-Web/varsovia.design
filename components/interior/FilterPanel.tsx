@@ -37,7 +37,7 @@ const SECTION_META: Record<
 };
 
 const DROPDOWN_BTN =
-  "inline-flex h-11 w-full items-center justify-between rounded-[6px] border border-[#cfc4c6] bg-white px-5 font-outfit text-[14px] font-normal text-[#6a414d]/70 outline-none transition hover:border-[#6a414d]/35";
+  "inline-flex h-11 w-[150px] items-center justify-between rounded-[6px] border border-[#cfc4c6] bg-white px-5 font-outfit text-[14px] font-normal text-[#6a414d]/70 outline-none transition hover:border-[#6a414d]/35";
 
 const HIDE_SCROLLBAR =
   "[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden";
@@ -151,7 +151,7 @@ export default function FilterPanel({ open, category, value, onClose, onApply }:
           >
             <div className="border-b border-[#e5dcd3] pb-4">
               <div className="flex items-center justify-between">
-                <h2 className="font-outfit text-[22px] font-medium leading-none text-[#6a414d]">
+                <h2 className="font-outfit text-[22px] !font-bold leading-none !text-black">
                   {t("title")}
                 </h2>
                 <button
@@ -181,7 +181,7 @@ export default function FilterPanel({ open, category, value, onClose, onApply }:
                     }
                     style={sectionIndex > 0 ? { paddingTop: "1.25rem" } : undefined}
                   >
-                    <p className="mb-3 font-outfit text-[15px] font-medium text-[#6a414d]">
+                    <p className="mb-3 font-outfit text-[15px] font-medium text-black">
                       {section.label}
                     </p>
 
@@ -192,15 +192,12 @@ export default function FilterPanel({ open, category, value, onClose, onApply }:
                       aria-expanded={isOpen}
                     >
                       <span>
-                        {selected.length > 0
-                          ? `${selected.length} selected`
-                          : section.placeholder}
+                        {section.placeholder}
                       </span>
                       <ChevronDown
                         size={12}
-                        className={`shrink-0 text-[#6a414d]/70 transition-transform duration-200 ${
-                          isOpen ? "rotate-180" : ""
-                        }`}
+                        className={`shrink-0 text-[#6a414d]/70 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+                          }`}
                       />
                     </button>
 
@@ -211,14 +208,13 @@ export default function FilterPanel({ open, category, value, onClose, onApply }:
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
                           transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                          className="overflow-hidden"
+                          className="overflow-hidden w-[220px]"
                         >
                           <div
-                            className={`mt-2 rounded-[6px] border border-[#cfc4c6] bg-white py-1 shadow-sm ${
-                              section.options.length > SCROLLABLE_OPTIONS
-                                ? `max-h-52 overflow-y-auto ${HIDE_SCROLLBAR}`
-                                : ""
-                            }`}
+                            className={`mt-2 rounded-[6px] border border-[#cfc4c6] bg-white py-1 shadow-sm ${section.options.length > SCROLLABLE_OPTIONS
+                              ? `max-h-52 overflow-y-auto ${HIDE_SCROLLBAR}`
+                              : ""
+                              }`}
                           >
                             {section.options.length === 0 ? (
                               <p className="px-4 py-3 font-outfit text-[14px] text-[#6a414d]/60">
@@ -232,11 +228,10 @@ export default function FilterPanel({ open, category, value, onClose, onApply }:
                                     key={option}
                                     type="button"
                                     onClick={() => toggleOption(section.key, option)}
-                                    className={`flex w-full cursor-pointer items-center justify-between px-4 py-2.5 text-left font-outfit text-[14px] transition hover:bg-[#f7f1f2] ${
-                                      active
-                                        ? "font-medium text-[#6a414d]"
-                                        : "font-normal text-[#444]"
-                                    }`}
+                                    className={`flex w-full cursor-pointer items-center justify-between px-4 py-2.5 text-left font-outfit text-[14px] transition hover:bg-[#f7f1f2] ${active
+                                      ? "font-medium text-[#6a414d]"
+                                      : "font-normal text-[#444]"
+                                      }`}
                                   >
                                     <span>{option}</span>
                                     {active && <span className="text-[#825E69]">✓</span>}
@@ -249,25 +244,65 @@ export default function FilterPanel({ open, category, value, onClose, onApply }:
                       )}
                     </AnimatePresence>
 
-                    {selected.length > 0 && (
-                      <div className="mt-3 flex flex-wrap items-center font-outfit text-[13px] font-normal leading-relaxed text-[#7a7072]">
-                        {selected.map((tag, i) => (
-                          <span key={tag} className="inline-flex items-center">
-                            <button
-                              type="button"
-                              onClick={() => removeTag(section.key, tag)}
-                              className="cursor-pointer font-medium transition hover:text-[#6a414d]"
-                              title={`Remove ${tag}`}
-                            >
-                              {tag}
-                            </button>
-                            {i < selected.length - 1 && (
-                              <span className="mx-2 select-none text-[#cfc4c6]">|</span>
-                            )}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    {(() => {
+                      const combinedTags = [
+                        ...draft.shapes,
+                        ...draft.subcategories,
+                        ...draft.styles,
+                        ...draft.colors,
+                        ...draft.materials,
+                      ];
+                      
+                      if (section.key !== "finishes") {
+                        if (combinedTags.length === 0) return null;
+                        return (
+                          <div className="mt-3 flex flex-wrap items-center font-outfit text-[13px] font-normal leading-relaxed text-[#7a7072]">
+                            {combinedTags.map((tag) => {
+                              let targetKey: FilterKey = "shapes";
+                              if (draft.subcategories.includes(tag)) targetKey = "subcategories";
+                              else if (draft.styles.includes(tag)) targetKey = "styles";
+                              else if (draft.colors.includes(tag)) targetKey = "colors";
+                              else if (draft.materials.includes(tag)) targetKey = "materials";
+
+                              return (
+                                <span key={tag} className="inline-flex items-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => removeTag(targetKey, tag)}
+                                    className="cursor-pointer font-medium transition hover:text-[#6a414d]"
+                                    title={`Remove ${tag}`}
+                                  >
+                                    {tag}
+                                  </button>
+                                  <span className="mx-2 select-none text-[#cfc4c6]">|</span>
+                                </span>
+                              );
+                            })}
+                          </div>
+                        );
+                      } else {
+                        if (selected.length === 0) return null;
+                        return (
+                          <div className="mt-3 flex flex-wrap items-center font-outfit text-[13px] font-normal leading-relaxed text-[#7a7072]">
+                            {selected.map((tag, i) => (
+                              <span key={tag} className="inline-flex items-center">
+                                <button
+                                  type="button"
+                                  onClick={() => removeTag(section.key, tag)}
+                                  className="cursor-pointer font-medium transition hover:text-[#6a414d]"
+                                  title={`Remove ${tag}`}
+                                >
+                                  {tag}
+                                </button>
+                                {i < selected.length - 1 && (
+                                  <span className="mx-2 select-none text-[#cfc4c6]">|</span>
+                                )}
+                              </span>
+                            ))}
+                          </div>
+                        );
+                      }
+                    })()}
                   </div>
                 );
               })}

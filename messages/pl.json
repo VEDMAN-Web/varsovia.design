@@ -99,6 +99,7 @@
     "step": "Krok {step}"
   },
   "sort": {
+    "all": "Wszystkie",
     "newest": "Od najnowszych",
     "oldest": "Od najstarszych",
     "priceHigh": "Cena: od wysokiej do niskiej",

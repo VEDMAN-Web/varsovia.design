@@ -625,12 +625,14 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
 ];
 
 export type SortOption =
+  | "all"
   | "newest"
   | "oldest"
   | "price-high"
   | "price-low";
 
 export const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: "all", label: "All" },
   { value: "newest", label: "Newest To Oldest" },
   { value: "oldest", label: "Oldest To Newest" },
   { value: "price-high", label: "High to Low Price" },

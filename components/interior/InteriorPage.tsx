@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
@@ -88,24 +88,15 @@ function categoryFromQuery(value: string | null | undefined, fallback: InteriorC
   return match ?? fallback;
 }
 
-function FilterIcon({ className = "" }: { className?: string }) {
+function FilterIcon({ className = "", active = false }: { className?: string; active?: boolean }) {
   return (
-    <svg
-      className={className}
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden
-    >
-      <path
-        d="M5 4h14l-5 7v5l-4 2v-7L5 4z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <path d="M8 7h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
+    <img
+      src="/global/document-filter.png"
+      alt="Filter"
+      className={`${className} w-5 h-5 object-contain ${
+        active ? "brightness-0 invert" : "partner-logo-img"
+      }`}
+    />
   );
 }
 
@@ -163,7 +154,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
   );
   const [category, setCategory] = useState<InteriorCategory>(urlCategory);
   const [subcategory, setSubcategory] = useState<string>("All");
-  const [sortBy, setSortBy] = useState<SortOption>("newest");
+  const [sortBy, setSortBy] = useState<SortOption>("all");
   const [filters, setFilters] = useState<AdvancedFilters>(EMPTY_FILTERS);
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
@@ -249,6 +240,9 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
     });
 
     switch (sortBy) {
+      case "all":
+        list = [...list].sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+        break;
       case "newest":
         list = [...list].sort(
           (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
@@ -300,6 +294,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
   const sortOptions = useMemo(
     () =>
       [
+        { value: "all" as SortOption, label: tSort("all") },
         { value: "newest" as SortOption, label: tSort("newest") },
         { value: "oldest" as SortOption, label: tSort("oldest") },
         { value: "price-high" as SortOption, label: tSort("priceHigh") },
@@ -309,7 +304,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
   );
 
   const activeFilterCount = countActiveFilters(filters);
-  const sortLabel = sortOptions.find((opt) => opt.value === sortBy)?.label ?? tSort("newest");
+  const sortLabel = sortOptions.find((opt) => opt.value === sortBy)?.label ?? tSort("all");
   const gridKey = `${category}-${subcategory}-${sortBy}-${activeFilterCount}`;
 
   function selectCategory(cat: InteriorCategory) {
@@ -358,7 +353,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
                     className={`inline-flex h-11 shrink-0 items-center px-3 font-outfit text-[15px] font-normal transition-colors duration-200 md:px-3 ${
                       active
                         ? "rounded-[6px] bg-[#6a414d] text-white"
-                        : "bg-transparent text-[#6a414d]/70 hover:text-[#6a414d]"
+                        : "bg-transparent text-black hover:text-black/80"
                     }`}
                   >
                     {categoryLabels[cat]}
@@ -416,21 +411,21 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
       <section className="mt-10 md:mt-12">
         <PageShell>
           <div className="flex min-h-11 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="font-outfit text-[clamp(1rem,2vw,1.375rem)] font-normal leading-none text-[#6a414d] tabular-nums">
+            <p className="font-outfit text-[clamp(1rem,2vw,1.375rem)] font-bold leading-none !text-black tabular-nums">
               {tCommon("allInteriorCount", { count: items.length })}
             </p>
 
             <div className="flex flex-wrap items-center gap-5">
               <div ref={sortRef} className="relative flex items-center gap-3">
-                <span className="font-outfit text-[15px] font-normal text-[#6a414d]">{tCommon("sortBy")}</span>
+                <span className="font-outfit text-[18px] font-normal !text-black">{tCommon("sortBy")}</span>
                 <button
                   type="button"
                   onClick={() => setSortOpen((open) => !open)}
-                  className={`${TOOLBAR_PILL} min-w-[180px] justify-between px-5`}
+                  className={`${TOOLBAR_PILL} min-w-[120px] justify-between px-5`}
                   aria-expanded={sortOpen}
                   aria-haspopup="listbox"
                 >
-                  <span className="truncate">{sortLabel}</span>
+                  <span className="truncate !text-black !font-bold">{sortLabel}</span>
                   <ChevronDown
                     size={16}
                     className={`shrink-0 text-[#6a414d]/70 transition ${sortOpen ? "rotate-180" : ""}`}
@@ -439,7 +434,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
                 {sortOpen && (
                   <div
                     role="listbox"
-                    className="absolute right-0 top-full z-20 mt-1 min-w-[220px] overflow-hidden rounded-[6px] border border-[#cfc4c6] bg-white py-1 shadow-lg"
+                    className="absolute right-0 top-full z-20 mt-1 min-w-[180px] overflow-hidden rounded-[6px] border border-[#cfc4c6] bg-white py-1 shadow-lg"
                   >
                     {sortOptions.map((opt) => (
                       <button
@@ -453,7 +448,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
                         }}
                         className={`flex w-full px-4 py-2.5 text-left font-outfit text-[15px] transition hover:bg-[#f7f1f2] ${
                           sortBy === opt.value
-                            ? "font-medium text-[#6a414d]"
+                            ? "font-bold text-black"
                             : "font-normal text-[#6a414d]/85"
                         }`}
                       >
@@ -469,8 +464,8 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
                 onClick={() => setFilterOpen(true)}
                 className={toolbarPillClass(activeFilterCount > 0)}
               >
-                <FilterIcon className="shrink-0" />
-                <span>
+                <FilterIcon className="shrink-0" active={activeFilterCount > 0} />
+                <span className={activeFilterCount > 0 ? "font-bold text-white" : "font-bold text-black"}>
                   {activeFilterCount > 0
                     ? tCommon("filterCount", { count: activeFilterCount })
                     : tCommon("filter")}
