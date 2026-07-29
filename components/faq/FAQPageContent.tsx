@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { ChevronDown, CirclePlus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import CompanyHero from "@/components/company/CompanyHero";
 import FadeInView from "@/components/company/FadeInView";
 import { COMPANY_PAGE_BG, COMPANY_SHELL } from "@/components/company/companyLayoutShared";
 import { fetchFAQs } from "@/lib/api";
+import type { Locale } from "@/lib/i18n/routing";
 import {
   FAQ_TOPICS,
   resolveFaqsForTopic,
@@ -31,15 +33,30 @@ const FAQ_QUESTION =
 const FAQ_ANSWER = "font-outfit text-[clamp(0.875rem,1.4vw,1rem)] font-normal leading-7 text-[#6a414d]/85";
 
 export default function FAQPageContent() {
+  const locale = useLocale();
+  const t = useTranslations("faq");
+  const tCommon = useTranslations("common");
+  const topicLabels = useMemo(
+    (): Record<FaqTopic, string> => ({
+      "Kitchen Interior": t("topicKitchen"),
+      "Bedroom Interior": t("topicBedroom"),
+      "Living Room": t("topicLivingRoom"),
+      "Bathroom Interior": t("topicBathroom"),
+      "Doors & Windows": t("topicDoorsWindows"),
+      Furniture: t("topicFurniture"),
+      "Whole Home": t("topicWholeHome"),
+    }),
+    [t],
+  );
   const [activeTopic, setActiveTopic] = useState<FaqTopic>("Kitchen Interior");
   const [openIndex, setOpenIndex] = useState<number>(0);
   const [dbFaqs, setDbFaqs] = useState<Array<{ category?: string; question?: string; answer?: string }>>([]);
 
   useEffect(() => {
-    fetchFAQs().then((data) => {
+    fetchFAQs(locale as Locale).then((data) => {
       if (Array.isArray(data) && data.length > 0) setDbFaqs(data);
     });
-  }, []);
+  }, [locale]);
 
   function handleTopicChange(topic: FaqTopic) {
     setActiveTopic(topic);
@@ -55,8 +72,8 @@ export default function FAQPageContent() {
   return (
     <div className={COMPANY_PAGE_BG}>
       <CompanyHero
-        title="FAQ"
-        subtitle="Clear answers to help you make informed design decisions"
+        title={t("heroTitle")}
+        subtitle={t("heroSubtitle")}
         subtitleSentenceCase={false}
       />
 
@@ -64,8 +81,8 @@ export default function FAQPageContent() {
         {/* Figma 4:4358 — Topic | Questions & Answer header row */}
         <FadeInView>
           <div className="mb-5 grid grid-cols-1 gap-6 lg:mb-5 lg:grid-cols-[minmax(0,372px)_minmax(0,1fr)] lg:gap-[50px]">
-            <h2 className={FAQ_COLUMN_TITLE}>Topic</h2>
-            <h2 className={FAQ_COLUMN_TITLE}>Questions &amp; Answer</h2>
+            <h2 className={FAQ_COLUMN_TITLE}>{tCommon("topic")}</h2>
+            <h2 className={FAQ_COLUMN_TITLE}>{tCommon("questionsAndAnswers")}</h2>
           </div>
         </FadeInView>
 
@@ -83,7 +100,7 @@ export default function FAQPageContent() {
                       className={`${FAQ_TOPIC_ROW} ${active ? "ring-1 ring-[#6a414d]/15" : ""}`}
                     >
                       <span className={`${FAQ_TOPIC_LABEL} ${active ? "text-[#6a414d]" : "text-[#6a414d]/80"}`}>
-                        {topic}
+                        {topicLabels[topic]}
                       </span>
                       <ChevronDown
                         size={24}

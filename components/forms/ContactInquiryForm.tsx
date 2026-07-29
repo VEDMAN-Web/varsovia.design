@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { ChevronDown, Download } from "lucide-react";
 import { submitContact } from "@/lib/api";
 import {
@@ -16,6 +17,38 @@ import {
   MODAL_LABEL,
   type InquiryPurpose,
 } from "@/components/forms/contactFormShared";
+import type { Locale } from "@/lib/i18n/routing";
+
+// ─── Phone config per locale ──────────────────────────────────────────────────
+const PHONE_CONFIG: Record<Locale, {
+  flag: string;
+  dialCode: string;
+  maxDigits: number;
+  pattern: string;      // HTML input pattern for native validation
+  placeholder: string;  // digit-only placeholder
+}> = {
+  en: {
+    flag: "/icon/flag-english.svg",
+    dialCode: "+91",
+    maxDigits: 10,
+    pattern: "[0-9]{10}",
+    placeholder: "9876543210",
+  },
+  th: {
+    flag: "/icon/flag-thailand.svg",
+    dialCode: "+66",
+    maxDigits: 9,
+    pattern: "[0-9]{8,9}",
+    placeholder: "812345678",
+  },
+  pl: {
+    flag: "/icon/flag-polish.svg",
+    dialCode: "+48",
+    maxDigits: 9,
+    pattern: "[0-9]{9}",
+    placeholder: "512345678",
+  },
+};
 
 type ContactInquiryFormProps = {
   purpose?: InquiryPurpose;
@@ -32,8 +65,16 @@ export default function ContactInquiryForm({
   className = "",
   density = "section",
 }: ContactInquiryFormProps) {
+  const t = useTranslations("contact");
+  const tCommon = useTranslations("common");
+  const locale = useLocale() as Locale;
+  const phoneConfig = PHONE_CONFIG[locale] ?? PHONE_CONFIG.en;
+
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [phoneDigits, setPhoneDigits] = useState("");
+  const [formKey, setFormKey] = useState(0);
+
   const copy = INQUIRY_COPY[purpose];
   const isModal = density === "modal";
   const labelClass = isModal ? MODAL_LABEL : CONTACT_LABEL;
@@ -41,11 +82,22 @@ export default function ContactInquiryForm({
   const rowClass = isModal ? MODAL_FIELD_ROW : CONTACT_FIELD_ROW;
   const formGapClass = isModal ? MODAL_FORM_GAP : CONTACT_FORM_GAP;
 
+  function handlePhoneInput(e: React.ChangeEvent<HTMLInputElement>) {
+    // Strip everything except digits
+    const digits = e.target.value.replace(/\D/g, "").slice(0, phoneConfig.maxDigits);
+    setPhoneDigits(digits);
+  }
+
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const data = new FormData(form);
     const payload = Object.fromEntries(data.entries()) as Record<string, string>;
+
+    // Prefix dial code so the lead shows full international number
+    if (payload.phone) {
+      payload.phone = `${phoneConfig.dialCode} ${payload.phone}`;
+    }
 
     if (purpose === "catalogue") {
       payload.source = "catalogue-download";
@@ -57,11 +109,12 @@ export default function ContactInquiryForm({
       const res = await submitContact(payload);
       setStatus("success");
       setMessage(res.message || copy.successLead);
-      form.reset();
+      setPhoneDigits("");
+      setFormKey((k) => k + 1); // remount form to reset all uncontrolled fields
       onSubmitted?.();
     } catch (err) {
       setStatus("error");
-      setMessage(err instanceof Error ? err.message : "Something went wrong.");
+      setMessage(err instanceof Error ? err.message : tCommon("somethingWrong"));
     }
   }
 
@@ -82,13 +135,13 @@ export default function ContactInquiryForm({
         </div>
 
         <h3 className="font-display text-[clamp(2rem,4vw,3.75rem)] font-normal tracking-[0.06em] text-[#6a414d] uppercase">
-          {copy.successTitle}
+          {t("thankYou")}
         </h3>
         <p className="font-outfit mt-4 text-[clamp(1rem,1.6vw,1.375rem)] font-normal text-[#cf5374]">
-          {copy.successLead}
+          {copy.successLead || t("successMessage")}
         </p>
         <p className="font-outfit mt-3 max-w-[459px] text-[clamp(0.875rem,1.4vw,1rem)] leading-7 text-[#6a414d]/85">
-          {copy.successBody}
+          {copy.successBody || t("successFollowUp")}
         </p>
 
         {purpose === "catalogue" && downloadUrl ? (
@@ -97,7 +150,7 @@ export default function ContactInquiryForm({
             download
             className="font-outfit mt-6 inline-flex h-[50px] items-center gap-2 rounded-[6px] bg-[#6a414d] px-5 text-[18px] font-normal text-white transition hover:bg-[#5a3640]"
           >
-            {INQUIRY_COPY.catalogue.downloadLabel}
+            {t("downloadPdf")}
             <Download size={16} aria-hidden />
           </a>
         ) : null}
@@ -106,33 +159,44 @@ export default function ContactInquiryForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className={`${formGapClass} ${className}`.trim()}>
+    <form key={formKey} onSubmit={onSubmit} className={`${formGapClass} ${className}`.trim()}>
       <div>
-        <label className={labelClass}>Full Name</label>
-        <input name="name" required placeholder="Enter Your Full Name" className={fieldClass} />
+        <label className={labelClass}>{t("fullName")}</label>
+        <input name="name" required placeholder={t("fullNamePh")} className={fieldClass} />
       </div>
 
       <div>
-        <label className={labelClass}>Email Address</label>
-        <input name="email" type="email" required placeholder="Enter Your Email Address" className={fieldClass} />
+        <label className={labelClass}>{t("email")}</label>
+        <input name="email" type="email" required placeholder={t("emailPh")} className={fieldClass} />
       </div>
 
       <div className={rowClass}>
         <div>
-          <label className={labelClass}>WhatsApp Number</label>
-          <input name="whatsapp" placeholder="Enter Your WhatsApp Number" className={fieldClass} />
+          <label className={labelClass}>{t("whatsapp")}</label>
+          <input name="whatsapp" placeholder={t("whatsappPh")} className={fieldClass} />
         </div>
         <div>
-          <label className={labelClass}>Phone Number</label>
+          <label className={labelClass}>{t("phone")}</label>
           <div className={`${fieldClass} flex items-center gap-2 px-3`}>
-            <img src="/icon/flag-thailand.svg" alt="" className="h-[18px] w-[18px] shrink-0" />
-            <ChevronDown size={14} className="shrink-0 text-[#6a414d]/70" aria-hidden />
-            <span className="shrink-0 text-[14px] text-[#251b1e]">+66</span>
+            <img
+              src={phoneConfig.flag}
+              alt=""
+              className="h-[18px] w-auto shrink-0 rounded-[2px] object-cover"
+              style={{ minWidth: "22px" }}
+            />
+            <span className="shrink-0 text-[14px] font-medium text-[#251b1e]">{phoneConfig.dialCode}</span>
+            <span className="h-4 w-px shrink-0 bg-[#6a414d]/20" aria-hidden />
             <input
               name="phone"
               required
-              placeholder="Enter Your Number"
-              className="min-w-0 flex-1 bg-transparent text-[14px] text-[#251b1e] outline-none placeholder:text-[rgba(37,27,30,0.6)]"
+              value={phoneDigits ?? ""}
+              onChange={handlePhoneInput}
+              inputMode="numeric"
+              pattern={phoneConfig.pattern}
+              maxLength={phoneConfig.maxDigits}
+              placeholder={phoneConfig.placeholder}
+              title={t("phonePh")}
+              className="min-w-0 flex-1 bg-transparent text-[14px] text-[#251b1e] outline-none placeholder:text-[rgba(37,27,30,0.45)]"
             />
           </div>
         </div>
@@ -140,45 +204,72 @@ export default function ContactInquiryForm({
 
       <div className={rowClass}>
         <div>
-          <label className={labelClass}>City Name</label>
-          <input name="city" placeholder="Enter Your City Name" className={fieldClass} />
+          <label className={labelClass}>{t("city")}</label>
+          <input name="city" placeholder={t("cityPh")} className={fieldClass} />
         </div>
         <div>
-          <label className={labelClass}>Country Name</label>
-          <input name="country" placeholder="Enter Your Country Name" className={fieldClass} />
+          <label className={labelClass}>{t("country")}</label>
+          <input name="country" placeholder={t("countryPh")} className={fieldClass} />
         </div>
       </div>
 
-      <div>
-        <label className={labelClass}>Project Type</label>
-        <div className="relative">
-          <select
-            name="projectType"
-            defaultValue=""
-            className={`${fieldClass} cursor-pointer appearance-none pr-10`}
-          >
-            <option value="" disabled>
-              Select Your Project Type
-            </option>
-            <option value="Modular Kitchen">Modular Kitchen</option>
-            <option value="Wardrobe">Wardrobe</option>
-            <option value="TV Unit">TV Unit</option>
-            <option value="Interior Design">Interior Design</option>
-            <option value="Other">Other</option>
-          </select>
-          <ChevronDown
-            size={16}
-            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#6a414d]/70"
-            aria-hidden
-          />
+      <div className={rowClass}>
+        <div>
+          <label className={labelClass}>{t("projectType")}</label>
+          <div className="relative">
+            <select
+              name="projectType"
+              defaultValue=""
+              className={`${fieldClass} cursor-pointer appearance-none pr-10`}
+            >
+              <option value="" disabled>
+                {t("projectTypePh")}
+              </option>
+              <option value="Modular Kitchen">{t("projectModularKitchen")}</option>
+              <option value="Wardrobe">{t("projectWardrobe")}</option>
+              <option value="TV Unit">{t("projectTvUnit")}</option>
+              <option value="Interior Design">{t("projectInteriorDesign")}</option>
+              <option value="Other">{t("projectOther")}</option>
+            </select>
+            <ChevronDown
+              size={16}
+              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#6a414d]/70"
+              aria-hidden
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className={labelClass}>{t("budgetRange")}</label>
+          <div className="relative">
+            <select
+              name="budget"
+              defaultValue=""
+              className={`${fieldClass} cursor-pointer appearance-none pr-10`}
+            >
+              <option value="" disabled>
+                {t("budgetPh")}
+              </option>
+              <option value={t("budget1")}>{t("budget1")}</option>
+              <option value={t("budget2")}>{t("budget2")}</option>
+              <option value={t("budget3")}>{t("budget3")}</option>
+              <option value={t("budget4")}>{t("budget4")}</option>
+              <option value={t("budget5")}>{t("budget5")}</option>
+            </select>
+            <ChevronDown
+              size={16}
+              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#6a414d]/70"
+              aria-hidden
+            />
+          </div>
         </div>
       </div>
 
       <div className={`flex min-h-0 flex-col ${isModal ? "" : "min-h-[146px] flex-1"}`}>
-        <label className={labelClass}>Message</label>
+        <label className={labelClass}>{t("message")}</label>
         <textarea
           name="message"
-          placeholder="Tell Us a Bit About Your Kitchen Project..."
+          placeholder={t("messagePh")}
           className={`resize-none ${isModal ? `${fieldClass} h-[118px] py-3` : CONTACT_TEXTAREA}`}
         />
       </div>
@@ -197,7 +288,7 @@ export default function ContactInquiryForm({
             isModal ? "h-[46px] px-[18px] text-[18px]" : "h-[50px] px-5 text-[18px]"
           }`}
         >
-          {status === "loading" ? "Submitting..." : "Submit"}
+          {status === "loading" ? tCommon("submitting") : tCommon("submit")}
         </button>
       </div>
     </form>

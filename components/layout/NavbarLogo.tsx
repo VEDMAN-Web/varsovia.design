@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { LogoWingSvg } from "@/components/preloader/preloaderLogo";
 
 /** Figma header logo — Frame 2147205489 @ 82.7×74.3, x=100 y=14 */

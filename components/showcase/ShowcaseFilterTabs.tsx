@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 import { SHOWCASE_TABS, type ShowcaseTab } from "@/lib/showcaseData";
 
 type ShowcaseFilterTabsProps = {

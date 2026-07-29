@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { motion } from "framer-motion";
 import SectionHeading from "@/components/ui/SectionHeading";
 import SectionShell, { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";

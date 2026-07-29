@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import {
   NAV_DROPDOWN_ITEM,
   NAV_DROPDOWN_ITEM_SUBTITLE,

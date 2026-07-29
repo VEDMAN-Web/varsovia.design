@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useLocale } from "next-intl";
 import Navbar from "@/components/layout/Navbar";
 import CatalogueNotebookCard from "@/components/catalogue/CatalogueNotebookCard";
 import DownloadCatalogueModal from "@/components/forms/DownloadCatalogueModal";
@@ -14,6 +15,7 @@ import {
   CATALOGUE_SECTION_SHELL,
 } from "@/components/catalogue/catalogueLayoutShared";
 import { fetchCatalogues } from "@/lib/api";
+import type { Locale } from "@/lib/i18n/routing";
 import { fallbackHomeData } from "@/lib/fallbackData";
 
 type CatalogueItem = {
@@ -31,13 +33,14 @@ const FALLBACK_ITEMS: CatalogueItem[] = fallbackHomeData.catalogues.map((c) => (
 }));
 
 export default function CataloguePageClient() {
+  const locale = useLocale();
   const [items, setItems] = useState<CatalogueItem[]>(FALLBACK_ITEMS);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [selected, setSelected] = useState<CatalogueItem | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchCatalogues().then((data) => {
+    fetchCatalogues(locale as Locale).then((data) => {
       if (!data?.length) return;
       setItems(
         data.map((c: { _id?: string; id?: string; title: string; coverImage?: string; downloadUrl?: string }) => ({
@@ -48,7 +51,7 @@ export default function CataloguePageClient() {
         }))
       );
     });
-  }, []);
+  }, [locale]);
 
   const displayItems = useMemo(() => {
     if (items.length >= 6) return items.slice(0, 6);

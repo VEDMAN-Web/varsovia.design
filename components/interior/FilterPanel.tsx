@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ChevronDown, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -74,6 +75,7 @@ function getOptionsForSection(
 }
 
 export default function FilterPanel({ open, category, value, onClose, onApply }: Props) {
+  const t = useTranslations("filter");
   const [draft, setDraft] = useState<AdvancedFilters>(EMPTY_FILTERS);
   const [openSection, setOpenSection] = useState<FilterKey | null>(null);
 
@@ -150,11 +152,11 @@ export default function FilterPanel({ open, category, value, onClose, onApply }:
             <div className="border-b border-[#e5dcd3] pb-4">
               <div className="flex items-center justify-between">
                 <h2 className="font-outfit text-[22px] font-medium leading-none text-[#6a414d]">
-                  Filter
+                  {t("title")}
                 </h2>
                 <button
                   type="button"
-                  aria-label="Close filter"
+                  aria-label={t("close")}
                   onClick={onClose}
                   className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-[#cfc4c6] text-[#6a414d] transition hover:bg-[#f7f1f2]"
                 >
@@ -220,7 +222,7 @@ export default function FilterPanel({ open, category, value, onClose, onApply }:
                           >
                             {section.options.length === 0 ? (
                               <p className="px-4 py-3 font-outfit text-[14px] text-[#6a414d]/60">
-                                No options available
+                                {t("noOptions")}
                               </p>
                             ) : (
                               section.options.map((option) => {
@@ -280,7 +282,7 @@ export default function FilterPanel({ open, category, value, onClose, onApply }:
                 }}
                 className="flex-1 cursor-pointer rounded-[6px] bg-[#6a414d] py-3 font-outfit text-[14px] font-medium uppercase tracking-[0.1em] text-white transition hover:bg-[#5a3640]"
               >
-                Apply
+                {t("apply")}
               </button>
               <button
                 type="button"
@@ -291,7 +293,7 @@ export default function FilterPanel({ open, category, value, onClose, onApply }:
                 }}
                 className="flex-1 cursor-pointer rounded-[6px] border border-[#6a414d] bg-white py-3 font-outfit text-[14px] font-medium text-[#6a414d] transition hover:bg-[#6a414d]/5"
               >
-                Reset
+                {t("clear")}
               </button>
             </div>
           </motion.aside>

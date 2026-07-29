@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import type { ShowcaseProject } from "@/lib/showcaseData";
 import { SHOWCASE_CARD_SLOT_HEIGHT } from "@/components/showcase/showcaseLayoutShared";
 

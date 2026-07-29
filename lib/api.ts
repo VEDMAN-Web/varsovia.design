@@ -1,9 +1,19 @@
 import { resolveMediaUrl, resolveMediaUrls, MEDIA } from "./mediaAssets";
+import type { Locale } from "./i18n/routing";
 import type { ApiProject, HomeData, SiteBlock, SiteContent } from "./siteTypes";
 
 export type { ApiProject, SiteContent, HomeData };
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+function withLocale(url: string, locale?: Locale) {
+  if (!locale) return url;
+  return url.includes("?") ? `${url}&locale=${locale}` : `${url}?locale=${locale}`;
+}
+
+function localeHeaders(locale?: Locale): HeadersInit {
+  return locale ? { "Accept-Language": locale } : {};
+}
 
 function pickString(value: unknown, fallback: unknown) {
   return typeof value === "string" && value.trim() ? value : fallback;
@@ -67,9 +77,12 @@ function normalizeTestimonials(items: unknown[]) {
   });
 }
 
-export async function fetchSite(): Promise<SiteContent> {
+export async function fetchSite(locale?: Locale): Promise<SiteContent> {
   try {
-    const res = await fetch(`${API_URL}/site`, { next: { revalidate: 60 } });
+    const res = await fetch(withLocale(`${API_URL}/site`, locale), {
+      headers: localeHeaders(locale),
+      next: { revalidate: 60 },
+    });
     if (!res.ok) throw new Error("Failed to fetch site");
     const data = await res.json();
     if (!data) throw new Error("Empty");
@@ -80,9 +93,12 @@ export async function fetchSite(): Promise<SiteContent> {
   }
 }
 
-export async function fetchProducts() {
+export async function fetchProducts(locale?: Locale) {
   try {
-    const res = await fetch(`${API_URL}/products`, { next: { revalidate: 30 } });
+    const res = await fetch(withLocale(`${API_URL}/products`, locale), {
+      headers: localeHeaders(locale),
+      next: { revalidate: 30 },
+    });
     if (!res.ok) throw new Error("Failed to fetch products");
     const data = await res.json();
     if (!data || data.length === 0) throw new Error("Empty");
@@ -96,10 +112,10 @@ export async function fetchProducts() {
   }
 }
 
-export async function fetchProductBySlug(slug: string) {
+export async function fetchProductBySlug(slug: string, locale?: Locale) {
   const { getProductBySlug } = await import("./productData");
   try {
-    const products = await fetchProducts();
+    const products = await fetchProducts(locale);
     const apiProduct = products.find(
       (p: { slug?: string; _id?: string }) => p.slug === slug || p._id === slug,
     );
@@ -185,10 +201,13 @@ async function mergeFeaturedProjects(apiProjects: Record<string, unknown>[]) {
   return merged.length > 0 ? merged : fallbacks.map(normalizeProjectCover);
 }
 
-export async function fetchProjects(): Promise<ApiProject[]> {
+export async function fetchProjects(locale?: Locale): Promise<ApiProject[]> {
   const { fallbackHomeData } = await import("./fallbackData");
   try {
-    const res = await fetch(`${API_URL}/projects`, { next: { revalidate: 30 } });
+    const res = await fetch(withLocale(`${API_URL}/projects`, locale), {
+      headers: localeHeaders(locale),
+      next: { revalidate: 30 },
+    });
     if (!res.ok) throw new Error("Failed to fetch projects");
     const data = await res.json();
     if (!data || data.length === 0) throw new Error("Empty");
@@ -198,9 +217,10 @@ export async function fetchProjects(): Promise<ApiProject[]> {
   }
 }
 
-export async function fetchHomeData(): Promise<HomeData> {
+export async function fetchHomeData(locale?: Locale): Promise<HomeData> {
   try {
-    const res = await fetch(`${API_URL}/home`, {
+    const res = await fetch(withLocale(`${API_URL}/home`, locale), {
+      headers: localeHeaders(locale),
       next: { revalidate: 30 },
     });
     if (!res.ok) throw new Error("Failed to fetch home data");
@@ -277,9 +297,12 @@ export async function adminFetch(path: string, options: RequestInit = {}, adminK
   return data;
 }
 
-export async function fetchBlogs() {
+export async function fetchBlogs(locale?: Locale) {
   try {
-    const res = await fetch(`${API_URL}/blogs`, { next: { revalidate: 10 } });
+    const res = await fetch(withLocale(`${API_URL}/blogs`, locale), {
+      headers: localeHeaders(locale),
+      next: { revalidate: 10 },
+    });
     if (!res.ok) throw new Error("Failed to fetch blogs");
     const data = await res.json();
     if (Array.isArray(data) && data.length > 0) return data;
@@ -290,9 +313,12 @@ export async function fetchBlogs() {
   return fallbackBlogs;
 }
 
-export async function fetchBlogById(id: string) {
+export async function fetchBlogById(id: string, locale?: Locale) {
   try {
-    const res = await fetch(`${API_URL}/blogs/${id}`, { next: { revalidate: 10 } });
+    const res = await fetch(withLocale(`${API_URL}/blogs/${id}`, locale), {
+      headers: localeHeaders(locale),
+      next: { revalidate: 10 },
+    });
     if (!res.ok) throw new Error("Failed to fetch blog detail");
     const data = await res.json();
     if (data && typeof data === "object" && "title" in data) return data;
@@ -303,9 +329,12 @@ export async function fetchBlogById(id: string) {
   return getBlogById(id);
 }
 
-export async function fetchTeamMembers() {
+export async function fetchTeamMembers(locale?: Locale) {
   try {
-    const res = await fetch(`${API_URL}/team`, { next: { revalidate: 10 } });
+    const res = await fetch(withLocale(`${API_URL}/team`, locale), {
+      headers: localeHeaders(locale),
+      next: { revalidate: 10 },
+    });
     if (!res.ok) throw new Error("Failed to fetch team");
     return await res.json();
   } catch {
@@ -313,9 +342,12 @@ export async function fetchTeamMembers() {
   }
 }
 
-export async function fetchFAQs() {
+export async function fetchFAQs(locale?: Locale) {
   try {
-    const res = await fetch(`${API_URL}/faqs`, { next: { revalidate: 10 } });
+    const res = await fetch(withLocale(`${API_URL}/faqs`, locale), {
+      headers: localeHeaders(locale),
+      next: { revalidate: 10 },
+    });
     if (!res.ok) throw new Error("Failed to fetch FAQs");
     return await res.json();
   } catch {
@@ -323,14 +355,14 @@ export async function fetchFAQs() {
   }
 }
 
-export async function fetchProjectById(id: string) {
+export async function fetchProjectById(id: string, locale?: Locale) {
   const { getInteriorProjectById, INTERIOR_NARRATIVE_ONE, INTERIOR_NARRATIVE_TWO } =
     await import("./interiorData");
   const interior = getInteriorProjectById(id);
   if (interior) return interior;
 
   try {
-    const projects = await fetchProjects();
+    const projects = await fetchProjects(locale);
     const apiProject = projects.find(
       (p) => p._id === id || p.slug === id,
     ) as ApiProject | undefined;
@@ -364,9 +396,12 @@ export async function fetchProjectById(id: string) {
   }
 }
 
-export async function fetchCatalogues() {
+export async function fetchCatalogues(locale?: Locale) {
   try {
-    const res = await fetch(`${API_URL}/catalogues`, { next: { revalidate: 10 } });
+    const res = await fetch(withLocale(`${API_URL}/catalogues`, locale), {
+      headers: localeHeaders(locale),
+      next: { revalidate: 10 },
+    });
     if (!res.ok) throw new Error("Failed to fetch catalogues");
     const data = await res.json();
     if (!data || data.length === 0) throw new Error("Empty");
@@ -377,9 +412,12 @@ export async function fetchCatalogues() {
   }
 }
 
-export async function fetchShowcases() {
+export async function fetchShowcases(locale?: Locale) {
   try {
-    const res = await fetch(`${API_URL}/showcases`, { next: { revalidate: 30 } });
+    const res = await fetch(withLocale(`${API_URL}/showcases`, locale), {
+      headers: localeHeaders(locale),
+      next: { revalidate: 30 },
+    });
     if (!res.ok) throw new Error("Failed to fetch showcases");
     const data = await res.json();
     if (!data || data.length === 0) throw new Error("Empty");

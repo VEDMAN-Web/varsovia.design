@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { motion } from "framer-motion";
 import { cardHoverProps, COMPANY_CARD, SECTION_BODY_CLASS } from "@/components/company/companyLayoutShared";
 import { SUBSECTION_TITLE_CLASS } from "@/components/ui/SectionHeading";

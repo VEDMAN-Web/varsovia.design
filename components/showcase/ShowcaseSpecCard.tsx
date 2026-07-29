@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { ChevronLeft } from "lucide-react";
 import type { ShowcaseProject } from "@/lib/showcaseData";
 

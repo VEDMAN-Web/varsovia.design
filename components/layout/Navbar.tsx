@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { ChevronDown, Menu, Search, X } from "lucide-react";
+import { Link, usePathname, useRouter } from "@/lib/i18n/navigation";
 import NavbarLogo from "@/components/layout/NavbarLogo";
 import ShowcaseNavDropdown from "@/components/layout/ShowcaseNavDropdown";
 import {
@@ -13,8 +13,10 @@ import {
   NAV_DROPDOWN_PANEL,
   NAV_DROPDOWN_TEXT,
 } from "@/components/layout/navDropdownShared";
+import { locales, type Locale } from "@/lib/i18n/routing";
 
 type NavItem = {
+  id: string;
   label: string;
   href: string;
   hasArrow?: boolean;
@@ -27,72 +29,17 @@ type SearchPage = {
   description: string;
 };
 
-const navItems: NavItem[] = [
-  { label: "Home", href: "/" },
-  {
-    label: "Interior",
-    href: "/interior",
-    hasArrow: true,
-    children: [
-      { label: "Kitchen", href: "/interior?category=Kitchen" },
-      { label: "Bedroom", href: "/interior?category=Bedroom" },
-      { label: "Bathroom", href: "/interior?category=Bathroom" },
-      { label: "Furniture", href: "/interior?category=Furniture" },
-      { label: "Door & Windows", href: "/interior?category=Door%20%26%20Windows" },
-      { label: "Whole House Solutions", href: "/interior?category=Whole%20House%20Solutions" },
-    ],
-  },
-  { label: "Free Catalogue", href: "/catalogue" },
-  {
-    label: "Showcase",
-    href: "/showcase",
-    hasArrow: true,
-    children: [],
-  },
-  {
-    label: "Company",
-    href: "/about",
-    hasArrow: true,
-    children: [
-      { label: "About Varsovia", href: "/about" },
-      { label: "Our Team", href: "/team" },
-      { label: "Our Blog", href: "/blog" },
-      { label: "Quality After Sales", href: "/quality-sale" },
-    ],
-  },
-  {
-    label: "Contact",
-    href: "/contact",
-    hasArrow: true,
-    children: [
-      { label: "Get in Touch", href: "/contact" },
-      { label: "FAQ", href: "/faq" },
-    ],
-  },
-];
+const LANGUAGE_LABELS: Record<Locale, string> = {
+  en: "English",
+  th: "Thai",
+  pl: "Polish",
+};
 
-/** Add future pages here — search will pick them up automatically. */
-export const searchablePages: SearchPage[] = [
-  { title: "Home", href: "/", description: "Varsovia Design homepage" },
-  { title: "Interior", href: "/interior", description: "Browse all interior designs" },
-  { title: "Kitchen Cabinet", href: "/product/kitchen-cabinet", description: "Kitchen cabinet product detail" },
-  { title: "Bedroom Interior", href: "/product/bedroom-interior", description: "Bedroom interior product detail" },
-  { title: "Kitchen Interior", href: "/interior?category=Kitchen", description: "Kitchen designs" },
-  { title: "About", href: "/about", description: "About Varsovia company" },
-  { title: "Our Team", href: "/team", description: "Meet the Varsovia design team" },
-  { title: "Our Blog", href: "/blog", description: "Interior design ideas and inspiration" },
-  { title: "Free Catalogue", href: "/catalogue", description: "Browse design catalogues" },
-  { title: "Contact", href: "/contact", description: "Get in touch / Free consultation" },
-  { title: "FAQ", href: "/faq", description: "Frequently asked questions about interiors" },
-  { title: "Showcase", href: "/showcase", description: "Browse home case and commercial projects showcase" },
-  { title: "Quality After Sales", href: "/quality-sale", description: "After sales service and warranty specifications" },
-];
-
-const languages = [
-  { code: "en", label: "English", flag: "/icon/flag-english.svg" },
-  { code: "th", label: "Thai", flag: "/icon/flag-thailand.svg" },
-  { code: "pl", label: "Polish", flag: "/icon/flag-polish.svg" },
-] as const;
+const LANGUAGE_META: Record<Locale, { flag: string }> = {
+  en: { flag: "/icon/flag-english.svg" },
+  th: { flag: "/icon/flag-thailand.svg" },
+  pl: { flag: "/icon/flag-polish.svg" },
+};
 
 function NavChevron({ className = "", size = 16 }: { className?: string; size?: number }) {
   return (
@@ -110,7 +57,6 @@ const navLinkClass = (active: boolean) =>
     active ? "text-maroon" : "text-[#2b2b2b] hover:text-maroon"
   }`;
 
-/** Figma Frame 82 — 50px controls, 6px radius, Outfit 15px */
 const headerBtnBase =
   "inline-flex h-[50px] items-center justify-center rounded-[6px] font-outfit text-[15px] font-normal leading-[23px] transition duration-200";
 
@@ -118,13 +64,89 @@ const dropdownPanel = NAV_DROPDOWN_PANEL;
 const dropdownLink = NAV_DROPDOWN_LINK;
 const dropdownLinkFeatured = NAV_DROPDOWN_LINK_FEATURED;
 
+function useNavItems(): NavItem[] {
+  const t = useTranslations("nav");
+
+  return useMemo(
+    () => [
+      { id: "home", label: t("home"), href: "/" },
+      {
+        id: "interior",
+        label: t("interior"),
+        href: "/interior",
+        hasArrow: true,
+        children: [
+          { label: t("kitchen"), href: "/interior?category=Kitchen" },
+          { label: t("bedroom"), href: "/interior?category=Bedroom" },
+          { label: t("bathroom"), href: "/interior?category=Bathroom" },
+          { label: t("furniture"), href: "/interior?category=Furniture" },
+          { label: t("doorWindows"), href: "/interior?category=Door%20%26%20Windows" },
+          { label: t("wholeHouse"), href: "/interior?category=Whole%20House%20Solutions" },
+        ],
+      },
+      { id: "catalogue", label: t("freeCatalogue"), href: "/catalogue" },
+      { id: "showcase", label: t("showcase"), href: "/showcase", hasArrow: true, children: [] },
+      {
+        id: "company",
+        label: t("company"),
+        href: "/about",
+        hasArrow: true,
+        children: [
+          { label: t("aboutVarsovia"), href: "/about" },
+          { label: t("ourTeam"), href: "/team" },
+          { label: t("ourBlog"), href: "/blog" },
+          { label: t("qualityAfterSales"), href: "/quality-sale" },
+        ],
+      },
+      {
+        id: "contact",
+        label: t("contact"),
+        href: "/contact",
+        hasArrow: true,
+        children: [
+          { label: t("getInTouch"), href: "/contact" },
+          { label: t("faq"), href: "/faq" },
+        ],
+      },
+    ],
+    [t],
+  );
+}
+
+function useSearchablePages(): SearchPage[] {
+  const t = useTranslations("search");
+
+  return useMemo(
+    () => [
+      { title: t("homeTitle"), href: "/", description: t("homeDesc") },
+      { title: t("interiorTitle"), href: "/interior", description: t("interiorDesc") },
+      { title: t("kitchenCabinetTitle"), href: "/product/kitchen-cabinet", description: t("kitchenCabinetDesc") },
+      { title: t("bedroomInteriorTitle"), href: "/product/bedroom-interior", description: t("bedroomInteriorDesc") },
+      { title: t("kitchenInteriorTitle"), href: "/interior?category=Kitchen", description: t("kitchenInteriorDesc") },
+      { title: t("aboutTitle"), href: "/about", description: t("aboutDesc") },
+      { title: t("teamTitle"), href: "/team", description: t("teamDesc") },
+      { title: t("blogTitle"), href: "/blog", description: t("blogDesc") },
+      { title: t("catalogueTitle"), href: "/catalogue", description: t("catalogueDesc") },
+      { title: t("contactTitle"), href: "/contact", description: t("contactDesc") },
+      { title: t("faqTitle"), href: "/faq", description: t("faqDesc") },
+      { title: t("showcaseTitle"), href: "/showcase", description: t("showcaseDesc") },
+      { title: t("qualityTitle"), href: "/quality-sale", description: t("qualityDesc") },
+    ],
+    [t],
+  );
+}
+
 export default function Navbar() {
+  const t = useTranslations("nav");
+  const locale = useLocale() as Locale;
   const pathname = usePathname();
+  const router = useRouter();
+  const navItems = useNavItems();
+  const searchablePages = useSearchablePages();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [langOpen, setLangOpen] = useState(false);
-  const [language, setLanguage] = useState<(typeof languages)[number]>(languages[1]);
   const [searchHover, setSearchHover] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [query, setQuery] = useState("");
@@ -132,15 +154,17 @@ export default function Navbar() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const currentLanguage = LANGUAGE_META[locale];
+
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return searchablePages.slice(0, 5);
     return searchablePages.filter(
       (page) =>
         page.title.toLowerCase().includes(q) ||
-        page.description.toLowerCase().includes(q)
+        page.description.toLowerCase().includes(q),
     );
-  }, [query]);
+  }, [query, searchablePages]);
 
   const showResults = searchFocused || searchHover || query.length > 0;
 
@@ -171,12 +195,33 @@ export default function Navbar() {
     };
   }, []);
 
-  function openDropdown(label: string) {
+  useEffect(() => {
+    searchablePages.forEach((page) => {
+      router.prefetch(page.href);
+    });
+  }, [router, searchablePages]);
+
+  useEffect(() => {
+    if (!showResults) return;
+    results.forEach((page) => {
+      router.prefetch(page.href);
+    });
+  }, [showResults, results, router]);
+
+  function closeSearch() {
+    setQuery("");
+    setSearchFocused(false);
+    setSearchHover(false);
+    setMobileOpen(false);
+    setOpenMenu(null);
+  }
+
+  function openDropdown(id: string) {
     if (closeTimerRef.current) {
       clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
     }
-    setOpenMenu(label);
+    setOpenMenu(id);
     setLangOpen(false);
     setSearchFocused(false);
   }
@@ -185,12 +230,10 @@ export default function Navbar() {
     closeTimerRef.current = setTimeout(() => setOpenMenu(null), 150);
   }
 
-  function goToPage(href: string) {
-    setQuery("");
-    setSearchFocused(false);
+  function switchLocale(nextLocale: Locale) {
+    router.replace(pathname, { locale: nextLocale, scroll: false });
+    setLangOpen(false);
     setMobileOpen(false);
-    setOpenMenu(null);
-    window.location.href = href;
   }
 
   function isActive(item: NavItem) {
@@ -214,7 +257,6 @@ export default function Navbar() {
       <nav className="mx-auto flex h-[102.33px] w-full max-w-[1440px] items-center px-[clamp(1.25rem,7vw,100px)]">
         <NavbarLogo />
 
-        {/* Figma Frame 81 — starts 71px after logo, 20px gaps between items */}
         <ul
           className={`ml-[71px] hidden min-w-0 shrink items-center transition-[gap] duration-300 xl:flex ${
             searchExpanded ? "gap-3" : "gap-5"
@@ -224,9 +266,9 @@ export default function Navbar() {
             const active = isActive(item);
             return (
               <li
-                key={item.label}
+                key={item.id}
                 className="relative shrink-0"
-                onMouseEnter={() => item.hasArrow && openDropdown(item.label)}
+                onMouseEnter={() => item.hasArrow && openDropdown(item.id)}
                 onMouseLeave={() => item.hasArrow && scheduleCloseDropdown()}
               >
                 {item.hasArrow ? (
@@ -234,7 +276,7 @@ export default function Navbar() {
                     type="button"
                     className={navLinkClass(active)}
                     onClick={() => {
-                      setOpenMenu((prev) => (prev === item.label ? null : item.label));
+                      setOpenMenu((prev) => (prev === item.id ? null : item.id));
                       setLangOpen(false);
                       setSearchFocused(false);
                     }}
@@ -246,13 +288,10 @@ export default function Navbar() {
                     >
                       {item.label}
                     </span>
-                    <NavChevron className={`transition-transform ${openMenu === item.label ? "rotate-180" : ""}`} />
+                    <NavChevron className={`transition-transform ${openMenu === item.id ? "rotate-180" : ""}`} />
                   </button>
                 ) : (
-                  <Link
-                    href={item.href}
-                    className={navLinkClass(active)}
-                  >
+                  <Link href={item.href} className={navLinkClass(active)}>
                     <span
                       className={`relative shrink-0 whitespace-nowrap pb-0.5 ${
                         active ? "after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:bg-maroon" : ""
@@ -263,19 +302,19 @@ export default function Navbar() {
                   </Link>
                 )}
 
-                {item.hasArrow && openMenu === item.label && item.label === "Showcase" && (
+                {item.hasArrow && openMenu === item.id && item.id === "showcase" && (
                   <ShowcaseNavDropdown onNavigate={() => setOpenMenu(null)} />
                 )}
 
-                {item.hasArrow && openMenu === item.label && item.children && item.children.length > 0 && (
+                {item.hasArrow && openMenu === item.id && item.children && item.children.length > 0 && (
                   <div className={`${dropdownPanel} left-0`}>
-                    {item.label === "Interior" && (
+                    {item.id === "interior" && (
                       <Link
                         href="/interior"
                         className={dropdownLinkFeatured}
                         onClick={() => setOpenMenu(null)}
                       >
-                        All Interiors
+                        {t("allInteriors")}
                       </Link>
                     )}
                     {item.children.map((child) => (
@@ -293,11 +332,10 @@ export default function Navbar() {
               </li>
             );
           })}
-          </ul>
+        </ul>
 
         <div className="min-w-0 flex-1" aria-hidden="true" />
 
-        {/* Figma Frame 82 — search 24px + 20 + lang 110 + 20 + CTA 181 */}
         <div className="flex shrink-0 items-center gap-5">
           <div
             className="relative hidden sm:block"
@@ -328,7 +366,7 @@ export default function Navbar() {
                     if (!query) setSearchFocused(false);
                   }, 150);
                 }}
-                placeholder="Search..."
+                placeholder={t("searchPlaceholder")}
                 tabIndex={searchExpanded ? 0 : -1}
                 className={`min-w-0 flex-1 bg-transparent py-2.5 text-sm text-[#333] outline-none transition-opacity duration-200 placeholder:text-[#b0b0b0] ${
                   searchExpanded
@@ -338,7 +376,7 @@ export default function Navbar() {
               />
               <button
                 type="button"
-                aria-label="Search"
+                aria-label={t("searchAria")}
                 className={`inline-flex shrink-0 items-center justify-center bg-transparent text-[#2b2b2b] transition-colors duration-300 hover:text-maroon ${
                   searchExpanded ? "h-11 w-11 text-maroon" : "h-6 w-6"
                 }`}
@@ -355,28 +393,36 @@ export default function Navbar() {
             </div>
 
             {showResults && (searchFocused || query) && (
-              <div className="absolute right-0 top-full z-50 mt-2 w-[280px] overflow-hidden rounded-2xl border border-maroon/10 bg-white shadow-[0_12px_32px_rgba(0,0,0,0.12)]">
+              <div
+                className="absolute right-0 top-full z-50 mt-2 w-[280px] overflow-hidden rounded-2xl border border-maroon/10 bg-white shadow-[0_12px_32px_rgba(0,0,0,0.12)]"
+                data-lenis-prevent
+              >
                 <p className="border-b border-maroon/5 px-4 py-2 text-[11px] tracking-[0.12em] uppercase text-muted">
-                  Pages
+                  {t("searchPages")}
                 </p>
                 {results.length > 0 ? (
-                  <ul className="max-h-64 overflow-y-auto py-1">
+                  <ul
+                    className="max-h-64 overflow-y-auto overscroll-y-contain py-1 [-ms-overflow-style:auto] [scrollbar-width:thin]"
+                    data-lenis-prevent
+                  >
                     {results.map((page) => (
                       <li key={page.href + page.title}>
-                        <button
-                          type="button"
+                        <Link
+                          href={page.href}
+                          prefetch
+                          onClick={closeSearch}
                           className="flex w-full flex-col items-start px-4 py-2.5 text-left transition hover:bg-blush"
-                          onMouseDown={(e) => e.preventDefault()}
-                          onClick={() => goToPage(page.href)}
                         >
                           <span className="text-sm font-medium text-ink">{page.title}</span>
                           <span className="text-xs text-muted">{page.description}</span>
-                        </button>
+                        </Link>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="px-4 py-6 text-center text-sm text-muted">No pages found for “{query}”</p>
+                  <p className="px-4 py-6 text-center text-sm text-muted">
+                    {t("noSearchResults", { query })}
+                  </p>
                 )}
               </div>
             )}
@@ -397,13 +443,13 @@ export default function Navbar() {
               }}
             >
               <Image
-                src={language.flag}
+                src={currentLanguage.flag}
                 alt=""
                 width={20}
                 height={20}
                 className="h-5 w-5 shrink-0 rounded-[2px] object-cover"
               />
-              <span className="whitespace-nowrap">{language.label}</span>
+              <span className="whitespace-nowrap">{LANGUAGE_LABELS[locale]}</span>
               <NavChevron
                 size={12}
                 className={`text-[#444] transition-transform ${langOpen ? "rotate-180" : ""}`}
@@ -412,44 +458,44 @@ export default function Navbar() {
 
             {langOpen && (
               <div className={`${dropdownPanel} right-0 left-auto min-w-[190px]`}>
-                {languages.map((lang) => (
-                  <button
-                    key={lang.code}
-                    type="button"
-                    className={`flex w-full items-center gap-3 px-5 py-3 text-left ${NAV_DROPDOWN_TEXT} transition-colors hover:bg-blush ${
-                      language.code === lang.code ? "text-maroon" : "text-[#2b2b2b] hover:text-maroon"
-                    }`}
-                    onClick={() => {
-                      setLanguage(lang);
-                      setLangOpen(false);
-                    }}
-                  >
-                    <Image
-                      src={lang.flag}
-                      alt=""
-                      width={22}
-                      height={14}
-                      className="h-[14px] w-auto shrink-0 rounded-[2px] object-cover"
-                      style={{ width: "auto" }}
-                    />
-                    <span>{lang.label}</span>
-                  </button>
-                ))}
+                {locales.map((code) => {
+                  const meta = LANGUAGE_META[code];
+                  return (
+                    <button
+                      key={code}
+                      type="button"
+                      className={`flex w-full items-center gap-3 px-5 py-3 text-left ${NAV_DROPDOWN_TEXT} transition-colors hover:bg-blush ${
+                        locale === code ? "text-maroon" : "text-[#2b2b2b] hover:text-maroon"
+                      }`}
+                      onClick={() => switchLocale(code)}
+                    >
+                      <Image
+                        src={meta.flag}
+                        alt=""
+                        width={22}
+                        height={14}
+                        className="h-[14px] w-auto shrink-0 rounded-[2px] object-cover"
+                        style={{ width: "auto" }}
+                      />
+                      <span>{LANGUAGE_LABELS[code]}</span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
 
-          <a
+          <Link
             href="/contact"
             className={`${headerBtnBase} hidden w-[181px] bg-[#6a414d] px-5 text-white hover:bg-[#5a3540] sm:inline-flex`}
           >
-            Free Consultation
-          </a>
+            {t("freeConsultation")}
+          </Link>
 
           <button
             type="button"
             className="inline-flex h-10 w-10 items-center justify-center text-maroon xl:hidden"
-            aria-label="Toggle menu"
+            aria-label={t("toggleMenu")}
             onClick={() => setMobileOpen((v) => !v)}
           >
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -464,7 +510,7 @@ export default function Navbar() {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search..."
+              placeholder={t("searchPlaceholder")}
               className="min-w-0 flex-1 bg-transparent py-2.5 text-sm outline-none placeholder:text-[#b0b0b0]"
             />
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm">
@@ -473,28 +519,34 @@ export default function Navbar() {
           </div>
 
           {query && (
-            <ul className="mb-4 overflow-hidden rounded-2xl border border-maroon/10 bg-white">
+            <ul
+              className="mb-4 max-h-64 overflow-y-auto overscroll-y-contain rounded-2xl border border-maroon/10 bg-white [-ms-overflow-style:auto] [scrollbar-width:thin]"
+              data-lenis-prevent
+            >
               {results.map((page) => (
                 <li key={page.href + page.title}>
-                  <button
-                    type="button"
+                  <Link
+                    href={page.href}
+                    prefetch
+                    onClick={closeSearch}
                     className="flex w-full flex-col items-start border-b border-maroon/5 px-4 py-2.5 text-left last:border-0"
-                    onClick={() => goToPage(page.href)}
                   >
                     <span className="text-sm font-medium">{page.title}</span>
                     <span className="text-xs text-muted">{page.description}</span>
-                  </button>
+                  </Link>
                 </li>
               ))}
               {!results.length && (
-                <li className="px-4 py-4 text-center text-sm text-muted">No pages found</li>
+                <li className="px-4 py-4 text-center text-sm text-muted">
+                  {t("noSearchResults", { query })}
+                </li>
               )}
             </ul>
           )}
 
           <ul className="flex flex-col gap-1">
             {navItems.map((item) => (
-              <li key={item.label}>
+              <li key={item.id}>
                 <Link
                   href={item.href}
                   className="flex items-center justify-between py-3 text-[19px] font-normal text-[#444]"
@@ -508,28 +560,31 @@ export default function Navbar() {
           </ul>
 
           <div className="mt-4 flex items-center gap-2 border-t border-maroon/10 pt-4">
-            {languages.map((lang) => (
-              <button
-                key={lang.code}
-                type="button"
-                className={`flex flex-1 items-center justify-center gap-2 rounded-full border px-2 py-2 text-xs ${
-                  language.code === lang.code ? "border-maroon text-maroon" : "border-[#ddd] text-[#555]"
-                }`}
-                onClick={() => setLanguage(lang)}
-              >
-                <Image src={lang.flag} alt="" width={18} height={12} />
-                {lang.label}
-              </button>
-            ))}
+            {locales.map((code) => {
+              const meta = LANGUAGE_META[code];
+              return (
+                <button
+                  key={code}
+                  type="button"
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-full border px-2 py-2 text-xs ${
+                    locale === code ? "border-maroon text-maroon" : "border-[#ddd] text-[#555]"
+                  }`}
+                  onClick={() => switchLocale(code)}
+                >
+                  <Image src={meta.flag} alt="" width={18} height={12} />
+                  {LANGUAGE_LABELS[code]}
+                </button>
+              );
+            })}
           </div>
 
-          <a
+          <Link
             href="/contact"
             className="mt-4 flex w-full items-center justify-center rounded-md bg-maroon py-3 text-sm font-medium text-white"
             onClick={() => setMobileOpen(false)}
           >
-            Free Consultation
-          </a>
+            {t("freeConsultation")}
+          </Link>
         </div>
       )}
     </header>

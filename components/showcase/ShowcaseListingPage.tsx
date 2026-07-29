@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import { Suspense, useEffect, useState } from "react";
+import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import ShowcaseFilterTabs from "@/components/showcase/ShowcaseFilterTabs";
@@ -19,6 +20,8 @@ import {
   type ShowcaseProject,
   type ShowcaseTab,
 } from "@/lib/showcaseData";
+import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
+import type { Locale } from "@/lib/i18n/routing";
 
 type ApiShowcase = {
   _id: string;
@@ -41,16 +44,19 @@ function toShowcaseProject(s: ApiShowcase): ShowcaseProject {
     category: (SHOWCASE_TABS.includes(s.category as ShowcaseTab)
       ? s.category
       : "Home case") as ShowcaseTab,
-    image: s.image || "/Interior-kitchen/kitchen1.png",
+    image: resolveMediaUrl(s.image, MEDIA.interior[0]),
     location: s.location || "",
     typeLabel: s.typeLabel || "Type",
     typeValue: s.typeValue || "",
     supplyArea: s.supplyArea || "",
-    gallery: s.gallery?.length ? s.gallery : [s.image || "/Interior-kitchen/kitchen1.png"],
+    gallery: s.gallery?.length
+      ? s.gallery.map((url) => resolveMediaUrl(url, MEDIA.interior[0]))
+      : [resolveMediaUrl(s.image, MEDIA.interior[0])],
   };
 }
 
 function ShowcaseListingInner() {
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<ShowcaseTab>("Home case");
   const [apiProjects, setApiProjects] = useState<ShowcaseProject[] | null>(null);
@@ -68,20 +74,19 @@ function ShowcaseListingInner() {
   // Fetch from API once on mount
   useEffect(() => {
     import("@/lib/api").then(({ fetchShowcases }) => {
-      fetchShowcases()
+      fetchShowcases(locale as Locale)
         .then((data) => {
           if (data && data.length > 0) {
             setApiProjects(data.map(toShowcaseProject));
           }
-          // null → keep using hardcoded fallback
         })
         .catch(() => {/* keep hardcoded */});
     });
-  }, []);
+  }, [locale]);
 
   const meta = SHOWCASE_CATEGORY_META[activeTab];
 
-  // Filter by active tab — works for both API and hardcoded data
+  // Filter by active tab ÔÇö works for both API and hardcoded data
   const projects: ShowcaseProject[] = (() => {
     const source = apiProjects ?? null;
     if (!source) {

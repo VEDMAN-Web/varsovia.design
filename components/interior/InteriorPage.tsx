@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { Link, useRouter } from "@/lib/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import FilterPanel from "@/components/interior/FilterPanel";
@@ -22,11 +23,22 @@ import {
   type SortOption,
 } from "@/lib/interiorData";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
+import type { Locale } from "@/lib/i18n/routing";
 
 const INTERIOR_FALLBACK = MEDIA.interior[0];
 
+const TOOLBAR_PILL_BASE =
+  "inline-flex h-11 items-center gap-2 rounded-[6px] border px-5 font-outfit text-[15px] font-normal outline-none transition";
+
+/** Avoid appending active colors onto TOOLBAR_PILL ÔÇö Tailwind order can leave bg-white/text overrides winning. */
+function toolbarPillClass(active = false) {
+  return active
+    ? `${TOOLBAR_PILL_BASE} min-w-[128px] justify-center border-[#6a414d] bg-[#6a414d] text-white hover:border-[#5a3640] hover:bg-[#5a3640]`
+    : `${TOOLBAR_PILL_BASE} min-w-[128px] justify-center border-[#cfc4c6] bg-white text-[#6a414d] hover:border-[#6a414d]/40`;
+}
+
 const TOOLBAR_PILL =
-  "inline-flex h-11 items-center gap-2 rounded-[6px] border border-[#cfc4c6] bg-white px-5 font-outfit text-[15px] font-normal text-[#6a414d] outline-none transition hover:border-[#6a414d]/40";
+  `${TOOLBAR_PILL_BASE} border-[#cfc4c6] bg-white text-[#6a414d] hover:border-[#6a414d]/40`;
 
 const GRID_FADE = {
   initial: { opacity: 0 },
@@ -67,6 +79,14 @@ type ApiProject = {
 type Props = {
   initialCategory?: InteriorCategory;
 };
+
+function categoryFromQuery(value: string | null | undefined, fallback: InteriorCategory): InteriorCategory {
+  if (!value) return fallback;
+  const match = INTERIOR_CATEGORIES.find(
+    (c) => c.toLowerCase() === decodeURIComponent(value).toLowerCase(),
+  );
+  return match ?? fallback;
+}
 
 function FilterIcon({ className = "" }: { className?: string }) {
   return (
@@ -130,8 +150,18 @@ function ProjectCardImage({
 }
 
 export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
+  const locale = useLocale();
+  const tCommon = useTranslations("common");
+  const tCat = useTranslations("categories");
+  const tHero = useTranslations("categoryHero");
+  const tSort = useTranslations("sort");
   const router = useRouter();
-  const [category, setCategory] = useState<InteriorCategory>(initialCategory);
+  const searchParams = useSearchParams();
+  const urlCategory = useMemo(
+    () => categoryFromQuery(searchParams.get("category"), initialCategory),
+    [searchParams, initialCategory],
+  );
+  const [category, setCategory] = useState<InteriorCategory>(urlCategory);
   const [subcategory, setSubcategory] = useState<string>("All");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [filters, setFilters] = useState<AdvancedFilters>(EMPTY_FILTERS);
@@ -151,15 +181,15 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
   }, [category]);
 
   useEffect(() => {
-    setCategory(initialCategory);
+    setCategory(urlCategory);
     setSubcategory("All");
     setFilters(EMPTY_FILTERS);
-  }, [initialCategory]);
+  }, [urlCategory]);
 
   useEffect(() => {
     let cancelled = false;
     import("@/lib/api").then(({ fetchProjects }) => {
-      fetchProjects()
+      fetchProjects(locale as Locale)
         .then((data: ApiProject[]) => {
           if (!cancelled) {
             setProjects(buildInteriorCatalog(data ?? []) as ApiProject[]);
@@ -172,7 +202,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [locale]);
 
   useEffect(() => {
     if (!sortOpen) return;
@@ -241,9 +271,45 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
     return list;
   }, [projects, category, subcategory, subcategoryOptions, sortBy, filters]);
 
-  const hero = CATEGORY_HERO[category];
+  const hero = useMemo(() => {
+    const map: Record<InteriorCategory, { title: string; subtitle: string }> = {
+      All: { title: tHero("allTitle"), subtitle: tHero("allSubtitle") },
+      Kitchen: { title: tHero("kitchenTitle"), subtitle: tHero("kitchenSubtitle") },
+      Bedroom: { title: tHero("bedroomTitle"), subtitle: tHero("bedroomSubtitle") },
+      Bathroom: { title: tHero("bathroomTitle"), subtitle: tHero("bathroomSubtitle") },
+      Furniture: { title: tHero("furnitureTitle"), subtitle: tHero("furnitureSubtitle") },
+      "Door & Windows": { title: tHero("doorWindowsTitle"), subtitle: tHero("doorWindowsSubtitle") },
+      "Whole House Solutions": { title: tHero("wholeHouseTitle"), subtitle: tHero("wholeHouseSubtitle") },
+    };
+    return map[category] ?? CATEGORY_HERO[category];
+  }, [category, tHero]);
+
+  const categoryLabels = useMemo(
+    (): Record<InteriorCategory, string> => ({
+      All: tCat("all"),
+      Kitchen: tCat("kitchen"),
+      Bedroom: tCat("bedroom"),
+      Bathroom: tCat("bathroom"),
+      Furniture: tCat("furniture"),
+      "Door & Windows": tCat("doorWindows"),
+      "Whole House Solutions": tCat("wholeHouse"),
+    }),
+    [tCat],
+  );
+
+  const sortOptions = useMemo(
+    () =>
+      [
+        { value: "newest" as SortOption, label: tSort("newest") },
+        { value: "oldest" as SortOption, label: tSort("oldest") },
+        { value: "price-high" as SortOption, label: tSort("priceHigh") },
+        { value: "price-low" as SortOption, label: tSort("priceLow") },
+      ] satisfies { value: SortOption; label: string }[],
+    [tSort],
+  );
+
   const activeFilterCount = countActiveFilters(filters);
-  const sortLabel = SORT_OPTIONS.find((opt) => opt.value === sortBy)?.label ?? "Newest To Oldest";
+  const sortLabel = sortOptions.find((opt) => opt.value === sortBy)?.label ?? tSort("newest");
   const gridKey = `${category}-${subcategory}-${sortBy}-${activeFilterCount}`;
 
   function selectCategory(cat: InteriorCategory) {
@@ -295,7 +361,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
                         : "bg-transparent text-[#6a414d]/70 hover:text-[#6a414d]"
                     }`}
                   >
-                    {CATEGORY_LABELS[cat]}
+                    {categoryLabels[cat]}
                   </button>
                 );
               })}
@@ -320,7 +386,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
                           : "bg-transparent text-[#6a414d]/70 hover:text-[#6a414d]"
                       }`}
                     >
-                      All Interior ({categoryCount})
+                      {tCommon("allInteriorCount", { count: categoryCount })}
                     </button>
                     {subcategoryOptions.map((sub) => {
                       const active = subcategory === sub;
@@ -351,12 +417,12 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
         <PageShell>
           <div className="flex min-h-11 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="font-outfit text-[clamp(1rem,2vw,1.375rem)] font-normal leading-none text-[#6a414d] tabular-nums">
-              All Interior ({items.length})
+              {tCommon("allInteriorCount", { count: items.length })}
             </p>
 
             <div className="flex flex-wrap items-center gap-5">
               <div ref={sortRef} className="relative flex items-center gap-3">
-                <span className="font-outfit text-[15px] font-normal text-[#6a414d]">Sort by :</span>
+                <span className="font-outfit text-[15px] font-normal text-[#6a414d]">{tCommon("sortBy")}</span>
                 <button
                   type="button"
                   onClick={() => setSortOpen((open) => !open)}
@@ -375,7 +441,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
                     role="listbox"
                     className="absolute right-0 top-full z-20 mt-1 min-w-[220px] overflow-hidden rounded-[6px] border border-[#cfc4c6] bg-white py-1 shadow-lg"
                   >
-                    {SORT_OPTIONS.map((opt) => (
+                    {sortOptions.map((opt) => (
                       <button
                         key={opt.value}
                         type="button"
@@ -401,13 +467,13 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
               <button
                 type="button"
                 onClick={() => setFilterOpen(true)}
-                className={`${TOOLBAR_PILL} min-w-[128px] justify-center ${
-                  activeFilterCount > 0 ? "border-[#6a414d] bg-[#6a414d] text-white" : ""
-                }`}
+                className={toolbarPillClass(activeFilterCount > 0)}
               >
-                <FilterIcon className={activeFilterCount > 0 ? "text-white" : "text-[#6a414d]"} />
+                <FilterIcon className="shrink-0" />
                 <span>
-                  Filter{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+                  {activeFilterCount > 0
+                    ? tCommon("filterCount", { count: activeFilterCount })
+                    : tCommon("filter")}
                 </span>
               </button>
             </div>
@@ -425,7 +491,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
                   {...GRID_FADE}
                   className="py-20 text-center font-outfit text-[#6a414d]/70"
                 >
-                  No projects found for this filter.
+                  {tCommon("noProjectsFilter")}
                 </motion.p>
               ) : (
                 <motion.div

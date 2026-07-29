@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { ChevronLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { InteriorDetailProject } from "@/lib/interiorData";

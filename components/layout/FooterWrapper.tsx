@@ -1,7 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/lib/i18n/navigation";
 import Footer from "@/components/layout/Footer";
 
 type SiteFooter = {
