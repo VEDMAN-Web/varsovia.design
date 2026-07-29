@@ -60,7 +60,7 @@ function ContactRow({ icon, children }: { icon: "email" | "location" | "phone"; 
 }
 
 function LegalDot() {
-  return <span className="font-outfit text-[23px] leading-none text-[#cf5374]">.</span>;
+  return <span className="h-1 w-1 shrink-0 rounded-full bg-[#cf5374]" />;
 }
 
 export default function Footer({

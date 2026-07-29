@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Eye, Flag, Gem, MessagesSquare, PenTool, Hammer, Wrench } from "lucide-react";
 import { fallbackHomeData } from "@/lib/fallbackData";
@@ -36,7 +37,30 @@ const PROCESS_ICONS = [MessagesSquare, PenTool, Hammer, Wrench] as const;
 
 const FB = fallbackHomeData.site;
 
+function TimelineConnector({ isHovered }: { isHovered: boolean }) {
+  return (
+    <div className="relative z-10 flex items-center justify-center h-16 md:h-auto md:w-16 lg:w-24 xl:w-32 shrink-0">
+      {/* Horizontal connector on Desktop, Vertical connector on Mobile */}
+      <div className="relative w-[2px] h-full md:w-full md:h-[2px] bg-[#dfc2c6]">
+        {/* Animated colored progress line on hover */}
+        <div
+          className={`absolute top-0 left-0 bg-[#C94A5B] transition-all duration-[350ms] ease-out origin-top md:origin-left
+            ${isHovered ? "w-[2px] h-full md:w-full md:h-[2px]" : "w-[2px] h-0 md:w-0 md:h-[2px]"}`}
+        />
+        {/* Circle dot in theme red positioned at the end of the line */}
+        <div
+          className={`absolute w-2.5 h-2.5 rounded-full bg-[#C94A5B] transition-transform duration-[350ms] ease-out
+            bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2
+            md:bottom-auto md:left-auto md:right-0 md:top-1/2 md:translate-x-1/2 md:-translate-y-1/2
+            ${isHovered ? "scale-[1.25]" : "scale-100"}`}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function AboutPageContent({ site }: { site?: AboutSite | null }) {
+  const [hoveredProcessIndex, setHoveredProcessIndex] = useState<number | null>(null);
   const intro = site?.aboutIntro || site?.aboutText || FB.aboutIntro;
   const storyText = site?.aboutStory || site?.aboutText || FB.aboutStory;
   const heroSubtitle = site?.aboutHeroSubtitle || FB.aboutHeroSubtitle;
@@ -57,8 +81,23 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
     { title: site?.values?.title || FB.values.title, text: site?.values?.text || FB.values.text, icon: ICONS[2] },
   ];
 
-  const processSteps =
-    site?.processSteps && site.processSteps.length > 0 ? site.processSteps : FB.processSteps;
+  const processSteps = [
+    {
+      step: "01",
+      title: site?.processSteps?.[0]?.title || "Consultation",
+      text: site?.processSteps?.[0]?.text || "Understanding your lifestyle, needs, and design preferences.",
+    },
+    {
+      step: "02",
+      title: site?.processSteps?.[1]?.title || "Planning & Design",
+      text: site?.processSteps?.[1]?.text || "Creating layouts, concepts, material selections, and realistic 3D visualizations.",
+    },
+    {
+      step: "03",
+      title: site?.processSteps?.[2]?.title || site?.processSteps?.[3]?.title || "Execution",
+      text: site?.processSteps?.[2]?.text || site?.processSteps?.[3]?.text || "Expert craftsmanship, quality installation, and professional project execution.",
+    },
+  ];
 
   return (
     <div className="bg-[#f7f3f2] pt-[72px] pb-20 font-outfit md:pb-28">
@@ -72,7 +111,7 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
             expanded
             className="w-full rounded-[16px]"
           >
-            <p className={`mx-auto mt-8 max-w-4xl px-2 md:px-4 ${PAGE_BODY_LEAD_CLASS}`}>{intro}</p>
+            <p className={`mx-auto mt-8 max-w-4xl px-2 md:px-4 ${PAGE_BODY_LEAD_CLASS} !font-bold !text-black`}>{intro}</p>
           </SectionHeading>
         </FadeInView>
       </section>
@@ -104,10 +143,11 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
         <CompanySectionHeading
           title="Vision. Mission. Value."
           subtitle="The foundation of everything we create"
+          subtitleSentenceCase={false}
           className="mb-10 md:mb-14"
         />
 
-        <div className="grid gap-6 md:grid-cols-3 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
           {valueBlocks.map((item, i) => {
             const Icon = item.icon;
             return (
@@ -117,19 +157,19 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.55, delay: i * 0.1 }}
-                className="rounded-[16px] border border-[#e5dcd3]/20 bg-[#F6EAEA] px-7 py-10 text-center shadow-[0_8px_30px_rgba(107,44,58,0.02)]"
+                className="group rounded-[16px] border border-[#e5dcd3]/20 bg-[#F6EAEA] p-8 md:p-10 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-300 ease-out hover:-translate-y-[6px] hover:shadow-[0_12px_36px_rgba(107,44,58,0.06)]"
               >
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-[#6a414d] shadow-[0_4px_14px_rgba(107,44,58,0.04)]">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#E5D2D5]/70 text-[#6a414d] shadow-[0_4px_14px_rgba(107,44,58,0.04)]">
                   <Icon size={26} strokeWidth={1.5} />
                 </div>
-                <h3 className={`mt-6 ${SUBSECTION_TITLE_CLASS}`}>{item.title}</h3>
-                <p className={`mt-4 ${SECTION_BODY_CLASS} leading-7`}>{item.text}</p>
+                <h3 className={`mt-6 ${SUBSECTION_TITLE_CLASS} !text-black`}>{item.title}</h3>
+                <div className="mt-3.5 h-[2px] w-[30px] bg-[#C94A5B] transition-all duration-[350ms] ease-out group-hover:w-[80px]" />
+                <p className={`mt-5 ${SECTION_BODY_CLASS} leading-7 !text-black`}>{item.text}</p>
               </motion.article>
             );
           })}
         </div>
       </section>
-
       {/* Our Story */}
       <section className={`${COMPANY_SHELL} mb-20 md:mb-28`}>
         <CompanySectionHeading title="Our Story" subtitle={heroSubtitle || undefined} className="mb-10" />
@@ -144,57 +184,155 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
           {storyText}
         </motion.p>
 
-        <div className="grid gap-4 lg:gap-5">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={COMPANY_IMAGE_FRAME}>
-            <img src={storyImages[0]} alt="Our story highlight" className="aspect-[21/9] w-full object-cover transition duration-500 hover:scale-[1.02]" />
-          </motion.div>
-          <div className="grid gap-4 md:grid-cols-2 lg:gap-5">
-            {[storyImages[1], storyImages[2]].map((src, i) => (
-              <motion.div key={src} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.08 + i * 0.06 }} className={COMPANY_IMAGE_FRAME}>
-                <img src={src} alt={`Story detail ${i + 1}`} className="aspect-[4/3] w-full object-cover transition duration-500 hover:scale-[1.02]" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8 items-start">
+          {storyImages.map((src, i) => {
+            const isStaggered = i % 2 === 0;
+            return (
+              <motion.div
+                key={src}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.05 * i }}
+                className={`${COMPANY_IMAGE_FRAME} ${isStaggered ? "mt-0 sm:mt-8 md:mt-12 lg:mt-16" : "mt-0"}`}
+              >
+                <img
+                  src={src}
+                  alt={`Our story highlight ${i + 1}`}
+                  className="aspect-[3/4] w-full object-cover transition duration-500 hover:scale-[1.02]"
+                />
               </motion.div>
-            ))}
-          </div>
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className={COMPANY_IMAGE_FRAME}>
-            <img src={storyImages[3]} alt="Our story showcase" className="aspect-[21/9] w-full object-cover transition duration-500 hover:scale-[1.02]" />
-          </motion.div>
+            );
+          })}
         </div>
       </section>
 
-      {/* Our Process — 4 steps */}
-      <section className={COMPANY_SHELL}>
+      {/* Our Process — 3 steps with responsive timeline and hover states */}
+      <section className={`${COMPANY_SHELL} mb-20 md:mb-28`}>
         <CompanySectionHeading
           title="Our Process"
           subtitle="A seamless journey from vision to reality"
+          subtitleSentenceCase={false}
           className="mb-12 md:mb-16"
         />
 
-        <div className="relative">
-          <div aria-hidden className="absolute top-[48px] right-[8%] left-[8%] z-0 hidden h-[2px] bg-[#dfc2c6] md:block" />
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4 md:gap-6 lg:gap-8">
-            {processSteps.map((item, i) => {
-              const Icon = PROCESS_ICONS[i] || Wrench;
-              return (
-                <motion.article
-                  key={item.step}
-                  initial={{ opacity: 0, y: 22 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.55, delay: i * 0.1 }}
-                  className="relative z-10 rounded-[16px] border border-[#e5dcd3]/20 bg-[#F6EAEA] px-5 py-9 text-center shadow-[0_8px_30px_rgba(107,44,58,0.02)]"
-                >
-                  <div className="mx-auto mb-6 flex h-6 w-6 items-center justify-center rounded-full bg-[#6a414d] font-display text-[10px] font-bold text-white shadow-md">
-                    {item.step}
-                  </div>
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#6a414d] shadow-[0_4px_14px_rgba(107,44,58,0.04)]">
-                    <Icon size={22} strokeWidth={1.5} />
-                  </div>
-                  <h3 className={`mt-5 ${SUBSECTION_TITLE_CLASS} text-base lg:text-lg`}>{item.title}</h3>
-                  <p className={`mt-3 ${SECTION_BODY_CLASS} leading-7`}>{item.text}</p>
-                </motion.article>
-              );
-            })}
-          </div>
+        <div className="flex flex-col md:flex-row items-stretch justify-between gap-0">
+          {/* Card 1 */}
+          <motion.article
+            initial={{ opacity: 0, y: 22 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.55, delay: 0 }}
+            className="group relative flex-1 rounded-[16px] border border-[#e5dcd3]/20 bg-[#F6EAEA] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-2 hover:shadow-[0_16px_40px_rgba(107,44,58,0.06)]"
+            onMouseEnter={() => setHoveredProcessIndex(0)}
+            onMouseLeave={() => setHoveredProcessIndex(null)}
+          >
+            {/* Decorative background Icon */}
+            <div className="absolute top-8 right-8 text-[#C94A5B] opacity-15 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-35 group-hover:scale-105">
+              {(() => {
+                const Icon = PROCESS_ICONS[0] || Wrench;
+                return <Icon size={52} strokeWidth={1} />;
+              })()}
+            </div>
+
+            {/* Step Label with vertical line */}
+            <div className="flex items-start gap-2.5">
+              <div className="w-[2px] bg-[#C94A5B] h-[32px] transition-all duration-[350ms] ease-out group-hover:h-[50px]" />
+              <span className="font-outfit text-sm font-semibold uppercase tracking-[0.15em] text-[#6a414d] pt-1">
+                STEP 01
+              </span>
+            </div>
+
+            {/* Card Title */}
+            <h3 className="font-outfit text-[20px] font-semibold text-[#6a414d] mt-7">
+              {processSteps[0].title}
+            </h3>
+
+            {/* Card Description */}
+            <p className={`mt-4 ${SECTION_BODY_CLASS} leading-7 text-[#6a414d]/80`}>
+              {processSteps[0].text}
+            </p>
+          </motion.article>
+
+          {/* Connector 1 */}
+          <TimelineConnector isHovered={hoveredProcessIndex === 0} />
+
+          {/* Card 2 */}
+          <motion.article
+            initial={{ opacity: 0, y: 22 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.55, delay: 0.15 }}
+            className="group relative flex-1 rounded-[16px] border border-[#e5dcd3]/20 bg-[#F6EAEA] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-2 hover:shadow-[0_16px_40px_rgba(107,44,58,0.06)]"
+            onMouseEnter={() => setHoveredProcessIndex(1)}
+            onMouseLeave={() => setHoveredProcessIndex(null)}
+          >
+            {/* Decorative background Icon */}
+            <div className="absolute top-8 right-8 text-[#C94A5B] opacity-15 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-35 group-hover:scale-105">
+              {(() => {
+                const Icon = PROCESS_ICONS[1] || Wrench;
+                return <Icon size={52} strokeWidth={1} />;
+              })()}
+            </div>
+
+            {/* Step Label with vertical line */}
+            <div className="flex items-start gap-2.5">
+              <div className="w-[2px] bg-[#C94A5B] h-[32px] transition-all duration-[350ms] ease-out group-hover:h-[50px]" />
+              <span className="font-outfit text-sm font-semibold uppercase tracking-[0.15em] text-[#6a414d] pt-1">
+                STEP 02
+              </span>
+            </div>
+
+            {/* Card Title */}
+            <h3 className="font-outfit text-[20px] font-semibold text-[#6a414d] mt-7">
+              {processSteps[1].title}
+            </h3>
+
+            {/* Card Description */}
+            <p className={`mt-4 ${SECTION_BODY_CLASS} leading-7 text-[#6a414d]/80`}>
+              {processSteps[1].text}
+            </p>
+          </motion.article>
+
+          {/* Connector 2 */}
+          <TimelineConnector isHovered={hoveredProcessIndex === 1} />
+
+          {/* Card 3 */}
+          <motion.article
+            initial={{ opacity: 0, y: 22 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.55, delay: 0.3 }}
+            className="group relative flex-1 rounded-[16px] border border-[#e5dcd3]/20 bg-[#F6EAEA] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-2 hover:shadow-[0_16px_40px_rgba(107,44,58,0.06)]"
+            onMouseEnter={() => setHoveredProcessIndex(2)}
+            onMouseLeave={() => setHoveredProcessIndex(null)}
+          >
+            {/* Decorative background Icon */}
+            <div className="absolute top-8 right-8 text-[#C94A5B] opacity-15 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-35 group-hover:scale-105">
+              {(() => {
+                const Icon = PROCESS_ICONS[2] || Wrench;
+                return <Icon size={52} strokeWidth={1} />;
+              })()}
+            </div>
+
+            {/* Step Label with vertical line */}
+            <div className="flex items-start gap-2.5">
+              <div className="w-[2px] bg-[#C94A5B] h-[32px] transition-all duration-[350ms] ease-out group-hover:h-[50px]" />
+              <span className="font-outfit text-sm font-semibold uppercase tracking-[0.15em] text-[#6a414d] pt-1">
+                STEP 03
+              </span>
+            </div>
+
+            {/* Card Title */}
+            <h3 className="font-outfit text-[20px] font-semibold text-[#6a414d] mt-7">
+              {processSteps[2].title}
+            </h3>
+
+            {/* Card Description */}
+            <p className={`mt-4 ${SECTION_BODY_CLASS} leading-7 text-[#6a414d]/80`}>
+              {processSteps[2].text}
+            </p>
+          </motion.article>
         </div>
       </section>
     </div>
