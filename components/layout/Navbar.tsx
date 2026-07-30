@@ -18,7 +18,7 @@ import {
   NavDropdownSectionLabel,
   NavLanguageOption,
 } from "@/components/layout/NavDropdown";
-import { NAV_DROPDOWN_SUBTITLES } from "@/components/layout/navDropdownMeta";
+import { getNavDropdownSubtitle } from "@/components/layout/navDropdownMeta";
 import { locales, type Locale } from "@/lib/i18n/routing";
 
 type NavItem = {
@@ -33,12 +33,6 @@ type SearchPage = {
   title: string;
   href: string;
   description: string;
-};
-
-const LANGUAGE_LABELS: Record<Locale, string> = {
-  en: "English",
-  th: "Thai",
-  pl: "Polish",
 };
 
 const LANGUAGE_META: Record<Locale, { flag: string }> = {
@@ -68,28 +62,22 @@ const headerBtnBase =
 
 const NAV_MENU_CONFIG = {
   interior: {
-    sectionLabel: "By room",
-    featured: (t: ReturnType<typeof useTranslations>) => ({
-      href: "/interior",
-      label: t("allInteriors"),
-      subtitle: NAV_DROPDOWN_SUBTITLES["/interior"],
-    }),
+    sectionKey: "byRoom" as const,
+    featuredHref: "/interior",
+    featuredLabelKey: "allInteriors" as const,
+    featuredSubtitleHref: "/interior",
   },
   company: {
-    sectionLabel: "Company",
-    featured: (t: ReturnType<typeof useTranslations>) => ({
-      href: "/about",
-      label: t("aboutVarsovia"),
-      subtitle: NAV_DROPDOWN_SUBTITLES["/about"],
-    }),
+    sectionKey: "companySection" as const,
+    featuredHref: "/about",
+    featuredLabelKey: "aboutVarsovia" as const,
+    featuredSubtitleHref: "/about",
   },
   contact: {
-    sectionLabel: "Support",
-    featured: (t: ReturnType<typeof useTranslations>) => ({
-      href: "/contact",
-      label: t("getInTouch"),
-      subtitle: NAV_DROPDOWN_SUBTITLES["/contact"],
-    }),
+    sectionKey: "supportSection" as const,
+    featuredHref: "/contact",
+    featuredLabelKey: "getInTouch" as const,
+    featuredSubtitleHref: "/contact",
   },
 } as const;
 
@@ -167,6 +155,7 @@ function useSearchablePages(): SearchPage[] {
 
 export default function Navbar({ overlayHero = false }: { overlayHero?: boolean }) {
   const t = useTranslations("nav");
+  const tDrop = useTranslations("navDropdown");
   const locale = useLocale() as Locale;
   const pathname = usePathname();
   const router = useRouter();
@@ -186,6 +175,26 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentLanguage = LANGUAGE_META[locale];
+
+  const navDropSubtitle = (href: string) => getNavDropdownSubtitle(href, tDrop);
+
+  const languageLabel = (code: Locale) => {
+    if (code === "th") return t("thai");
+    if (code === "pl") return t("polish");
+    return t("english");
+  };
+
+  const navMenuFeatured = (itemId: keyof typeof NAV_MENU_CONFIG) => {
+    const cfg = NAV_MENU_CONFIG[itemId];
+    return {
+      href: cfg.featuredHref,
+      label: t(cfg.featuredLabelKey),
+      subtitle: navDropSubtitle(cfg.featuredSubtitleHref),
+    };
+  };
+
+  const navMenuSection = (itemId: keyof typeof NAV_MENU_CONFIG) =>
+    t(NAV_MENU_CONFIG[itemId].sectionKey);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -386,14 +395,11 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
                   item.children.length > 0 &&
                   item.id !== "showcase" && (
                     <NavMenuDropdown
-                      featured={
-                        NAV_MENU_CONFIG[item.id as keyof typeof NAV_MENU_CONFIG].featured(t)
-                      }
-                      sectionLabel={
-                        NAV_MENU_CONFIG[item.id as keyof typeof NAV_MENU_CONFIG].sectionLabel
-                      }
+                      featured={navMenuFeatured(item.id as keyof typeof NAV_MENU_CONFIG)}
+                      sectionLabel={navMenuSection(item.id as keyof typeof NAV_MENU_CONFIG)}
                       children={item.children}
                       onNavigate={() => setOpenMenu(null)}
+                      getSubtitle={navDropSubtitle}
                     />
                   )}
               </li>
@@ -518,7 +524,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
                 height={20}
                 className="h-5 w-5 shrink-0 rounded-[2px] object-cover"
               />
-              <span className="whitespace-nowrap">{LANGUAGE_LABELS[locale]}</span>
+              <span className="whitespace-nowrap">{languageLabel(locale)}</span>
               <NavChevron
                 size={12}
                 className={`text-[#444] transition-transform ${langOpen ? "rotate-180" : ""}`}
@@ -527,7 +533,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
 
             {langOpen && (
               <NavDropdownPanel align="right" className="min-w-[210px]">
-                <NavDropdownSectionLabel>Language</NavDropdownSectionLabel>
+                <NavDropdownSectionLabel>{t("language")}</NavDropdownSectionLabel>
                 <NavDropdownBody className="py-1">
                   {locales.map((code) => {
                     const meta = LANGUAGE_META[code];
@@ -535,7 +541,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
                       <NavLanguageOption
                         key={code}
                         flag={meta.flag}
-                        label={LANGUAGE_LABELS[code]}
+                        label={languageLabel(code)}
                         active={locale === code}
                         onClick={() => switchLocale(code)}
                       />
@@ -658,19 +664,11 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
                           <>
                             {item.id in NAV_MENU_CONFIG && (
                               <Link
-                                href={
-                                  NAV_MENU_CONFIG[item.id as keyof typeof NAV_MENU_CONFIG].featured(
-                                    t,
-                                  ).href
-                                }
+                                href={navMenuFeatured(item.id as keyof typeof NAV_MENU_CONFIG).href}
                                 className={mobileSubLinkFeatured}
                                 onClick={closeMobileMenu}
                               >
-                                {
-                                  NAV_MENU_CONFIG[item.id as keyof typeof NAV_MENU_CONFIG].featured(
-                                    t,
-                                  ).label
-                                }
+                                {navMenuFeatured(item.id as keyof typeof NAV_MENU_CONFIG).label}
                               </Link>
                             )}
                             {item.children
@@ -679,9 +677,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
                                   !(
                                     item.id in NAV_MENU_CONFIG &&
                                     child.href ===
-                                      NAV_MENU_CONFIG[
-                                        item.id as keyof typeof NAV_MENU_CONFIG
-                                      ].featured(t).href
+                                      navMenuFeatured(item.id as keyof typeof NAV_MENU_CONFIG).href
                                   ),
                               )
                               .map((child) => (
@@ -694,11 +690,11 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
                                   <span className="block font-outfit text-[15px] font-medium text-[#444] transition-colors hover:text-maroon">
                                     {child.label}
                                   </span>
-                                  {NAV_DROPDOWN_SUBTITLES[child.href] && (
+                                  {navDropSubtitle(child.href) ? (
                                     <span className="mt-0.5 block font-outfit text-[12px] text-[#6a414d]/65">
-                                      {NAV_DROPDOWN_SUBTITLES[child.href]}
+                                      {navDropSubtitle(child.href)}
                                     </span>
-                                  )}
+                                  ) : null}
                                 </Link>
                               ))}
                           </>
@@ -724,7 +720,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
                   onClick={() => switchLocale(code)}
                 >
                   <Image src={meta.flag} alt="" width={18} height={12} />
-                  {LANGUAGE_LABELS[code]}
+                  {languageLabel(code)}
                 </button>
               );
             })}

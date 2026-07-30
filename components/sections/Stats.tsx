@@ -1,17 +1,12 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { motion, useInView } from "framer-motion";
 import SectionShell from "@/components/ui/SectionShell";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 
 type Stat = { value: string; label: string };
-
-const FALLBACK_STATS: Stat[] = [
-  { value: "+12", label: "Years Experience" },
-  { value: "+140", label: "Projects Completed" },
-  { value: "+6", label: "Cities Served" },
-];
 
 type StatsProps = {
   stats?: Stat[];
@@ -164,10 +159,18 @@ function CountUp({
 }
 
 export default function Stats({ stats, statsImage }: StatsProps) {
+  const t = useTranslations("home");
+  const displayStats =
+    stats && stats.length > 0
+      ? stats
+      : [
+          { value: "+12", label: t("statYears") },
+          { value: "+140", label: t("statProjects") },
+          { value: "+6", label: t("statCities") },
+        ];
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.45 });
 
-  const displayStats = stats && stats.length > 0 ? stats : FALLBACK_STATS;
   const imageSrc = resolveMediaUrl(statsImage, MEDIA.stats);
 
   return (
@@ -192,7 +195,7 @@ export default function Stats({ stats, statsImage }: StatsProps) {
       </SectionShell>
 
       <SectionShell className="mt-12 md:mt-16">
-        <StatsFixedImage src={imageSrc} alt="Varsovia interior space" />
+        <StatsFixedImage src={imageSrc} alt={t("statsImageAlt")} />
       </SectionShell>
     </section>
   );

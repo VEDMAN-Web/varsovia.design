@@ -5,13 +5,14 @@ import {
   NavDropdownPanel,
   NavDropdownSectionLabel,
 } from "@/components/layout/NavDropdown";
-import { NAV_DROPDOWN_SUBTITLES } from "@/components/layout/navDropdownMeta";
+import { getNavDropdownSubtitle } from "@/components/layout/navDropdownMeta";
 
 type NavMenuDropdownProps = {
   featured: { href: string; label: string; subtitle?: string };
   sectionLabel?: string;
   children: { label: string; href: string }[];
   onNavigate?: () => void;
+  getSubtitle?: (href: string) => string | undefined;
 };
 
 export default function NavMenuDropdown({
@@ -19,6 +20,7 @@ export default function NavMenuDropdown({
   sectionLabel,
   children,
   onNavigate,
+  getSubtitle,
 }: NavMenuDropdownProps) {
   const items = children.filter((child) => child.href !== featured.href);
 
@@ -39,7 +41,7 @@ export default function NavMenuDropdown({
             key={child.href}
             href={child.href}
             label={child.label}
-            subtitle={NAV_DROPDOWN_SUBTITLES[child.href]}
+            subtitle={getSubtitle?.(child.href)}
             onNavigate={onNavigate}
           />
         ))}

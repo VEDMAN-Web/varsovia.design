@@ -30,13 +30,6 @@ import { companyTransition } from "@/components/company/companyLayoutShared";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-const SUPPORT_SVG = [
-  "/quality-sale/support-illustration-1.svg",
-  "/quality-sale/support-illustration-2.svg",
-  "/quality-sale/support-illustration-3.svg",
-  "/quality-sale/support-illustration-4.svg",
-] as const;
-
 const SUPPORT_PNG = [
   "/quality-sale/support-illustration-1.png",
   "/quality-sale/support-illustration-2.png",
@@ -44,19 +37,34 @@ const SUPPORT_PNG = [
   "/quality-sale/support-illustration-4.png",
 ] as const;
 
+/** JPG fallbacks (always in repo if PNG missing on deploy) */
+const SUPPORT_JPG = [
+  "/quality-sale/support-1.jpg",
+  "/quality-sale/support-2.jpg",
+  "/quality-sale/support-3.jpg",
+  "/quality-sale/support-4.jpg",
+] as const;
+
 function SupportStepArt({ index, className }: { index: number; className?: string }) {
-  const svg = SUPPORT_SVG[index] ?? SUPPORT_SVG[0];
   const png = SUPPORT_PNG[index] ?? SUPPORT_PNG[0];
-  const [src, setSrc] = useState(svg);
+  const jpg = SUPPORT_JPG[index] ?? SUPPORT_JPG[0];
+  const [src, setSrc] = useState<string>(png);
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
+      key={src}
       src={src}
       alt=""
       className={className}
+      loading="lazy"
+      decoding="async"
       onError={() => {
-        if (src !== png) setSrc(png);
+        setSrc((current) => {
+          if (current.endsWith(".jpg")) return current;
+          if (current.endsWith(".png")) return jpg;
+          return png;
+        });
       }}
     />
   );
@@ -106,7 +114,7 @@ function SupportProcessStep({
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true, margin: "-8%" }}
       transition={{ duration: 0.55, ease: EASE, delay: 0.04 }}
-      className={`${QAS_SUPPORT_ILLUSTRATION} mx-auto md:mx-0 ${item.imageRight ? "md:ml-auto" : "md:mr-auto"}`}
+      className={`${QAS_SUPPORT_ILLUSTRATION} mx-auto min-h-[120px] md:mx-0 ${item.imageRight ? "md:ml-auto" : "md:mr-auto"}`}
     >
       <SupportStepArt index={item.artIndex} className="h-auto w-full object-contain" />
     </motion.div>

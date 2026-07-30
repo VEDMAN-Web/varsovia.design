@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import ContactFormPanel from "@/components/forms/ContactFormPanel";
 import SectionHeading from "@/components/ui/SectionHeading";
 import SectionShell, { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
@@ -10,12 +11,13 @@ type ContactProps = {
 };
 
 export default function Contact({ images }: ContactProps) {
+  const t = useTranslations("home");
   return (
     <section id="contact" className="bg-cream py-14 sm:py-16 md:pb-28 md:pt-20">
       <SectionShell>
         <SectionHeading
-          title="Get In touch"
-          subtitle="Your dream space begins with a simple conversation"
+          title={t("contactTitle")}
+          subtitle={t("contactSubtitle")}
           className={`${SECTION_HEADING_WIDE} mb-8 sm:mb-10 md:mb-20`}
         />
 

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@/lib/i18n/navigation";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import SectionHeading from "@/components/ui/SectionHeading";
 import SectionShell, { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
 import { fallbackHomeData } from "@/lib/fallbackData";
@@ -55,6 +56,7 @@ function buildDisplayProjects(projects?: Project[]) {
 }
 
 export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
+  const t = useTranslations("home");
   const [active, setActive] = useState(0);
   const [hovered, setHovered] = useState<number | null>(null);
   const [brokenImages, setBrokenImages] = useState<Record<string, string>>({});
@@ -88,8 +90,8 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
     <section id="projects" className="bg-transparent py-14 sm:py-20 md:py-28">
       <SectionShell>
         <SectionHeading
-          title="Featured Projects"
-          subtitle="Designed to inspire. Built to last"
+          title={t("featuredTitle")}
+          subtitle={t("featuredSubtitle")}
           className={SECTION_HEADING_WIDE}
         />
 

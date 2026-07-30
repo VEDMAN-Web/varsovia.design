@@ -2,23 +2,19 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import SectionHeading from "@/components/ui/SectionHeading";
 import SectionShell, { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 
 /** Figma Frame 2147205349 — layout positions within 686×500 collage */
 const ABOUT_LAYOUT = [
-  { alt: "Varsovia kitchen with maroon cabinetry",   className: "left-[1.75%] top-[0.2%] h-[76.2%] w-[43.4%]" },
-  { alt: "Bright white kitchen with marble island",  className: "left-[37.9%] top-[26.2%] h-[44%] w-[56%]" },
-  { alt: "Warm wood kitchen dining island",          className: "left-[10.9%] top-[54%] h-[44%] w-[51.3%]" },
+  { altKey: "aboutImageAlt1" as const, className: "left-[1.75%] top-[0.2%] h-[76.2%] w-[43.4%]" },
+  { altKey: "aboutImageAlt2" as const, className: "left-[37.9%] top-[26.2%] h-[44%] w-[56%]" },
+  { altKey: "aboutImageAlt3" as const, className: "left-[10.9%] top-[54%] h-[44%] w-[51.3%]" },
 ];
 
 const FALLBACK_ABOUT_IMAGES = [...MEDIA.about];
-
-const DEFAULT_PARAGRAPHS = [
-  "Varsovia started in a rented one-room studio in Warsaw's Praga district, with a simple belief: a beautiful room only earns that word once someone has lived in it for a year and still loves it. We still work that way measuring twice, drawing by hand before we draw on screen, and choosing materials that age instead of wear out.",
-  "Every project starts with how you move through a space, not how it will photograph. The result is interiors that feel inevitable, as if they couldn't have been arranged any other way.",
-];
 
 type AboutProps = {
   title?: string;
@@ -26,15 +22,18 @@ type AboutProps = {
   images?: string[];
 };
 
-export default function About({ title = "ABOUT VARSOVIA", text, images }: AboutProps) {
+export default function About({ title, text, images }: AboutProps) {
+  const t = useTranslations("home");
+  const tSite = useTranslations("siteFallback");
   const [hovered, setHovered] = useState<number | null>(null);
 
-  const paragraphs = text ? text.split(/\n+/).filter(Boolean) : DEFAULT_PARAGRAPHS;
+  const defaultParagraphs = tSite("aboutText").split(/\n+/).filter(Boolean);
+  const paragraphs = text ? text.split(/\n+/).filter(Boolean) : defaultParagraphs;
+  const displayTitle = title || t("aboutTitle");
 
-  // Merge API images with fallback — always keep 3 entries
   const displayImages = ABOUT_LAYOUT.map((layout, i) => ({
     src: resolveMediaUrl(images?.[i], FALLBACK_ABOUT_IMAGES[i]),
-    alt: layout.alt,
+    alt: t(layout.altKey),
     className: layout.className,
   }));
 
@@ -50,8 +49,8 @@ export default function About({ title = "ABOUT VARSOVIA", text, images }: AboutP
           className="w-full"
         >
           <SectionHeading
-            title={title}
-            subtitle="Twelve years of rooms built to last"
+            title={displayTitle}
+            subtitle={t("aboutSubtitle")}
             className={SECTION_HEADING_WIDE}
           />
         </motion.div>
@@ -114,7 +113,7 @@ export default function About({ title = "ABOUT VARSOVIA", text, images }: AboutP
               href="#projects"
               className="mt-2 inline-block text-[0.95rem] font-medium text-[#e85d8a] underline decoration-[#e85d8a]/70 underline-offset-4 transition hover:text-[#d44575] hover:decoration-[#d44575]"
             >
-              Learn More
+              {t("aboutLearnMore")}
             </a>
           </motion.div>
         </div>

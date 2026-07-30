@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { Eye, Flag, Gem, MessagesSquare, PenTool, Hammer, Wrench } from "lucide-react";
-import { fallbackHomeData } from "@/lib/fallbackData";
 import { aboutHeroGalleryImages, aboutStoryCollageImages } from "@/lib/companyData";
 import CompanySectionHeading from "@/components/company/CompanySectionHeading";
 import FadeInView from "@/components/company/FadeInView";
@@ -34,12 +34,12 @@ export type AboutSite = {
 const ICONS = [Eye, Flag, Gem] as const;
 const PROCESS_ICONS = [MessagesSquare, PenTool, Hammer, Wrench] as const;
 
-const FB = fallbackHomeData.site;
-
 export default function AboutPageContent({ site }: { site?: AboutSite | null }) {
-  const intro = site?.aboutIntro || site?.aboutText || FB.aboutIntro;
-  const storyText = site?.aboutStory || site?.aboutText || FB.aboutStory;
-  const heroSubtitle = site?.aboutHeroSubtitle || FB.aboutHeroSubtitle;
+  const t = useTranslations("aboutPage");
+  const tSite = useTranslations("siteFallback");
+  const intro = site?.aboutIntro || site?.aboutText || tSite("aboutIntro");
+  const storyText = site?.aboutStory || site?.aboutText || tSite("aboutStory");
+  const heroSubtitle = site?.aboutHeroSubtitle || tSite("aboutHeroSubtitle");
 
   const heroGallery =
     site?.aboutImages && site.aboutImages.length >= 3
@@ -52,13 +52,32 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
       : aboutStoryCollageImages;
 
   const valueBlocks = [
-    { title: site?.vision?.title || FB.vision.title, text: site?.vision?.text || FB.vision.text, icon: ICONS[0] },
-    { title: site?.mission?.title || FB.mission.title, text: site?.mission?.text || FB.mission.text, icon: ICONS[1] },
-    { title: site?.values?.title || FB.values.title, text: site?.values?.text || FB.values.text, icon: ICONS[2] },
+    {
+      title: site?.vision?.title || t("visionTitle"),
+      text: site?.vision?.text || tSite("visionText"),
+      icon: ICONS[0],
+    },
+    {
+      title: site?.mission?.title || t("missionTitle"),
+      text: site?.mission?.text || tSite("missionText"),
+      icon: ICONS[1],
+    },
+    {
+      title: site?.values?.title || t("valuesBlockTitle"),
+      text: site?.values?.text || tSite("valuesText"),
+      icon: ICONS[2],
+    },
   ];
 
   const processSteps =
-    site?.processSteps && site.processSteps.length > 0 ? site.processSteps : FB.processSteps;
+    site?.processSteps && site.processSteps.length > 0
+      ? site.processSteps
+      : [
+          { step: "01", title: tSite("process1Title"), text: tSite("process1Text") },
+          { step: "02", title: tSite("process2Title"), text: tSite("process2Text") },
+          { step: "03", title: tSite("process3Title"), text: tSite("process3Text") },
+          { step: "04", title: tSite("process4Title"), text: tSite("process4Text") },
+        ];
 
   return (
     <div className="bg-[#f7f3f2] pt-[72px] pb-20 font-outfit md:pb-28">
@@ -66,7 +85,7 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
       <section className={`${COMPANY_SHELL} pb-8 pt-10 md:pb-10 md:pt-16`}>
         <FadeInView className="mb-8 md:mb-12">
           <SectionHeading
-            title="About Us"
+            title={t("heroTitle")}
             subtitle={heroSubtitle || undefined}
             titleAs="h1"
             expanded
@@ -132,7 +151,7 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
 
       {/* Our Story */}
       <section className={`${COMPANY_SHELL} mb-20 md:mb-28`}>
-        <CompanySectionHeading title="Our Story" subtitle={heroSubtitle || undefined} className="mb-10" />
+        <CompanySectionHeading title={t("storyTitle")} subtitle={heroSubtitle || undefined} className="mb-10" />
 
         <motion.p
           initial={{ opacity: 0, y: 16 }}
@@ -164,7 +183,7 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
       {/* Our Process — 4 steps */}
       <section className={COMPANY_SHELL}>
         <CompanySectionHeading
-          title="Our Process"
+          title={t("processTitle")}
           subtitle="A seamless journey from vision to reality"
           className="mb-12 md:mb-16"
         />

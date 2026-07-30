@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Link } from "@/lib/i18n/navigation";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import SectionHeading from "@/components/ui/SectionHeading";
 import SectionShell, { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
@@ -51,6 +52,7 @@ const FALLBACK_PRODUCTS: Product[] = [
 ];
 
 export default function Products({ products }: ProductsProps) {
+  const t = useTranslations("home");
   const [hovered, setHovered] = useState<number | null>(null);
 
   const displayProducts = products && products.length > 0 ? products : FALLBACK_PRODUCTS;
@@ -59,8 +61,8 @@ export default function Products({ products }: ProductsProps) {
     <section id="products" className="bg-[#fdf2f0] py-14 sm:py-20 md:py-28">
       <SectionShell>
         <SectionHeading
-          title="Our Products"
-          subtitle="Interiors made for the way you actually live"
+          title={t("productsTitle")}
+          subtitle={t("productsSubtitle")}
           className={SECTION_HEADING_WIDE}
         />
 
@@ -114,7 +116,7 @@ export default function Products({ products }: ProductsProps) {
                     <div className="overflow-hidden">
                       <p className="text-[0.88rem] leading-6 text-white/90">{product.description}</p>
                       <span className="mt-3 inline-flex items-center gap-1.5 text-[0.92rem] font-medium text-[#e85d8a]">
-                        Explore Interiors
+                        {t("exploreInteriors")}
                         <span aria-hidden>→</span>
                       </span>
                     </div>
@@ -130,7 +132,7 @@ export default function Products({ products }: ProductsProps) {
             href="/interior"
             className="inline-flex rounded-md bg-[#5c3d42] px-8 py-3 text-sm font-medium text-white transition hover:bg-[#4a2f34]"
           >
-            Explore More
+            {t("exploreMore")}
           </Link>
         </div>
       </SectionShell>

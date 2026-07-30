@@ -19,6 +19,7 @@ export type InteriorItem = {
   gallery?: string[];
   isNew: boolean;
   createdAt: string;
+  order?: number;
   price: number;
   shape: string;
   style: string;

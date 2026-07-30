@@ -20,9 +20,9 @@ export const QAS_SUPPORT_ROW = "relative z-[1] py-[clamp(1rem,2.8vw,1.75rem)]";
 export const QAS_SUPPORT_GRID =
   "grid grid-cols-[var(--qas-spine)_minmax(0,1fr)] items-center gap-x-2 md:grid-cols-[minmax(0,1fr)_var(--qas-spine)_minmax(0,1fr)] md:items-center md:gap-x-[clamp(0.875rem,2.2vw,1.5rem)]";
 
-export const QAS_SUPPORT_GRID_STYLE: CSSProperties = {
+export const QAS_SUPPORT_GRID_STYLE = {
   ["--qas-spine"]: "28px",
-};
+} as CSSProperties;
 
 export const QAS_SUPPORT_ILLUSTRATION =
   "w-full max-w-[min(100%,208px)] shrink-0 sm:max-w-[224px] md:max-w-[min(100%,240px)]";

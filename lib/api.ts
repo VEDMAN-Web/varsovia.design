@@ -30,9 +30,9 @@ function pickBlock(value: unknown, fallback: SiteBlock): SiteBlock {
   return fallback;
 }
 
-async function mergeSiteFallback(data: Record<string, unknown>): Promise<SiteContent> {
-  const { fallbackHomeData } = await import("./fallbackData");
-  const fb = fallbackHomeData.site;
+async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale): Promise<SiteContent> {
+  const { getLocalizedSiteFallback } = await import("./i18n/localizedFallback");
+  const fb = getLocalizedSiteFallback(locale);
   return {
     ...fb,
     ...(data as SiteContent),
@@ -86,10 +86,10 @@ export async function fetchSite(locale?: Locale): Promise<SiteContent> {
     if (!res.ok) throw new Error("Failed to fetch site");
     const data = await res.json();
     if (!data) throw new Error("Empty");
-    return await mergeSiteFallback(data);
+    return await mergeSiteFallback(data, locale);
   } catch {
-    const { fallbackHomeData } = await import("./fallbackData");
-    return fallbackHomeData.site;
+    const { getLocalizedSiteFallback } = await import("./i18n/localizedFallback");
+    return getLocalizedSiteFallback(locale);
   }
 }
 
@@ -145,10 +145,10 @@ export async function fetchProductBySlug(slug: string, locale?: Locale) {
   }
 }
 
-export async function fetchRelatedProducts(slug: string) {
+export async function fetchRelatedProducts(slug: string, locale?: Locale) {
   const { getRelatedProducts } = await import("./productData");
   try {
-    const products = await fetchProducts();
+    const products = await fetchProducts(locale);
     const related = products.filter(
       (p: { slug?: string; _id?: string }) => p.slug !== slug && p._id !== slug,
     ).slice(0, 3);
@@ -226,7 +226,7 @@ export async function fetchHomeData(locale?: Locale): Promise<HomeData> {
     if (!res.ok) throw new Error("Failed to fetch home data");
     const data = await res.json();
     if (data.site) {
-      data.site = await mergeSiteFallback(data.site as Record<string, unknown>);
+      data.site = await mergeSiteFallback(data.site as Record<string, unknown>, locale);
     }
     if (Array.isArray(data.testimonials) && data.testimonials.length > 0) {
       data.testimonials = normalizeTestimonials(data.testimonials);

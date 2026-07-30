@@ -35,7 +35,7 @@ export default async function Home({ params }: Props) {
       <main>
         <Hero
           eyebrow={site.heroEyebrow}
-          headline={site.heroHeadline || "CHOOSE FROM A RANGE OF HIGH-QUALITY MODULAR KITCHENS."}
+          headline={site.heroHeadline}
           subtitle={site.heroSubtitle}
           heroImage={site.heroImage}
           primaryCtaLabel={site.heroPrimaryCtaLabel}
@@ -44,7 +44,7 @@ export default async function Home({ params }: Props) {
           secondaryCtaHref={site.heroSecondaryCtaHref}
         />
         <About
-          title={site.aboutTitle || "ABOUT VARSOVIA"}
+          title={site.aboutTitle}
           text={site.aboutText}
           images={site.aboutImages}
         />

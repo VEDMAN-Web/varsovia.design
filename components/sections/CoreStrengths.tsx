@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { motion, useReducedMotion, type PanInfo } from "framer-motion";
 import {
   ChevronLeft,
@@ -119,6 +120,7 @@ function getGeometry(offset: number) {
 }
 
 export default function CoreStrengths() {
+  const t = useTranslations("home");
   const length = STRENGTHS.length;
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -192,8 +194,8 @@ export default function CoreStrengths() {
       <SectionShell>
       <div className="text-center">
         <SectionHeading
-          title="Core Strengths"
-          subtitle="Transforming data into intelligent, real-world solutions"
+          title={t("strengthsTitle")}
+          subtitle={t("strengthsSubtitle")}
           className={SECTION_HEADING_WIDE}
         />
       </div>
@@ -208,7 +210,7 @@ export default function CoreStrengths() {
           ref={trackRef}
           role="region"
           aria-roledescription="carousel"
-          aria-label="Core strengths"
+          aria-label={t("strengthsAria")}
           tabIndex={0}
           className="relative mx-auto w-full cursor-grab overflow-hidden outline-none focus-visible:outline-none active:cursor-grabbing"
           style={{ height: trackHeight }}
@@ -327,7 +329,7 @@ export default function CoreStrengths() {
         <div className="relative z-20 mt-3 flex items-center justify-center gap-3 sm:mt-4">
           <button
             type="button"
-            aria-label="Previous strength"
+            aria-label={t("strengthPrev")}
             onClick={prev}
             className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#c9a4ab] text-[#6b3d48] shadow-sm transition hover:bg-[#b88f97] sm:h-10 sm:w-10"
           >
@@ -335,7 +337,7 @@ export default function CoreStrengths() {
           </button>
           <button
             type="button"
-            aria-label="Next strength"
+            aria-label={t("strengthNext")}
             onClick={next}
             className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#c9a4ab] text-[#6b3d48] shadow-sm transition hover:bg-[#b88f97] sm:h-10 sm:w-10"
           >

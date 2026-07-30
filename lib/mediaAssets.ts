@@ -53,10 +53,10 @@ export const MEDIA = {
   interior: ["/Interior-kitchen/kitchen1.jpg", "/Interior-kitchen/kitchen2.jpg"],
   showrooms: ["/home/about-1.jpg", "/home/about-2.jpg", "/home/about-3.jpg"],
   qualitySupport: [
-    "/quality-sale/support-illustration-1.svg",
-    "/quality-sale/support-illustration-2.svg",
-    "/quality-sale/support-illustration-3.svg",
-    "/quality-sale/support-illustration-4.svg",
+    "/quality-sale/support-illustration-1.png",
+    "/quality-sale/support-illustration-2.png",
+    "/quality-sale/support-illustration-3.png",
+    "/quality-sale/support-illustration-4.png",
   ],
 } as const;
 

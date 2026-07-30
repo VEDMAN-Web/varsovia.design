@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { motion, useReducedMotion, type PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getRelativeOffset } from "@/lib/carousel";
@@ -68,6 +69,7 @@ function catalogueImage(item: CatalogueItem, index: number) {
 }
 
 export default function Catalogue({ catalogues, contactImages = fallbackHomeData.site.contactImages }: CatalogueProps) {
+  const t = useTranslations("home");
   const raw: CatalogueItem[] = catalogues && catalogues.length > 0 ? catalogues : FALLBACK_CATALOGUES;
   const CATALOGUES = raw.map((c, index) => ({
     id: c._id || c.id || c.title,
@@ -176,8 +178,8 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
         <div className={CATALOGUE_SECTION_SHELL}>
           <div className={CATALOGUE_CONTENT_WIDTH}>
             <SectionHeading
-              title="Free Catalogue"
-              subtitle="Inspiration for Your Dream Kitchen"
+              title={t("catalogueTitle")}
+              subtitle={t("catalogueSubtitle")}
               className={SECTION_HEADING_WIDE}
             />
           </div>
@@ -186,7 +188,7 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
             ref={trackRef}
             role="region"
             aria-roledescription="carousel"
-            aria-label="Free catalogue previews"
+            aria-label={t("catalogueAria")}
             tabIndex={0}
             className="relative mt-4 w-full min-w-0 cursor-grab overflow-x-hidden overflow-y-visible bg-transparent outline-none focus-visible:outline-none active:cursor-grabbing md:mt-8"
             style={{ height: trackHeight, perspective: Math.min(1400, trackHeight * 3.2) }}
@@ -286,7 +288,7 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
           <div className="mt-4 flex items-center justify-center gap-4 pb-2">
             <button
               type="button"
-              aria-label="Previous catalogue"
+              aria-label={t("cataloguePrev")}
               onClick={prev}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#c9a4ab] text-[#6b3d48] transition hover:scale-105 hover:bg-[#b88f97] active:scale-95"
             >
@@ -295,7 +297,7 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
 
             <button
               type="button"
-              aria-label="Next catalogue"
+              aria-label={t("catalogueNext")}
               onClick={next}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#c9a4ab] text-[#6b3d48] transition hover:scale-105 hover:bg-[#b88f97] active:scale-95"
             >
