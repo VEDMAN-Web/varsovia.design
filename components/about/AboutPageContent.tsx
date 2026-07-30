@@ -2,16 +2,15 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { MessagesSquare, PenTool, Hammer, Wrench } from "lucide-react";
 import { useLenis } from "lenis/react";
 import { fallbackHomeData } from "@/lib/fallbackData";
 import { aboutHeroGalleryImages, aboutStoryCollageImages } from "@/lib/companyData";
 import CompanySectionHeading from "@/components/company/CompanySectionHeading";
 import FadeInView from "@/components/company/FadeInView";
 import SectionHeading from "@/components/ui/SectionHeading";
+import FixedBackgroundImage from "@/components/ui/FixedBackgroundImage";
 import {
   COMPANY_BODY,
-  COMPANY_IMAGE_FRAME,
   COMPANY_SHELL,
   PAGE_BODY_LEAD_CLASS,
   SECTION_BODY_CLASS,
@@ -34,6 +33,10 @@ export type AboutSite = {
 };
 
 const FB = fallbackHomeData.site;
+
+/** Same frame as COMPANY_IMAGE_FRAME, on this page's tighter 6px radius */
+const STORY_IMAGE_FRAME =
+  "overflow-hidden rounded-[6px] shadow-[0_8px_24px_rgba(107,44,58,0.02)] border border-[#e5dcd3]/30";
 
 // Connector components defined exactly as required
 function TimelineConnector({ isHovered, style }: { isHovered: boolean; style?: React.CSSProperties }) {
@@ -80,6 +83,7 @@ function TimelineConnectorMobile({ isHovered }: { isHovered: boolean }) {
 
 export default function AboutPageContent({ site }: { site?: AboutSite | null }) {
   const [hoveredProcessIndex, setHoveredProcessIndex] = useState<number | null>(null);
+  const [hoveredStoryIndex, setHoveredStoryIndex] = useState<number | null>(null);
   
   // Discrete steps: 0 (STEP 1 & 2), 1 (STEP 2 & 3), 2 (STEP 3 & 4)
   const [sliderIndex, setSliderIndex] = useState(0); 
@@ -225,13 +229,13 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
       step: "03",
       title: "Execution",
       text: "Expert craftsmanship, quality materials, and professional project management.",
-      icon: "hammer",
+      icon: "/ourprocess/ourprocessStep3.png",
     },
     {
       step: "04",
       title: "Delivery",
       text: "Final styling, quality inspection, and on-time project handover.",
-      icon: "wrench",
+      icon: "/ourprocess/ourprocessStep4.png",
     },
   ];
 
@@ -244,20 +248,19 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
             subtitle={heroSubtitle || undefined}
             titleAs="h1"
             expanded
-            className="w-full rounded-[16px] !pb-6 md:!pb-8"
+            className="w-full rounded-[6px] !pb-6 md:!pb-8"
           >
             <p className={`mx-auto mt-8 max-w-4xl px-2 md:px-4 ${PAGE_BODY_LEAD_CLASS} !text-black`}>{intro}</p>
           </SectionHeading>
         </FadeInView>
 
-        <FadeInView delay={0.1}>
-          <div className="overflow-hidden rounded-[16px] border border-[#e5dcd3]/30 shadow-[0_10px_30px_rgba(107,44,58,0.04)] w-full bg-white">
-            <img
-              src={heroGallery[1] || heroGallery[0]}
-              alt="About Us Featured"
-              className="w-full h-auto aspect-[16/7] md:aspect-[2.1/1] object-cover transition duration-500 hover:scale-[1.01]"
-            />
-          </div>
+        {/* y=0 keeps this wrapper transform-free so the fixed background keeps working */}
+        <FadeInView delay={0.1} y={0}>
+          <FixedBackgroundImage
+            src={heroGallery[1] || heroGallery[0]}
+            alt="About Us Featured"
+            className="mx-auto h-[min(42vw,340px)] min-h-[220px] w-full rounded-[6px] border border-[#e5dcd3]/30 bg-white shadow-[0_10px_30px_rgba(107,44,58,0.04)] sm:h-[340px] md:h-[400px] lg:h-[440px]"
+          />
         </FadeInView>
       </section>
 
@@ -267,6 +270,7 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
           subtitle="The foundation of everything we create."
           subtitleSentenceCase={false}
           className="mb-10 md:mb-14"
+          radiusClassName="rounded-[6px]"
         />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
@@ -278,7 +282,7 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.55, delay: i * 0.1 }}
-                className="group rounded-[16px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 md:p-10 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-300 ease-out hover:-translate-y-[6px] hover:shadow-[0_12px_36px_rgba(107,44,58,0.06)]"
+                className="group rounded-[6px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 md:p-10 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-300 ease-out hover:-translate-y-[6px] hover:shadow-[0_12px_36px_rgba(107,44,58,0.06)]"
               >
                 <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#E5D2D5]/70 shadow-[0_4px_14px_rgba(107,44,58,0.04)]">
                   <img src={item.iconPath} alt={item.title} className="w-11 h-11 object-contain" />
@@ -293,7 +297,13 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
       </section>
 
       <section className={`${COMPANY_SHELL} mb-20 md:mb-28`}>
-        <CompanySectionHeading title="Our Story" subtitle={heroSubtitle || undefined} subtitleSentenceCase={false} className="mb-10" />
+        <CompanySectionHeading
+          title="Our Story"
+          subtitle={heroSubtitle || undefined}
+          subtitleSentenceCase={false}
+          className="mb-10"
+          radiusClassName="rounded-[6px]"
+        />
 
         <motion.p
           initial={{ opacity: 0, y: 16 }}
@@ -305,24 +315,35 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
           {storyText}
         </motion.p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8 items-start">
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8 items-start"
+          onMouseLeave={() => setHoveredStoryIndex(null)}
+        >
           {storyImages.map((src, i) => {
-            const isStaggered = i % 2 === 0;
+            // Untouched grid keeps the alternating stagger; hovering raises that
+            // image to the top row and drops every other one to the lowered row
+            const isLowered =
+              hoveredStoryIndex === null ? i % 2 === 0 : i !== hoveredStoryIndex;
             return (
-              <motion.div
+              <motion.button
                 key={src}
+                type="button"
+                aria-label={`Our story highlight ${i + 1}`}
+                onMouseEnter={() => setHoveredStoryIndex(i)}
+                onFocus={() => setHoveredStoryIndex(i)}
+                onBlur={() => setHoveredStoryIndex(null)}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.05 * i }}
-                className={`${COMPANY_IMAGE_FRAME} ${isStaggered ? "mt-0 sm:mt-8 md:mt-12 lg:mt-16" : "mt-0"}`}
+                className={`${STORY_IMAGE_FRAME} block w-full text-left outline-none transition-[margin-top] duration-[450ms] ease-out ${isLowered ? "mt-0 sm:mt-8 md:mt-12 lg:mt-16" : "mt-0"}`}
               >
                 <img
                   src={src}
                   alt={`Our story highlight ${i + 1}`}
                   className="aspect-[3/4] w-full object-cover transition duration-500 hover:scale-[1.02]"
                 />
-              </motion.div>
+              </motion.button>
             );
           })}
         </div>
@@ -336,6 +357,7 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
               title="Our Process"
               subtitle="A seamless journey from vision to reality."
               subtitleSentenceCase={false}
+              radiusClassName="rounded-[6px]"
             />
           </div>
 
@@ -351,13 +373,13 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
 
                 {/* Step 1 */}
                 <motion.article
-                  className="group relative h-[320px] rounded-[16px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0"
+                  className="group relative h-[320px] rounded-[6px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0"
                   style={{ width: "21.1180%" }}
                   onMouseEnter={() => setHoveredProcessIndex(0)}
                   onMouseLeave={() => setHoveredProcessIndex(null)}
                 >
-                  <div className="absolute top-8 right-8 text-[#C94A5B] opacity-85 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-100 group-hover:scale-105">
-                    <img src="/ourprocess/ourprocessStep1.png" alt="Consultation" className="w-[52px] h-[52px] object-contain partner-logo-img" />
+                  <div className="absolute top-8 right-8 text-[#783b4a] opacity-[0.3] scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-[0.45] group-hover:scale-105">
+                    <img src="/ourprocess/ourprocessStep1.png" alt="Consultation" className="w-[60px] h-[60px] object-contain partner-logo-img" />
                   </div>
                   <div className="flex items-start gap-2.5">
                     <div className="w-[2px] bg-[#C94A5B] h-[32px] transition-all duration-[350ms] ease-out group-hover:h-[48px]" />
@@ -378,13 +400,13 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
 
                 {/* Step 2 */}
                 <motion.article
-                  className="group relative h-[320px] rounded-[16px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0"
+                  className="group relative h-[320px] rounded-[6px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0"
                   style={{ width: "21.1180%" }}
                   onMouseEnter={() => setHoveredProcessIndex(1)}
                   onMouseLeave={() => setHoveredProcessIndex(null)}
                 >
-                  <div className="absolute top-8 right-8 text-[#C94A5B] opacity-85 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-100 group-hover:scale-105">
-                    <img src="/ourprocess/ourprocessStep2.png" alt="Planning & Design" className="w-[52px] h-[52px] object-contain partner-logo-img" />
+                  <div className="absolute top-8 right-8 text-[#783b4a] opacity-[0.3] scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-[0.45] group-hover:scale-105">
+                    <img src="/ourprocess/ourprocessStep2.png" alt="Planning & Design" className="w-[60px] h-[60px] object-contain partner-logo-img" />
                   </div>
                   <div className="flex items-start gap-2.5">
                     <div className="w-[2px] bg-[#C94A5B] h-[32px] transition-all duration-[350ms] ease-out group-hover:h-[48px]" />
@@ -405,13 +427,13 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
 
                 {/* Step 3 */}
                 <motion.article
-                  className="group relative h-[320px] rounded-[16px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0"
+                  className="group relative h-[320px] rounded-[6px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0"
                   style={{ width: "21.1180%" }}
                   onMouseEnter={() => setHoveredProcessIndex(2)}
                   onMouseLeave={() => setHoveredProcessIndex(null)}
                 >
-                  <div className="absolute top-8 right-8 text-[#C94A5B] opacity-85 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-100 group-hover:scale-105">
-                    <Hammer size={52} strokeWidth={1} />
+                  <div className="absolute top-8 right-8 text-[#783b4a] opacity-[0.3] scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-[0.45] group-hover:scale-105">
+                    <img src="/ourprocess/ourprocessStep3.png" alt="Execution" className="w-[60px] h-[60px] object-contain partner-logo-img" />
                   </div>
                   <div className="flex items-start gap-2.5">
                     <div className="w-[2px] bg-[#C94A5B] h-[32px] transition-all duration-[350ms] ease-out group-hover:h-[48px]" />
@@ -432,13 +454,13 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
 
                 {/* Step 4 */}
                 <motion.article
-                  className="group relative h-[320px] rounded-[16px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0"
+                  className="group relative h-[320px] rounded-[6px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0"
                   style={{ width: "21.1180%" }}
                   onMouseEnter={() => setHoveredProcessIndex(3)}
                   onMouseLeave={() => setHoveredProcessIndex(null)}
                 >
-                  <div className="absolute top-8 right-8 text-[#C94A5B] opacity-85 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-100 group-hover:scale-105">
-                    <Wrench size={52} strokeWidth={1} />
+                  <div className="absolute top-8 right-8 text-[#783b4a] opacity-[0.3] scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-[0.45] group-hover:scale-105">
+                    <img src="/ourprocess/ourprocessStep4.png" alt="Delivery" className="w-[60px] h-[60px] object-contain partner-logo-img" />
                   </div>
                   <div className="flex items-start gap-2.5">
                     <div className="w-[2px] bg-[#C94A5B] h-[32px] transition-all duration-[350ms] ease-out group-hover:h-[48px]" />
@@ -469,6 +491,7 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
             title="Our Process"
             subtitle="A seamless journey from vision to reality."
             subtitleSentenceCase={false}
+            radiusClassName="rounded-[6px]"
           />
         </div>
 
@@ -479,12 +502,12 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
 
             {/* Step 1 */}
             <article
-              className="group relative w-[76%] h-[280px] rounded-[16px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0 snap-center"
+              className="group relative w-[76%] h-[280px] rounded-[6px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0 snap-center"
               onMouseEnter={() => setHoveredProcessIndex(0)}
               onMouseLeave={() => setHoveredProcessIndex(null)}
             >
-              <div className="absolute top-8 right-8 text-[#C94A5B] opacity-85 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-100 group-hover:scale-105">
-                <img src="/ourprocess/ourprocessStep1.png" alt="Consultation" className="w-[52px] h-[52px] object-contain partner-logo-img" />
+              <div className="absolute top-8 right-8 text-[#783b4a] opacity-[0.3] scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-[0.45] group-hover:scale-105">
+                <img src="/ourprocess/ourprocessStep1.png" alt="Consultation" className="w-[60px] h-[60px] object-contain partner-logo-img" />
               </div>
               <div className="flex items-start gap-2.5">
                 <div className="w-[2px] bg-[#C94A5B] h-[32px] transition-all duration-[350ms] ease-out group-hover:h-[48px]" />
@@ -505,12 +528,12 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
 
             {/* Step 2 */}
             <article
-              className="group relative w-[76%] h-[280px] rounded-[16px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0 snap-center"
+              className="group relative w-[76%] h-[280px] rounded-[6px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0 snap-center"
               onMouseEnter={() => setHoveredProcessIndex(1)}
               onMouseLeave={() => setHoveredProcessIndex(null)}
             >
-              <div className="absolute top-8 right-8 text-[#C94A5B] opacity-85 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-100 group-hover:scale-105">
-                <img src="/ourprocess/ourprocessStep2.png" alt="Planning & Design" className="w-[52px] h-[52px] object-contain partner-logo-img" />
+              <div className="absolute top-8 right-8 text-[#783b4a] opacity-[0.3] scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-[0.45] group-hover:scale-105">
+                <img src="/ourprocess/ourprocessStep2.png" alt="Planning & Design" className="w-[60px] h-[60px] object-contain partner-logo-img" />
               </div>
               <div className="flex items-start gap-2.5">
                 <div className="w-[2px] bg-[#C94A5B] h-[32px] transition-all duration-[350ms] ease-out group-hover:h-[48px]" />
@@ -531,12 +554,12 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
 
             {/* Step 3 */}
             <article
-              className="group relative w-[76%] h-[280px] rounded-[16px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0 snap-center"
+              className="group relative w-[76%] h-[280px] rounded-[6px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0 snap-center"
               onMouseEnter={() => setHoveredProcessIndex(2)}
               onMouseLeave={() => setHoveredProcessIndex(null)}
             >
-              <div className="absolute top-8 right-8 text-[#C94A5B] opacity-85 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-100 group-hover:scale-105">
-                <Hammer size={52} strokeWidth={1} />
+              <div className="absolute top-8 right-8 text-[#783b4a] opacity-[0.3] scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-[0.45] group-hover:scale-105">
+                <img src="/ourprocess/ourprocessStep3.png" alt="Execution" className="w-[60px] h-[60px] object-contain partner-logo-img" />
               </div>
               <div className="flex items-start gap-2.5">
                 <div className="w-[2px] bg-[#C94A5B] h-[32px] transition-all duration-[350ms] ease-out group-hover:h-[48px]" />
@@ -557,12 +580,12 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
 
             {/* Step 4 */}
             <article
-              className="group relative w-[76%] h-[280px] rounded-[16px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0 snap-center"
+              className="group relative w-[76%] h-[280px] rounded-[6px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0 snap-center"
               onMouseEnter={() => setHoveredProcessIndex(3)}
               onMouseLeave={() => setHoveredProcessIndex(null)}
             >
-              <div className="absolute top-8 right-8 text-[#C94A5B] opacity-85 scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-100 group-hover:scale-105">
-                <Wrench size={52} strokeWidth={1} />
+              <div className="absolute top-8 right-8 text-[#783b4a] opacity-[0.3] scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-[0.45] group-hover:scale-105">
+                <img src="/ourprocess/ourprocessStep4.png" alt="Delivery" className="w-[60px] h-[60px] object-contain partner-logo-img" />
               </div>
               <div className="flex items-start gap-2.5">
                 <div className="w-[2px] bg-[#C94A5B] h-[32px] transition-all duration-[350ms] ease-out group-hover:h-[48px]" />
