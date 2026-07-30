@@ -1,11 +1,11 @@
 /** Self-hosted assets under /public — mapped from legacy /home/* paths. */
 
 export const MEDIA = {
-  hero: "/home/hero.jpg",
-  stats: "/home/stats.jpg",
+  hero: "/home/home-front-page.png",
+  stats: "/home/counting.png",
   team: "/team/team.jpg",
   blog: "/blog/blog1.jpg",
-  about: ["/home/about-1.jpg", "/home/about-2.jpg", "/home/about-3.jpg"],
+  about: ["/home/about-1.png", "/home/about-2.png", "/home/about-3.png"],
   core: [
     "/home/core/core-1.jpg",
     "/home/core/core-2.jpg",
@@ -60,43 +60,10 @@ export const MEDIA = {
   ],
 } as const;
 
+/** Only rewrite API paths that are not stored under the same URL in /public. */
 const LOCAL_ALIASES: Record<string, string> = {
-  "/home/home-front-page.png": MEDIA.hero,
-  "/home/counting.png": MEDIA.stats,
-  "/home/about-1.png": MEDIA.about[0],
-  "/home/about-2.png": MEDIA.about[1],
-  "/home/about-3.png": MEDIA.about[2],
-  "/home/product/product-1.png": MEDIA.products[0],
-  "/home/product/product-2.png": MEDIA.products[1],
-  "/home/product/product-3.jpg": MEDIA.products[2],
-  "/home/catalog.png": MEDIA.catalogues[0],
   "/home/catalog-1.jpg": MEDIA.catalogues[1],
-  "/home/catalog-2.png": MEDIA.catalogues[2],
-  "/home/catalog-3.png": MEDIA.catalogues[3],
-  "/home/catalog-4.png": MEDIA.catalogues[4],
-  "/home/featured-project/feature-1.jpg": MEDIA.featured[0],
-  "/home/featured-project/feature-2.jpg": MEDIA.featured[1],
-  "/home/featured-project/feature-3.jpg": MEDIA.featured[2],
-  "/home/featured-project/feature-4.jpg": MEDIA.featured[3],
-  "/home/featured-project/feature-5.jpg": MEDIA.featured[4],
-  "/home/featured-project/feature-6.jpg": MEDIA.featured[5],
-  "/home/featured-project/feature-7.png": MEDIA.featured[6],
-  "/home/featured-project/feature-8.png": MEDIA.featured[7],
-  "/home/core/core (1).png": MEDIA.core[0],
-  "/home/core/core (2).png": MEDIA.core[1],
-  "/home/core/core (3).png": MEDIA.core[2],
-  "/home/core/core (4).png": MEDIA.core[3],
-  "/home/core/core (5).png": MEDIA.core[4],
-  "/home/core/core (6).png": MEDIA.core[5],
-  "/home/real-story/story (1).jpg": MEDIA.stories[0],
-  "/home/real-story/story (1).png": MEDIA.stories[1],
-  "/home/real-story/story (2).jpg": MEDIA.stories[2],
-  "/home/real-story/story (2).png": MEDIA.stories[3],
-  "/home/real-story/story (3).png": MEDIA.stories[4],
-  "/Interior-kitchen/kitchen1.png": MEDIA.interior[0],
-  "/Interior-kitchen/kitchen2.png": MEDIA.interior[1],
-  "/team/team.png": MEDIA.team,
-  "/blog/blog1.png": MEDIA.blog,
+  "/home/product/product-3.jpg": MEDIA.products[2],
 };
 
 export function resolveMediaUrl(src?: string | null, fallback: string = MEDIA.hero as string): string {
