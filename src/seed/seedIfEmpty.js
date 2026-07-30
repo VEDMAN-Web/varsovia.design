@@ -136,9 +136,9 @@ async function seedIfEmpty() {
     contactImages: [LOCAL.contact1, LOCAL.contact2, LOCAL.contact3, LOCAL.contact4, LOCAL.project5, LOCAL.about2, LOCAL.project7],
     footerBio:
       "Varsovia Kitchen designs and builds premium modular kitchens with precision, warmth, and lasting quality.",
-    phone: "+91 98765 43210",
-    email: "hello@varsoviakitchen.com",
-    address: "12 Design Avenue, Mumbai, India",
+    phone: "+66 64 683 9777",
+    email: "hi@thailandkitchens.com",
+    address: "Route 4169, Mae Nam, Amphoe Ko Samui, Surat Thani 84330",
   });
 
   await Product.insertMany([
