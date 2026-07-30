@@ -6,20 +6,18 @@ import type { ReactNode } from "react";
 import {
   IconEmailContact,
   IconFacebook,
-  IconInstagram,
   IconLocationContact,
   IconPhoneContact,
   IconWhatsApp,
-  IconX,
   LogoWingSvg,
 } from "@/components/layout/FooterIcons";
+import { FOOTER_CONTACT, telHref } from "@/lib/footerContact";
 
 type FooterProps = {
   bio?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
 };
+
+const SOCIAL_ICON = "size-8 sm:size-9 lg:size-10";
 
 function FooterNavLink({ href, label }: { href: string; label: string }) {
   const pathname = usePathname();
@@ -31,7 +29,7 @@ function FooterNavLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className={`group relative font-outfit text-[18px] leading-normal transition-colors duration-200 ${
+      className={`group relative font-outfit text-[14px] leading-snug transition-colors duration-200 sm:text-[16px] lg:text-[18px] lg:leading-normal ${
         active ? "font-medium text-[#cf5374]" : "font-normal text-white/80 hover:text-white"
       }`}
     >
@@ -52,27 +50,50 @@ function ContactRow({ icon, children }: { icon: "email" | "location" | "phone"; 
     icon === "email" ? IconEmailContact : icon === "location" ? IconLocationContact : IconPhoneContact;
 
   return (
-    <div className="flex items-center gap-5">
-      <Icon />
-      <div className="font-outfit text-[18px] leading-normal text-white/80">{children}</div>
+    <div className="grid grid-cols-[34px_minmax(0,1fr)] items-start gap-x-3 sm:gap-x-4">
+      <div className="flex justify-center pt-0.5">
+        <Icon />
+      </div>
+      <div className="min-w-0 font-outfit text-[14px] leading-[1.45] text-white/80 sm:text-[15px] lg:text-[16px]">
+        {children}
+      </div>
     </div>
   );
 }
 
-function LegalDot() {
-  return <span className="font-outfit text-[23px] leading-none text-[#cf5374]">.</span>;
+function ContactLabel({ children }: { children: ReactNode }) {
+  return <p className="font-medium leading-snug text-white">{children}</p>;
 }
 
-export default function Footer({
-  bio,
-  phone = "+91 98765 43210",
-  email = "hello@Varsoviadesign.in",
-  address = "SG Highway, Ahmedabad, Gujarat 380015",
-}: FooterProps) {
+function ContactValue({ href, children }: { href?: string; children: ReactNode }) {
+  const className =
+    "mt-0.5 block break-words transition-colors duration-200 hover:text-white hover:underline underline-offset-2 decoration-[#cf5374]";
+
+  if (href) {
+    return (
+      <a href={href} className={className}>
+        {children}
+      </a>
+    );
+  }
+
+  return <p className="mt-0.5 break-words">{children}</p>;
+}
+
+function LegalDot() {
+  return (
+    <span className="inline-flex h-[12px] shrink-0 items-center px-1 sm:h-[14px]" aria-hidden="true">
+      <span className="block size-[3px] rounded-full bg-[#cf5374] sm:size-1" />
+    </span>
+  );
+}
+
+export default function Footer({ bio }: FooterProps) {
   const t = useTranslations("footer");
   const tNav = useTranslations("nav");
   const tCat = useTranslations("categories");
   const year = new Date().getFullYear();
+  const { email, contactPhone, mobileWhatsapp } = FOOTER_CONTACT;
 
   const homeLinks = [
     { label: t("blog"), href: "/blog" },
@@ -93,103 +114,119 @@ export default function Footer({
 
   return (
     <footer className="bg-[#6a414d] text-white">
-      <div className="mx-auto w-full max-w-[1440px] px-[clamp(1.25rem,7vw,100px)] pt-[75px] lg:min-h-[529px]">
-        <div className="flex flex-col gap-12 lg:flex-row lg:gap-[128px]">
-          <div className="flex w-full max-w-[319px] flex-col gap-6">
-            <div className="flex w-[155.773px] flex-col items-center gap-[7.534px]">
-              <LogoWingSvg className="h-[82.169px] w-[52.396px]" />
-              <div className="w-full text-white">
-                <p className="font-display text-[31.413px] font-bold leading-[42.835px]">VARSOVIA</p>
-                <p className="font-outfit text-center text-[12.138px] font-normal tracking-[16.9934px]">
-                  DESIGN
-                </p>
+      <div className="mx-auto w-full max-w-[1440px] px-[clamp(1rem,5vw,100px)] pt-8 pb-20 sm:pt-12 sm:pb-16 lg:min-h-[529px] lg:pt-[75px] lg:pb-[75px]">
+        <div className="flex flex-col gap-8 sm:gap-10 lg:flex-row lg:gap-[128px] lg:gap-y-12">
+          {/* Brand block — compact horizontal on mobile */}
+          <div className="flex w-full max-w-[319px] flex-col gap-4 sm:gap-5 lg:gap-6">
+            <div className="flex items-center gap-4 sm:items-start sm:gap-0 sm:flex-col">
+              <div className="flex shrink-0 items-center gap-3 sm:w-[155.773px] sm:flex-col sm:gap-[7.534px]">
+                <LogoWingSvg className="h-[52px] w-[33px] sm:h-[68px] sm:w-[43px] lg:h-[82.169px] lg:w-[52.396px]" />
+                <div className="text-white sm:w-full">
+                  <p className="font-display text-[1.35rem] font-bold leading-tight sm:text-[26px] sm:leading-[34px] lg:text-[31.413px] lg:leading-[42.835px]">
+                    VARSOVIA
+                  </p>
+                  <p className="font-outfit text-[10px] font-normal tracking-[0.45em] sm:text-center sm:text-[12.138px] sm:tracking-[16.9934px]">
+                    DESIGN
+                  </p>
+                </div>
               </div>
             </div>
 
-            <p className="font-outfit text-[18px] font-normal leading-normal text-white/80">
+            <p className="font-outfit text-[14px] leading-snug text-white/80 sm:text-[16px] lg:text-[18px] lg:leading-normal">
               {bio || t("defaultBio")}
             </p>
 
-            <div className="flex items-center gap-5">
-              <a href="#" aria-label={t("whatsapp")} className="shrink-0 opacity-80 transition-all duration-200 hover:opacity-100 hover:scale-110">
-                <IconWhatsApp />
+            <div className="flex items-center gap-3 sm:gap-4 lg:gap-5">
+              <a
+                href={FOOTER_CONTACT.whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t("whatsapp")}
+                className="shrink-0 opacity-80 transition-all duration-200 hover:scale-110 hover:opacity-100"
+              >
+                <IconWhatsApp className={SOCIAL_ICON} />
               </a>
-              <a href="#" aria-label={t("instagram")} className="shrink-0 opacity-80 transition-all duration-200 hover:opacity-100 hover:scale-110">
-                <IconInstagram />
-              </a>
-              <a href="#" aria-label={t("x")} className="shrink-0 opacity-80 transition-all duration-200 hover:opacity-100 hover:scale-110">
-                <IconX />
-              </a>
-              <a href="#" aria-label={t("facebook")} className="shrink-0 opacity-80 transition-all duration-200 hover:opacity-100 hover:scale-110">
-                <IconFacebook />
+              <a
+                href={FOOTER_CONTACT.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t("facebook")}
+                className="shrink-0 opacity-80 transition-all duration-200 hover:scale-110 hover:opacity-100"
+              >
+                <IconFacebook className={SOCIAL_ICON} />
               </a>
             </div>
           </div>
 
-          <div className="flex flex-col gap-10 sm:flex-row sm:flex-nowrap lg:gap-[80px] xl:gap-[120px] lg:pt-[31px]">
-            <div className="flex flex-col gap-[30px] shrink-0">
-              <nav className="flex flex-col gap-4">
-                {homeLinks.map((link) => (
-                  <FooterNavLink key={link.href} href={link.href} label={link.label} />
-                ))}
-              </nav>
-            </div>
+          {/* Links + contact */}
+          <div className="grid min-w-0 flex-1 grid-cols-2 gap-x-6 gap-y-8 sm:gap-x-10 lg:flex lg:flex-row lg:flex-nowrap lg:gap-[80px] xl:gap-[120px] lg:pt-[31px]">
+            <nav className="flex flex-col gap-2 sm:gap-3 lg:gap-4">
+              {homeLinks.map((link) => (
+                <FooterNavLink key={link.href} href={link.href} label={link.label} />
+              ))}
+            </nav>
 
-            <div className="flex flex-col gap-[30px] shrink-0">
-              <nav className="flex flex-col gap-4">
-                {productLinks.map((link) => (
-                  <FooterNavLink key={link.href} href={link.href} label={link.label} />
-                ))}
-              </nav>
-            </div>
+            <nav className="flex flex-col gap-2 sm:gap-3 lg:gap-4">
+              {productLinks.map((link) => (
+                <FooterNavLink key={link.href} href={link.href} label={link.label} />
+              ))}
+            </nav>
 
-            <div className="flex flex-col gap-[30px] shrink-0 min-w-0">
-              <p className="font-outfit text-[20px] font-medium leading-normal text-white">{t("contactUs")}</p>
-              <div className="flex flex-col gap-[18px]">
+            <div className="col-span-2 flex min-w-0 flex-col gap-3 sm:col-span-2 sm:gap-4 lg:col-span-1 lg:min-w-[min(100%,320px)] lg:max-w-[360px] lg:gap-[30px]">
+              <p className="font-outfit text-[16px] font-medium leading-normal text-white sm:text-[18px] lg:text-[20px]">
+                {t("contactUs")}
+              </p>
+              <div className="flex flex-col gap-4 sm:gap-[14px] lg:gap-[18px]">
                 <ContactRow icon="email">
-                  <a href={`mailto:${email}`} className="whitespace-nowrap transition-colors duration-200 hover:text-white hover:underline underline-offset-2 decoration-[#cf5374]">
-                    {email}
-                  </a>
+                  <ContactLabel>{t("email")}</ContactLabel>
+                  <ContactValue href={`mailto:${email}`}>{email}</ContactValue>
                 </ContactRow>
-                <ContactRow icon="location">
-                  <span className="max-w-[235px] transition-colors duration-200 hover:text-white cursor-default">{address}</span>
-                </ContactRow>
+                {FOOTER_CONTACT.offices.map((office) => (
+                  <ContactRow key={office.labelKey} icon="location">
+                    <ContactLabel>{t(office.labelKey)}</ContactLabel>
+                    <ContactValue>{office.address}</ContactValue>
+                  </ContactRow>
+                ))}
                 <ContactRow icon="phone">
-                  <a
-                    href={`tel:${phone.replace(/\s/g, "")}`}
-                    className="whitespace-nowrap transition-colors duration-200 hover:text-white hover:underline underline-offset-2 decoration-[#cf5374]"
-                  >
-                    {phone}
-                  </a>
+                  <div className="flex flex-col gap-2.5 sm:gap-3">
+                    <div>
+                      <ContactLabel>{t("mobileWhatsapp")}</ContactLabel>
+                      <ContactValue href={telHref(mobileWhatsapp)}>{mobileWhatsapp}</ContactValue>
+                    </div>
+                    <div>
+                      <ContactLabel>{t("contactNumber")}</ContactLabel>
+                      <ContactValue href={telHref(contactPhone)}>{contactPhone}</ContactValue>
+                    </div>
+                  </div>
                 </ContactRow>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-[clamp(2.5rem,6vw,5rem)] border-t border-white/20 pt-[10px] pb-[75px]">
-          <div className="flex flex-wrap items-center gap-x-[10px] gap-y-2">
-            <span className="font-outfit text-[12px] font-light leading-normal text-white/80">
+        <div className="mt-8 border-t border-white/20 pt-3 pb-2 sm:mt-10 sm:pt-[10px] lg:mt-[clamp(2.5rem,6vw,5rem)]">
+          <div className="flex flex-wrap items-center gap-y-1.5">
+            <span className="inline-flex items-center font-outfit text-[11px] font-light leading-none text-white/80 sm:text-[12px]">
               {t("copyright", { year })}
             </span>
             <LegalDot />
             <Link
               href="#"
-              className="font-outfit text-[12px] font-light leading-normal text-white/60 transition-colors duration-200 hover:text-white"
+              className="inline-flex items-center font-outfit text-[11px] font-light leading-none text-white/60 transition-colors duration-200 hover:text-white sm:text-[12px]"
             >
               {t("privacy")}
             </Link>
             <LegalDot />
             <Link
               href="#"
-              className="font-outfit text-[12px] font-light leading-normal text-white/60 transition-colors duration-200 hover:text-white"
+              className="inline-flex items-center font-outfit text-[11px] font-light leading-none text-white/60 transition-colors duration-200 hover:text-white sm:text-[12px]"
             >
               {t("terms")}
             </Link>
             <LegalDot />
             <Link
               href="#"
-              className="font-outfit text-[12px] font-light leading-normal text-white/60 transition-colors duration-200 hover:text-white"
+              className="inline-flex items-center font-outfit text-[11px] font-light leading-none text-white/60 transition-colors duration-200 hover:text-white sm:text-[12px]"
             >
               {t("sitemap")}
             </Link>

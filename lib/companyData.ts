@@ -1,14 +1,16 @@
 /** Fallback content for Company pages when API is empty */
 
-import { MEDIA } from "./mediaAssets";
+import { MEDIA, resolveMediaUrl } from "./mediaAssets";
 
 export type BlogAuthor = { name: string; avatar: string };
 
 export type BlogSection = {
-  type: "paragraph" | "image" | "split-left" | "split-right";
+  type: "paragraph" | "paragraph-center" | "subheading" | "image" | "split-left" | "split-right";
   text?: string;
   image?: string;
   imageAlt?: string;
+  /** Centered label under image (Figma detail captions) */
+  caption?: string;
 };
 
 export type BlogPost = {
@@ -51,10 +53,50 @@ const IMG = {
   f5: MEDIA.featured[4],
   f6: MEDIA.featured[5],
   f7: MEDIA.featured[6],
+  k1: MEDIA.interior[0],
+  k2: MEDIA.interior[1],
   a1: MEDIA.about[0],
   a2: MEDIA.about[1],
   a3: MEDIA.about[2],
 };
+
+const DEFAULT_BLOG_DETAIL_INTRO =
+  "Interior design continues to evolve with changing lifestyles and modern living needs. In 2026, homeowners are embracing spaces that are elegant, functional, and personalized. Whether you're renovating a single room or designing your dream home, these trends will help you create interiors that are timeless and inspiring.";
+
+const DEFAULT_BLOG_DETAIL_AFTER_HERO =
+  "Interior design continues to evolve with changing lifestyles and modern living needs. In 2026, homeowners are embracing spaces that are elegant, functional, and personalized. Whether you're renovating a single room or designing your dream home, these trends will help you create interiors that are timeless and inspiring. Soft taupes, mushroom greys, and creamy off-whites continue to dominate palettes — paired with richer accents in wood, stone, and brushed metal so rooms never feel flat or cold. Curved silhouettes and soft edges continue to replace sharp, rigid forms. From arched doorways to rounded kitchen islands, these shapes create a sense of flow and make rooms feel more inviting without sacrificing structure.";
+
+/** Full Figma blog detail body (images, captions, splits) — used for all detail pages when CMS has no blocks */
+export const FIGMA_BLOG_DETAIL_SECTIONS: BlogSection[] = [
+  {
+    type: "paragraph",
+    text: DEFAULT_BLOG_DETAIL_INTRO,
+  },
+  {
+    type: "image",
+    image: IMG.f2,
+    imageAlt: "Modern kitchen with dark cabinetry and stone surfaces",
+    caption: "Warm Neutral Color Palettes",
+  },
+  {
+    type: "paragraph",
+    text: DEFAULT_BLOG_DETAIL_AFTER_HERO,
+  },
+  {
+    type: "split-left",
+    image: IMG.f3,
+    imageAlt: "Kitchen interior detail",
+    caption: "Warm Neutral Color Palettes",
+    text: "At **Varsovia Design**, we believe every project begins with understanding our clients' unique vision and lifestyle. Our approach combines creativity, craftsmanship, and innovative design solutions to create interiors that are elegant, functional, and built to stand the test of time. Whether you're renovating a single room, designing your dream home, or planning a complete interior transformation, staying informed about the latest design trends can help you make confident decisions and achieve exceptional results.",
+  },
+  {
+    type: "split-right",
+    image: IMG.f4,
+    imageAlt: "Natural stone and wood interior",
+    caption: "Natural Materials & Layered Texture",
+    text: "Natural stone, warm wood grains, and layered textiles add depth and character. The best interiors mix materials intentionally — pairing matte surfaces with subtle gloss, or smooth cabinetry with textured wall panels so every room feels layered, calm, and complete.",
+  },
+];
 
 export const fallbackBlogs: BlogPost[] = [
   {
@@ -63,38 +105,12 @@ export const fallbackBlogs: BlogPost[] = [
     excerpt:
       "From warm minimalism to sculptural lighting — discover the trends shaping beautiful, livable interiors this year.",
     category: "Trends",
-    date: "Jan 12, 2026",
+    date: "12 March 2026",
     readTime: "6 min",
-    image: IMG.f1,
+    image: IMG.f3,
     views: 1240,
-    author: { name: "Elena Varsovia", avatar: IMG.a2 },
-    sections: [
-      {
-        type: "paragraph",
-        text: "Interior design in 2026 is less about chasing novelty and more about creating spaces that feel calm, personal, and built to last. Warm neutrals, tactile materials, and thoughtful lighting are leading the way — and homeowners are prioritizing comfort as much as aesthetics.",
-      },
-      {
-        type: "image",
-        image: IMG.f2,
-        imageAlt: "Warm minimalist living room",
-      },
-      {
-        type: "split-left",
-        text: "Curved silhouettes and soft edges continue to replace sharp, rigid forms. From arched doorways to rounded kitchen islands, these shapes create a sense of flow and make rooms feel more inviting without sacrificing structure.",
-        image: IMG.f3,
-        imageAlt: "Curved kitchen island detail",
-      },
-      {
-        type: "split-right",
-        text: "Natural stone, warm wood grains, and layered textiles add depth and character. The best interiors mix materials intentionally — pairing matte surfaces with subtle gloss, or smooth cabinetry with textured wall panels.",
-        image: IMG.f4,
-        imageAlt: "Natural stone and wood interior",
-      },
-      {
-        type: "paragraph",
-        text: "Whether you're refreshing a single room or planning a full home transformation, these trends offer a strong foundation. The key is choosing what resonates with how you live — and letting quality craftsmanship do the rest.",
-      },
-    ],
+    author: { name: "Courtney Henry", avatar: IMG.a1 },
+    sections: FIGMA_BLOG_DETAIL_SECTIONS,
   },
   {
     _id: "blog-2",
@@ -273,6 +289,276 @@ export const fallbackBlogs: BlogPost[] = [
       },
     ],
   },
+  {
+    _id: "blog-10",
+    title: "Top Trends Transforming Modern Interior Design Showrooms in 2026",
+    excerpt:
+      "From immersive displays to tactile material libraries — how leading showrooms are redefining the way clients experience design.",
+    category: "Trends",
+    date: "12 Jun 2026",
+    readTime: "4 min",
+    image: IMG.f1,
+    views: 1102,
+    author: { name: "Courtney Henry", avatar: IMG.a2 },
+    sections: [
+      {
+        type: "paragraph",
+        text: "Showrooms today are less static galleries and more curated journeys. Clients expect to touch finishes, visualize scale, and understand how modular systems adapt to real homes.",
+      },
+    ],
+  },
+  {
+    _id: "blog-11",
+    title: "Open-Plan Living Without Losing Definition",
+    excerpt:
+      "Zoning tricks, ceiling treatments, and furniture placement that keep open layouts feeling structured and calm.",
+    category: "Living Room",
+    date: "28 May 2026",
+    readTime: "5 min",
+    image: IMG.f2,
+    views: 867,
+    author: { name: "Elena Varsovia", avatar: IMG.a2 },
+    sections: [
+      {
+        type: "paragraph",
+        text: "Open plans work best when each zone has a subtle identity — through rugs, lighting levels, or partial screens — without building walls that block light.",
+      },
+    ],
+  },
+  {
+    _id: "blog-12",
+    title: "Bedroom Wardrobes That Maximize Every Centimeter",
+    excerpt:
+      "Custom internals, sliding systems, and lighting ideas for wardrobes that feel boutique-hotel refined.",
+    category: "Bedroom",
+    date: "14 May 2026",
+    readTime: "4 min",
+    image: IMG.f3,
+    views: 743,
+    author: { name: "Priya Shah", avatar: IMG.a1 },
+    sections: [
+      {
+        type: "paragraph",
+        text: "A well-planned wardrobe eliminates daily friction. Adjustable shelves, pull-out trays, and integrated LED strips turn storage into a daily pleasure.",
+      },
+    ],
+  },
+  {
+    _id: "blog-13",
+    title: "Door & Window Profiles That Frame the View",
+    excerpt:
+      "Slim frames, warm timber, and performance glazing — selecting openings that connect indoors with landscape.",
+    category: "Doors & Windows",
+    date: "30 Apr 2026",
+    readTime: "6 min",
+    image: IMG.f4,
+    views: 591,
+    author: { name: "Marco Rossi", avatar: IMG.a3 },
+    sections: [
+      {
+        type: "paragraph",
+        text: "Windows are the artwork of architectural interiors. Profile depth, handle design, and sightlines should disappear so the view remains the hero.",
+      },
+    ],
+  },
+  {
+    _id: "blog-14",
+    title: "Furniture Layout Mistakes — and How to Fix Them",
+    excerpt:
+      "Common spacing errors in sofas, dining tables, and media walls that make rooms feel smaller than they are.",
+    category: "Furniture",
+    date: "16 Apr 2026",
+    readTime: "5 min",
+    image: IMG.f5,
+    views: 812,
+    author: { name: "Courtney Henry", avatar: IMG.a2 },
+    sections: [
+      {
+        type: "paragraph",
+        text: "Breathing room around key pieces changes how a space feels instantly. We share simple rules of thumb designers use before specifying a single chair.",
+      },
+    ],
+  },
+  {
+    _id: "blog-15",
+    title: "Kitchen Islands: Size, Height, and Seating Done Right",
+    excerpt:
+      "Proportions, overhang depth, and power planning for islands that anchor the heart of the home.",
+    category: "Kitchen",
+    date: "02 Apr 2026",
+    readTime: "5 min",
+    image: IMG.f6,
+    views: 934,
+    author: { name: "Elena Varsovia", avatar: IMG.a2 },
+    sections: [
+      {
+        type: "paragraph",
+        text: "An island that's too deep or too tall disrupts workflow. Align counter height with adjacent runs and allow clear circulation on all sides.",
+      },
+    ],
+  },
+  {
+    _id: "blog-16",
+    title: "Sustainable Materials Without Compromising Luxury",
+    excerpt:
+      "Responsible sourcing, low-VOC finishes, and durable cores that meet premium aesthetic expectations.",
+    category: "Materials",
+    date: "19 Mar 2026",
+    readTime: "7 min",
+    image: IMG.f7,
+    views: 688,
+    author: { name: "Marco Rossi", avatar: IMG.a3 },
+    sections: [
+      {
+        type: "paragraph",
+        text: "Sustainability and luxury now share the same brief. Clients want transparency on origins and longevity without sacrificing the tactile quality they expect.",
+      },
+    ],
+  },
+  {
+    _id: "blog-17",
+    title: "Designing Guest Suites That Feel Like a Boutique Stay",
+    excerpt:
+      "Layered bedding, integrated storage, and subtle lighting for spaces your visitors will remember.",
+    category: "Bedroom",
+    date: "05 Mar 2026",
+    readTime: "4 min",
+    image: IMG.a1,
+    views: 522,
+    author: { name: "Priya Shah", avatar: IMG.a1 },
+    sections: [
+      {
+        type: "paragraph",
+        text: "Guest rooms deserve the same rigor as primary suites — with thoughtful privacy, luggage space, and blackout options for restful nights.",
+      },
+    ],
+  },
+  {
+    _id: "blog-18",
+    title: "Powder Rooms: Small Spaces, Strong First Impressions",
+    excerpt:
+      "Bold stone, mirrored cabinetry, and sculptural fixtures that elevate compact washrooms.",
+    category: "Bathroom",
+    date: "20 Feb 2026",
+    readTime: "3 min",
+    image: IMG.a2,
+    views: 477,
+    author: { name: "Courtney Henry", avatar: IMG.a2 },
+    sections: [
+      {
+        type: "paragraph",
+        text: "Powder rooms are invitations to be expressive. Because the footprint is small, invest in one memorable material or fixture rather than many competing details.",
+      },
+    ],
+  },
+  {
+    _id: "blog-19",
+    title: "Home Office Joinery That Hides the Clutter",
+    excerpt:
+      "Cable management, adjustable shelves, and acoustic panels for focused work from home.",
+    category: "Furniture",
+    date: "06 Feb 2026",
+    readTime: "5 min",
+    image: IMG.a3,
+    views: 701,
+    author: { name: "Elena Varsovia", avatar: IMG.a2 },
+    sections: [
+      {
+        type: "paragraph",
+        text: "Integrated desks and wall units keep workspaces calm. Plan power, task lighting, and ventilation early so technology never fights the design.",
+      },
+    ],
+  },
+  {
+    _id: "blog-20",
+    title: "Outdoor Kitchens for Tropical Climates",
+    excerpt:
+      "Ventilation, shade, and weather-resistant cabinetry for seamless indoor–outdoor entertaining.",
+    category: "Kitchen",
+    date: "23 Jan 2026",
+    readTime: "6 min",
+    image: IMG.f1,
+    views: 845,
+    author: { name: "Marco Rossi", avatar: IMG.a3 },
+    sections: [
+      {
+        type: "paragraph",
+        text: "Outdoor cooking zones need the same planning as interior kitchens — with added protection from sun, rain, and salt air depending on location.",
+      },
+    ],
+  },
+  {
+    _id: "blog-21",
+    title: "Accent Walls That Don't Feel Dated",
+    excerpt:
+      "Paneling, limewash, and full-height stone — modern alternatives to yesterday's feature walls.",
+    category: "Trends",
+    date: "09 Jan 2026",
+    readTime: "4 min",
+    image: IMG.f2,
+    views: 563,
+    author: { name: "Priya Shah", avatar: IMG.a1 },
+    sections: [
+      {
+        type: "paragraph",
+        text: "The best accent surfaces feel architectural, not decorative. Continuity with adjacent materials keeps the room cohesive while still creating focus.",
+      },
+    ],
+  },
+  {
+    _id: "blog-22",
+    title: "Planning a Whole-House Renovation Timeline",
+    excerpt:
+      "Phasing trades, lead times, and client decisions so projects stay on track from demo to styling.",
+    category: "Whole House",
+    date: "26 Dec 2025",
+    readTime: "8 min",
+    image: IMG.f3,
+    views: 992,
+    author: { name: "Courtney Henry", avatar: IMG.a2 },
+    sections: [
+      {
+        type: "paragraph",
+        text: "Renovations succeed when sequencing is realistic. We map dependencies between structure, MEP, joinery, and finishes before the first wall comes down.",
+      },
+    ],
+  },
+  {
+    _id: "blog-23",
+    title: "Children's Rooms That Grow With the Family",
+    excerpt:
+      "Flexible storage, durable finishes, and neutral bases that adapt as tastes change.",
+    category: "Bedroom",
+    date: "12 Dec 2025",
+    readTime: "5 min",
+    image: IMG.f4,
+    views: 614,
+    author: { name: "Elena Varsovia", avatar: IMG.a2 },
+    sections: [
+      {
+        type: "paragraph",
+        text: "Invest in quality bones — flooring, lighting, and built-ins — then layer personality with textiles and art that are easy to refresh over the years.",
+      },
+    ],
+  },
+  {
+    _id: "blog-24",
+    title: "Styling Shelves and Niches Like a Pro",
+    excerpt:
+      "Balance, repetition, and negative space — simple rules for displays that look intentional, not crowded.",
+    category: "Living Room",
+    date: "28 Nov 2025",
+    readTime: "4 min",
+    image: IMG.f5,
+    views: 538,
+    author: { name: "Priya Shah", avatar: IMG.a1 },
+    sections: [
+      {
+        type: "paragraph",
+        text: "Curated styling ties a room together. Group objects in odd numbers, vary heights, and leave breathing room so each piece can be appreciated.",
+      },
+    ],
+  },
 ];
 
 export const fallbackTeamStats: TeamStat[] = [
@@ -283,23 +569,23 @@ export const fallbackTeamStats: TeamStat[] = [
 export const fallbackDesignTeam: TeamMember[] = [
   {
     _id: "tm-1",
-    name: "Elena Varsovia",
-    role: "Senior Designer",
-    image: IMG.a2,
+    name: "Brooklyn Simmons",
+    role: "Founder & Creative Director",
+    image: IMG.a1,
     teamType: "Design",
   },
   {
     _id: "tm-2",
-    name: "Marco Rossi",
-    role: "Junior Designer",
-    image: IMG.f1,
+    name: "Jenny Wilson",
+    role: "Founder & Creative Director",
+    image: IMG.a2,
     teamType: "Design",
   },
   {
     _id: "tm-3",
-    name: "Priya Shah",
-    role: "Junior Designer",
-    image: IMG.f3,
+    name: "Savannah Nguyen",
+    role: "Founder & Creative Director",
+    image: IMG.a3,
     teamType: "Design",
   },
 ];
@@ -352,13 +638,30 @@ export const aboutStoryCollageImages = [IMG.f1, IMG.f2, IMG.a3, IMG.f4];
 /** @deprecated use aboutStoryCollageImages */
 export const aboutStoryGridImages = aboutStoryCollageImages;
 
+function resolveAuthorName(name: unknown, fallback: string): string {
+  if (typeof name === "string" && name.trim()) return name;
+  if (name && typeof name === "object" && !Array.isArray(name)) {
+    const obj = name as Record<string, unknown>;
+    const picked =
+      obj.en ??
+      obj.th ??
+      obj.pl ??
+      Object.values(obj).find((v) => typeof v === "string" && String(v).trim());
+    if (typeof picked === "string" && picked.trim()) return picked;
+  }
+  return fallback;
+}
+
 export function normalizeBlog(raw: Partial<BlogPost> & { id?: string }): BlogPost | null {
-  const id = raw._id || raw.id;
+  const id = String(raw._id ?? raw.id ?? "").trim();
   if (!id || !raw.title) return null;
+  const title = typeof raw.title === "string" ? raw.title : String(raw.title);
+  if (!title.trim()) return null;
   const fallback = fallbackBlogs.find((b) => b._id === id);
+  const bodyText = String(raw.content || raw.excerpt || "").trim();
   return {
     _id: id,
-    title: raw.title,
+    title,
     excerpt: raw.excerpt || fallback?.excerpt || "",
     content: raw.content || fallback?.content,
     date: raw.date || fallback?.date || "—",
@@ -366,11 +669,15 @@ export function normalizeBlog(raw: Partial<BlogPost> & { id?: string }): BlogPos
     category: raw.category || fallback?.category || "Design",
     image: raw.image || fallback?.image || IMG.f1,
     author: {
-      name: raw.author?.name || fallback?.author.name || "Varsovia Design",
+      name: resolveAuthorName(raw.author?.name, fallback?.author.name || "Varsovia Design"),
       avatar: raw.author?.avatar || fallback?.author.avatar || IMG.a2,
     },
     views: raw.views ?? fallback?.views ?? 0,
-    sections: fallback?.sections || [{ type: "paragraph", text: raw.content || raw.excerpt || "" }],
+    sections:
+      fallback?.sections ||
+      (bodyText
+        ? [{ type: "paragraph", text: bodyText }]
+        : [{ type: "paragraph", text: raw.excerpt || title }]),
   };
 }
 
@@ -379,15 +686,89 @@ export function resolveBlogs(apiData: unknown[]): BlogPost[] {
   const normalized = apiData
     .map((item) => normalizeBlog(item as Partial<BlogPost> & { id?: string }))
     .filter(Boolean) as BlogPost[];
-  return normalized.length > 0 ? normalized : fallbackBlogs;
+  if (normalized.length === 0) return fallbackBlogs;
+  if (normalized.length >= fallbackBlogs.length) return normalized;
+
+  const seen = new Set(normalized.map((b) => b._id));
+  const padded = [...normalized];
+  for (const post of fallbackBlogs) {
+    if (padded.length >= fallbackBlogs.length) break;
+    if (!seen.has(post._id)) {
+      padded.push(post);
+      seen.add(post._id);
+    }
+  }
+  return padded;
 }
 
-export function getBlogById(id: string, apiBlog?: unknown | null): BlogPost | null {
+function isRichBlogSections(sections: BlogSection[]): boolean {
+  return sections.some(
+    (s) => s.type === "image" || s.type === "split-left" || s.type === "split-right",
+  );
+}
+
+function cloneDetailSections(sections: BlogSection[]): BlogSection[] {
+  return sections.map((s) => ({ ...s }));
+}
+
+/** Apply Figma detail layout + assets for API posts that only ship plain text */
+export function enrichBlogForDetailPage(blog: BlogPost): BlogPost {
+  const intro =
+    String(blog.content || blog.excerpt || "").trim() || DEFAULT_BLOG_DETAIL_INTRO;
+
+  let sections = blog.sections;
+  if (!isRichBlogSections(sections)) {
+    sections = cloneDetailSections(FIGMA_BLOG_DETAIL_SECTIONS).map((section, index) => {
+      if (index === 0 && section.type === "paragraph") {
+        return { ...section, text: intro };
+      }
+      return section;
+    });
+  }
+
+  return {
+    ...blog,
+    image: resolveMediaUrl(blog.image, IMG.f3),
+    author: {
+      ...blog.author,
+      avatar: resolveMediaUrl(blog.author.avatar, IMG.a1),
+    },
+    sections: sections.map((section) =>
+      section.image
+        ? { ...section, image: resolveMediaUrl(section.image, IMG.f2) }
+        : section,
+    ),
+  };
+}
+
+function mergeBlogDetailFromFallback(post: BlogPost): BlogPost {
+  const fallback = fallbackBlogs.find((b) => b._id === post._id);
+  if (!fallback) return post;
+  return {
+    ...post,
+    sections: fallback.sections,
+  };
+}
+
+/** Resolve a blog by id from API payload, static fallbacks, or an already-fetched list. */
+export function getBlogById(
+  id: string,
+  apiBlog?: unknown | null,
+  fromList?: BlogPost[],
+): BlogPost | null {
+  const needle = String(id).trim();
+  if (!needle) return null;
+
   if (apiBlog && typeof apiBlog === "object" && "title" in apiBlog) {
     const normalized = normalizeBlog(apiBlog as Partial<BlogPost> & { id?: string });
-    if (normalized) return normalized;
+    if (normalized) return mergeBlogDetailFromFallback(normalized);
   }
-  return fallbackBlogs.find((b) => b._id === id) ?? null;
+
+  const inList = fromList?.find((b) => String(b._id) === needle);
+  if (inList) return mergeBlogDetailFromFallback(inList);
+
+  const fallback = fallbackBlogs.find((b) => b._id === needle);
+  return fallback ?? null;
 }
 
 export function getRelatedBlogs(currentId: string, blogs: BlogPost[], limit = 3): BlogPost[] {
@@ -404,6 +785,21 @@ export function paginateBlogs<T>(items: T[], page: number, perPage = BLOGS_PER_P
     totalPages,
     totalItems: items.length,
   };
+}
+
+export type BlogSortOption = "all" | "newest" | "oldest";
+
+function parseBlogDate(dateStr: string): number {
+  const parsed = Date.parse(dateStr);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+export function sortBlogPosts(posts: BlogPost[], sortBy: BlogSortOption): BlogPost[] {
+  if (sortBy === "all") return [...posts];
+  const byNewest = [...posts].sort(
+    (a, b) => parseBlogDate(b.date) - parseBlogDate(a.date)
+  );
+  return sortBy === "newest" ? byNewest : byNewest.reverse();
 }
 
 export function resolveTeamMembers(apiData: unknown[]): {

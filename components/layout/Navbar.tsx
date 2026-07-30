@@ -1,18 +1,24 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { useLenis } from "lenis/react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChevronDown, Menu, Search, X } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/lib/i18n/navigation";
 import NavbarLogo from "@/components/layout/NavbarLogo";
-import ShowcaseNavDropdown from "@/components/layout/ShowcaseNavDropdown";
+import ShowcaseNavDropdown, { MobileShowcaseLinks } from "@/components/layout/ShowcaseNavDropdown";
+import NavMenuDropdown from "@/components/layout/NavMenuDropdown";
 import {
-  NAV_DROPDOWN_LINK,
-  NAV_DROPDOWN_LINK_FEATURED,
-  NAV_DROPDOWN_PANEL,
-  NAV_DROPDOWN_TEXT,
-} from "@/components/layout/navDropdownShared";
+  mobileSubLink,
+  mobileSubLinkFeatured,
+  mobileSubLinkRich,
+  NavDropdownBody,
+  NavDropdownPanel,
+  NavDropdownSectionLabel,
+  NavLanguageOption,
+} from "@/components/layout/NavDropdown";
+import { NAV_DROPDOWN_SUBTITLES } from "@/components/layout/navDropdownMeta";
 import { locales, type Locale } from "@/lib/i18n/routing";
 
 type NavItem = {
@@ -60,9 +66,32 @@ const navLinkClass = (active: boolean) =>
 const headerBtnBase =
   "inline-flex h-[50px] items-center justify-center rounded-[6px] font-outfit text-[15px] font-normal leading-[23px] transition duration-200";
 
-const dropdownPanel = NAV_DROPDOWN_PANEL;
-const dropdownLink = NAV_DROPDOWN_LINK;
-const dropdownLinkFeatured = NAV_DROPDOWN_LINK_FEATURED;
+const NAV_MENU_CONFIG = {
+  interior: {
+    sectionLabel: "By room",
+    featured: (t: ReturnType<typeof useTranslations>) => ({
+      href: "/interior",
+      label: t("allInteriors"),
+      subtitle: NAV_DROPDOWN_SUBTITLES["/interior"],
+    }),
+  },
+  company: {
+    sectionLabel: "Company",
+    featured: (t: ReturnType<typeof useTranslations>) => ({
+      href: "/about",
+      label: t("aboutVarsovia"),
+      subtitle: NAV_DROPDOWN_SUBTITLES["/about"],
+    }),
+  },
+  contact: {
+    sectionLabel: "Support",
+    featured: (t: ReturnType<typeof useTranslations>) => ({
+      href: "/contact",
+      label: t("getInTouch"),
+      subtitle: NAV_DROPDOWN_SUBTITLES["/contact"],
+    }),
+  },
+} as const;
 
 function useNavItems(): NavItem[] {
   const t = useTranslations("nav");
@@ -136,14 +165,16 @@ function useSearchablePages(): SearchPage[] {
   );
 }
 
-export default function Navbar() {
+export default function Navbar({ overlayHero = false }: { overlayHero?: boolean }) {
   const t = useTranslations("nav");
   const locale = useLocale() as Locale;
   const pathname = usePathname();
   const router = useRouter();
+  const lenis = useLenis();
   const navItems = useNavItems();
   const searchablePages = useSearchablePages();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [langOpen, setLangOpen] = useState(false);
@@ -208,6 +239,44 @@ export default function Navbar() {
     });
   }, [showResults, results, router]);
 
+  useEffect(() => {
+    if (!mobileOpen) {
+      setMobileExpanded(null);
+      return;
+    }
+
+    lenis?.stop();
+    const scrollY = window.scrollY;
+    const { style: bodyStyle } = document.body;
+    const prevOverflow = bodyStyle.overflow;
+    const prevTop = bodyStyle.top;
+    const prevPosition = bodyStyle.position;
+    const prevWidth = bodyStyle.width;
+
+    bodyStyle.overflow = "hidden";
+    bodyStyle.position = "fixed";
+    bodyStyle.top = `-${scrollY}px`;
+    bodyStyle.width = "100%";
+
+    return () => {
+      bodyStyle.overflow = prevOverflow;
+      bodyStyle.position = prevPosition;
+      bodyStyle.top = prevTop;
+      bodyStyle.width = prevWidth;
+      window.scrollTo(0, scrollY);
+      lenis?.start();
+    };
+  }, [mobileOpen, lenis]);
+
+  function closeMobileMenu() {
+    setMobileOpen(false);
+    setMobileExpanded(null);
+  }
+
+  function toggleMobileSection(id: string) {
+    setMobileExpanded((prev) => (prev === id ? null : id));
+  }
+
   function closeSearch() {
     setQuery("");
     setSearchFocused(false);
@@ -244,14 +313,19 @@ export default function Navbar() {
 
   const headerSolid = scrolled || openMenu !== null || langOpen || mobileOpen;
   const searchExpanded = searchHover || searchFocused || query.length > 0;
+  const frostedHeroBar = overlayHero && !headerSolid;
 
   return (
     <header
       ref={navRef}
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-out ${
-        scrolled
-          ? "border-b border-white/40 bg-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-sm"
-          : "border-b border-transparent bg-transparent shadow-none backdrop-blur-none"
+        mobileOpen
+          ? "border-b border-white/50 bg-white/85 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md"
+          : headerSolid || frostedHeroBar
+            ? frostedHeroBar
+              ? "border-b border-white/35 bg-white/78 shadow-[0_4px_28px_rgba(0,0,0,0.1)] backdrop-blur-lg backdrop-saturate-150"
+              : "border-b border-white/40 bg-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md"
+            : "border-b border-transparent bg-transparent shadow-none backdrop-blur-none"
       }`}
     >
       <nav className="mx-auto flex h-[102.33px] w-full max-w-[1440px] items-center px-[clamp(1.25rem,7vw,100px)]">
@@ -306,29 +380,22 @@ export default function Navbar() {
                   <ShowcaseNavDropdown onNavigate={() => setOpenMenu(null)} />
                 )}
 
-                {item.hasArrow && openMenu === item.id && item.children && item.children.length > 0 && (
-                  <div className={`${dropdownPanel} left-0`}>
-                    {item.id === "interior" && (
-                      <Link
-                        href="/interior"
-                        className={dropdownLinkFeatured}
-                        onClick={() => setOpenMenu(null)}
-                      >
-                        {t("allInteriors")}
-                      </Link>
-                    )}
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.label}
-                        href={child.href}
-                        className={dropdownLink}
-                        onClick={() => setOpenMenu(null)}
-                      >
-                        {child.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
+                {item.hasArrow &&
+                  openMenu === item.id &&
+                  item.children &&
+                  item.children.length > 0 &&
+                  item.id !== "showcase" && (
+                    <NavMenuDropdown
+                      featured={
+                        NAV_MENU_CONFIG[item.id as keyof typeof NAV_MENU_CONFIG].featured(t)
+                      }
+                      sectionLabel={
+                        NAV_MENU_CONFIG[item.id as keyof typeof NAV_MENU_CONFIG].sectionLabel
+                      }
+                      children={item.children}
+                      onNavigate={() => setOpenMenu(null)}
+                    />
+                  )}
               </li>
             );
           })}
@@ -393,38 +460,40 @@ export default function Navbar() {
             </div>
 
             {showResults && (searchFocused || query) && (
-              <div
-                className="absolute right-0 top-full z-50 mt-2 w-[280px] overflow-hidden rounded-2xl border border-maroon/10 bg-white shadow-[0_12px_32px_rgba(0,0,0,0.12)]"
-                data-lenis-prevent
-              >
-                <p className="border-b border-maroon/5 px-4 py-2 text-[11px] tracking-[0.12em] uppercase text-muted">
-                  {t("searchPages")}
-                </p>
-                {results.length > 0 ? (
-                  <ul
-                    className="max-h-64 overflow-y-auto overscroll-y-contain py-1 [-ms-overflow-style:auto] [scrollbar-width:thin]"
-                    data-lenis-prevent
-                  >
-                    {results.map((page) => (
-                      <li key={page.href + page.title}>
-                        <Link
-                          href={page.href}
-                          prefetch
-                          onClick={closeSearch}
-                          className="flex w-full flex-col items-start px-4 py-2.5 text-left transition hover:bg-blush"
-                        >
-                          <span className="text-sm font-medium text-ink">{page.title}</span>
-                          <span className="text-xs text-muted">{page.description}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="px-4 py-6 text-center text-sm text-muted">
-                    {t("noSearchResults", { query })}
-                  </p>
-                )}
-              </div>
+              <NavDropdownPanel align="right" className="w-[300px]">
+                <NavDropdownSectionLabel>{t("searchPages")}</NavDropdownSectionLabel>
+                <NavDropdownBody className="py-1">
+                  {results.length > 0 ? (
+                    <ul
+                      className="max-h-64 overflow-y-auto overscroll-y-contain [-ms-overflow-style:auto] [scrollbar-width:thin]"
+                      data-lenis-prevent
+                    >
+                      {results.map((page) => (
+                        <li key={page.href + page.title}>
+                          <Link
+                            href={page.href}
+                            prefetch
+                            onClick={closeSearch}
+                            className="group relative block px-5 py-2.5 transition-all duration-300 hover:bg-[#f7f1f2]/90 hover:pl-[22px]"
+                          >
+                            <span className="absolute left-0 top-1/2 h-0 w-[3px] -translate-y-1/2 rounded-r-full bg-maroon transition-all duration-300 group-hover:h-[55%]" />
+                            <span className="block font-outfit text-[14px] font-medium text-ink transition-colors group-hover:text-maroon">
+                              {page.title}
+                            </span>
+                            <span className="mt-0.5 block font-outfit text-[12px] text-muted">
+                              {page.description}
+                            </span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="px-5 py-6 text-center font-outfit text-sm text-muted">
+                      {t("noSearchResults", { query })}
+                    </p>
+                  )}
+                </NavDropdownBody>
+              </NavDropdownPanel>
             )}
           </div>
 
@@ -457,31 +526,23 @@ export default function Navbar() {
             </button>
 
             {langOpen && (
-              <div className={`${dropdownPanel} right-0 left-auto min-w-[190px]`}>
-                {locales.map((code) => {
-                  const meta = LANGUAGE_META[code];
-                  return (
-                    <button
-                      key={code}
-                      type="button"
-                      className={`flex w-full items-center gap-3 px-5 py-3 text-left ${NAV_DROPDOWN_TEXT} transition-colors hover:bg-blush ${
-                        locale === code ? "text-maroon" : "text-[#2b2b2b] hover:text-maroon"
-                      }`}
-                      onClick={() => switchLocale(code)}
-                    >
-                      <Image
-                        src={meta.flag}
-                        alt=""
-                        width={22}
-                        height={14}
-                        className="h-[14px] w-auto shrink-0 rounded-[2px] object-cover"
-                        style={{ width: "auto" }}
+              <NavDropdownPanel align="right" className="min-w-[210px]">
+                <NavDropdownSectionLabel>Language</NavDropdownSectionLabel>
+                <NavDropdownBody className="py-1">
+                  {locales.map((code) => {
+                    const meta = LANGUAGE_META[code];
+                    return (
+                      <NavLanguageOption
+                        key={code}
+                        flag={meta.flag}
+                        label={LANGUAGE_LABELS[code]}
+                        active={locale === code}
+                        onClick={() => switchLocale(code)}
                       />
-                      <span>{LANGUAGE_LABELS[code]}</span>
-                    </button>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </NavDropdownBody>
+              </NavDropdownPanel>
             )}
           </div>
 
@@ -504,7 +565,10 @@ export default function Navbar() {
       </nav>
 
       {mobileOpen && (
-        <div className="border-t border-maroon/10 bg-white/95 px-4 py-5 backdrop-blur-md xl:hidden">
+        <div
+          className="max-h-[calc(100dvh-102px)] overflow-y-auto overscroll-contain border-t border-maroon/10 bg-white/95 px-4 py-5 backdrop-blur-md [-webkit-overflow-scrolling:touch] xl:hidden"
+          data-lenis-prevent
+        >
           <div className="mb-4 flex items-center rounded-full border border-[#e5e5e5] bg-[#f7f5f2] pl-4 pr-1.5 shadow-sm">
             <input
               type="search"
@@ -545,18 +609,106 @@ export default function Navbar() {
           )}
 
           <ul className="flex flex-col gap-1">
-            {navItems.map((item) => (
-              <li key={item.id}>
-                <Link
-                  href={item.href}
-                  className="flex items-center justify-between py-3 text-[19px] font-normal text-[#444]"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <span>{item.label}</span>
-                  {item.hasArrow && <NavChevron />}
-                </Link>
-              </li>
-            ))}
+            {navItems.map((item) => {
+              const expanded = mobileExpanded === item.id;
+
+              if (!item.hasArrow) {
+                return (
+                  <li key={item.id}>
+                    <Link
+                      href={item.href}
+                      className="flex items-center justify-between py-3 text-[19px] font-normal text-[#444] transition-colors hover:text-maroon"
+                      onClick={closeMobileMenu}
+                    >
+                      <span>{item.label}</span>
+                    </Link>
+                  </li>
+                );
+              }
+
+              return (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-between py-3 text-left text-[19px] font-normal text-[#444] transition-colors hover:text-maroon"
+                    aria-expanded={expanded}
+                    onClick={() => toggleMobileSection(item.id)}
+                  >
+                    <span>{item.label}</span>
+                    <NavChevron
+                      className={`transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                        expanded ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  <div
+                    className={`grid transition-[grid-template-rows,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                      expanded
+                        ? "grid-rows-[1fr] opacity-100"
+                        : "pointer-events-none grid-rows-[0fr] opacity-0"
+                    }`}
+                    aria-hidden={!expanded}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="flex flex-col gap-0.5 border-l border-[#e5dcd3]/80 pl-4 pb-2">
+                        {item.id === "showcase" ? (
+                          <MobileShowcaseLinks onNavigate={closeMobileMenu} />
+                        ) : (
+                          <>
+                            {item.id in NAV_MENU_CONFIG && (
+                              <Link
+                                href={
+                                  NAV_MENU_CONFIG[item.id as keyof typeof NAV_MENU_CONFIG].featured(
+                                    t,
+                                  ).href
+                                }
+                                className={mobileSubLinkFeatured}
+                                onClick={closeMobileMenu}
+                              >
+                                {
+                                  NAV_MENU_CONFIG[item.id as keyof typeof NAV_MENU_CONFIG].featured(
+                                    t,
+                                  ).label
+                                }
+                              </Link>
+                            )}
+                            {item.children
+                              ?.filter(
+                                (child) =>
+                                  !(
+                                    item.id in NAV_MENU_CONFIG &&
+                                    child.href ===
+                                      NAV_MENU_CONFIG[
+                                        item.id as keyof typeof NAV_MENU_CONFIG
+                                      ].featured(t).href
+                                  ),
+                              )
+                              .map((child) => (
+                                <Link
+                                  key={child.label}
+                                  href={child.href}
+                                  className={mobileSubLinkRich}
+                                  onClick={closeMobileMenu}
+                                >
+                                  <span className="block font-outfit text-[15px] font-medium text-[#444] transition-colors hover:text-maroon">
+                                    {child.label}
+                                  </span>
+                                  {NAV_DROPDOWN_SUBTITLES[child.href] && (
+                                    <span className="mt-0.5 block font-outfit text-[12px] text-[#6a414d]/65">
+                                      {NAV_DROPDOWN_SUBTITLES[child.href]}
+                                    </span>
+                                  )}
+                                </Link>
+                              ))}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
 
           <div className="mt-4 flex items-center gap-2 border-t border-maroon/10 pt-4">
@@ -581,7 +733,7 @@ export default function Navbar() {
           <Link
             href="/contact"
             className="mt-4 flex w-full items-center justify-center rounded-md bg-maroon py-3 text-sm font-medium text-white"
-            onClick={() => setMobileOpen(false)}
+            onClick={closeMobileMenu}
           >
             {t("freeConsultation")}
           </Link>

@@ -39,7 +39,7 @@ export default function About({ title = "ABOUT VARSOVIA", text, images }: AboutP
   }));
 
   return (
-    <section id="about" className="bg-[#fdf2f0] py-20 md:py-28">
+    <section id="about" className="bg-[#fdf2f0] py-14 sm:py-20 md:py-28">
       {/* One synced shell — heading band + collage/text share the same width */}
       <SectionShell>
         <motion.div
@@ -56,9 +56,9 @@ export default function About({ title = "ABOUT VARSOVIA", text, images }: AboutP
           />
         </motion.div>
 
-        <div className="mt-14 grid w-full items-center gap-12 lg:mt-16 lg:grid-cols-[1.38fr_1fr] lg:gap-x-12 xl:gap-x-20">
+        <div className="mt-10 grid w-full items-center gap-10 sm:mt-12 lg:mt-16 lg:grid-cols-[1.38fr_1fr] lg:gap-x-12 xl:gap-x-20">
           <div
-            className="relative mx-auto aspect-[686/500] w-full lg:mx-0"
+            className="relative mx-auto aspect-[686/500] w-full max-w-[640px] min-w-0 lg:mx-0 lg:max-w-none"
             onMouseLeave={() => setHovered(null)}
           >
             {displayImages.map((img, i) => {
@@ -71,7 +71,7 @@ export default function About({ title = "ABOUT VARSOVIA", text, images }: AboutP
                   key={img.src}
                   type="button"
                   aria-label={img.alt}
-                  className={`absolute overflow-hidden rounded-[22px] border-[3px] border-white bg-white shadow-[0_10px_30px_rgba(80,40,50,0.12)] outline-none ${img.className}`}
+                  className={`absolute overflow-hidden rounded-[14px] border-2 border-white bg-white shadow-[0_10px_30px_rgba(80,40,50,0.12)] outline-none sm:rounded-[22px] sm:border-[3px] ${img.className}`}
                   style={{ zIndex: isHovered ? 20 : baseZ }}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -102,10 +102,10 @@ export default function About({ title = "ABOUT VARSOVIA", text, images }: AboutP
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className="w-full lg:pt-10"
+            className="w-full min-w-0 lg:pt-10"
           >
             {paragraphs.map((p) => (
-              <p key={p.slice(0, 32)} className="mb-5 text-[1.02rem] leading-8 text-[#5a5254]">
+              <p key={p.slice(0, 32)} className="mb-4 text-[0.95rem] leading-7 text-[#5a5254] sm:mb-5 sm:text-[1.02rem] sm:leading-8">
                 {p}
               </p>
             ))}

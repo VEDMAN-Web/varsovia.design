@@ -13,9 +13,8 @@ export function generateStaticParams() {
   return showcaseStaticParams();
 }
 
-// Allow dynamic rendering for API-created showcase items not in static params
-export const dynamic = "auto";
 export const dynamicParams = true;
+export const dynamic = "auto";
 
 async function fetchShowcaseById(id: string): Promise<ShowcaseProject | null> {
   try {

@@ -3,7 +3,7 @@
  * Hero bands, grids, toolbars, and section headings share this shell.
  */
 export const SITE_SECTION_SHELL =
-  "mx-auto w-[90%] min-w-0 px-[clamp(1.25rem,4vw,56px)]";
+  "mx-auto w-[min(100%,1440px)] max-w-[1440px] min-w-0 px-[clamp(1rem,4vw,3.5rem)]";
 
 export const SITE_SECTION_HEADING_WIDE = "!max-w-none w-full";
 

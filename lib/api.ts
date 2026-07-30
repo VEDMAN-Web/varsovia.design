@@ -319,14 +319,39 @@ export async function fetchBlogById(id: string, locale?: Locale) {
       headers: localeHeaders(locale),
       next: { revalidate: 10 },
     });
-    if (!res.ok) throw new Error("Failed to fetch blog detail");
-    const data = await res.json();
-    if (data && typeof data === "object" && "title" in data) return data;
+    if (res.ok) {
+      const data = await res.json();
+      if (data && typeof data === "object" && "title" in data) return data;
+    }
   } catch {
-    /* fall through to fallback */
+    /* try list fallback below */
   }
+
+  try {
+    const list = await fetchBlogs(locale);
+    const { resolveBlogs, getBlogById } = await import("@/lib/companyData");
+    const resolved = resolveBlogs(Array.isArray(list) ? list : []);
+    const fromList = getBlogById(id, null, resolved);
+    if (fromList) {
+      return {
+        _id: fromList._id,
+        title: fromList.title,
+        excerpt: fromList.excerpt,
+        content: fromList.content,
+        date: fromList.date,
+        readTime: fromList.readTime,
+        category: fromList.category,
+        image: fromList.image,
+        author: fromList.author,
+        views: fromList.views,
+      };
+    }
+  } catch {
+    /* ignore */
+  }
+
   const { getBlogById } = await import("@/lib/companyData");
-  return getBlogById(id);
+  return getBlogById(id) ?? null;
 }
 
 export async function fetchTeamMembers(locale?: Locale) {

@@ -2,40 +2,129 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Minus } from "lucide-react";
-import Navbar from "@/components/layout/Navbar";
-import CompanyHero from "@/components/company/CompanyHero";
-import CompanySectionHeading from "@/components/company/CompanySectionHeading";
-import FadeInView from "@/components/company/FadeInView";
+import { motion } from "framer-motion";
 import {
-  COMPANY_CARD,
-  COMPANY_IMAGE_FRAME,
-  COMPANY_PAGE_BG,
-  COMPANY_SHELL,
-  companyTransition,
-  SECTION_BODY_CLASS,
-  SUBSECTION_TITLE_CLASS,
-} from "@/components/company/companyLayoutShared";
+  Atom,
+  Droplets,
+  ShieldCheck,
+  Wind,
+  type LucideIcon,
+} from "lucide-react";
+import Navbar from "@/components/layout/Navbar";
+import FadeInView from "@/components/company/FadeInView";
+import CompanySectionHeading from "@/components/company/CompanySectionHeading";
+import QualitySupportProcessSection from "@/components/company/QualitySupportProcessSection";
+import { FaqAccordionList, FAQ_DEFAULT_OPEN_INDEX } from "@/components/faq/faqAccordionShared";
+import {
+  QAS_FAQ_BAND,
+  QAS_FAQ_LIST_WRAP,
+  QAS_FEATURE_CARD,
+  QAS_FEATURE_GRID,
+  QAS_FEATURE_IMAGE,
+  QAS_HERO_BAND,
+  QAS_HERO_BODY,
+  QAS_MAIN,
+  QAS_PAGE_BG,
+  QAS_SECTION_SPACING,
+  QAS_SHELL,
+} from "@/components/company/qualitySaleLayoutShared";
+import SectionHeading, {
+  SECTION_SUBTITLE_CLASS,
+  SECTION_TITLE_CLASS,
+} from "@/components/ui/SectionHeading";
 import { qualityGalleryImages } from "@/lib/companyData";
-import { MEDIA } from "@/lib/mediaAssets";
+import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 
-const SUPPORT_STEP_KEYS = ["step1", "step2", "step3", "step4"] as const;
+const FEATURE_ICONS: LucideIcon[] = [Atom, Droplets, ShieldCheck, Wind];
+const FEATURE_KEYS = ["feature1", "feature2", "feature3", "feature4"] as const;
 const FAQ_KEYS = ["faq1", "faq2", "faq3", "faq4"] as const;
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
+  visible: (delay = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] as const },
+  }),
+};
+
+function QualityFeatureColumn({
+  index,
+  title,
+  image,
+  imageAlt,
+  Icon,
+}: {
+  index: number;
+  title: string;
+  image: string;
+  imageAlt: string;
+  Icon: LucideIcon;
+}) {
+  const imageFirst = index % 2 === 1;
+  const number = String(index + 1).padStart(2, "0");
+
+  const card = (
+    <div className={QAS_FEATURE_CARD}>
+      <span
+        className="pointer-events-none absolute right-3 top-2 font-display text-[clamp(2.5rem,8vw,3.75rem)] font-bold leading-none text-[#6a414d]/[0.08]"
+        aria-hidden
+      >
+        {number}
+      </span>
+      <Icon className="mb-auto h-8 w-8 text-[#6a414d] sm:h-9 sm:w-9" strokeWidth={1.35} aria-hidden />
+      <p className="relative z-[1] mt-6 text-pretty font-outfit text-[clamp(0.8125rem,2vw,0.9375rem)] font-semibold leading-snug text-[#1f1f1f]">
+        {title}
+      </p>
+    </div>
+  );
+
+  const photo = (
+    <div className={QAS_FEATURE_IMAGE}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={resolveMediaUrl(image, MEDIA.featured[0])}
+        alt={imageAlt}
+        className="aspect-[3/4] w-full object-cover min-[640px]:aspect-[4/5]"
+      />
+    </div>
+  );
+
+  return (
+    <motion.div
+      custom={index * 0.08}
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-60px" }}
+      className="flex min-w-0 flex-col gap-[clamp(0.75rem,2.5vw,1rem)]"
+    >
+      {imageFirst ? (
+        <>
+          {photo}
+          {card}
+        </>
+      ) : (
+        <>
+          {card}
+          {photo}
+        </>
+      )}
+    </motion.div>
+  );
+}
 
 export default function QualityAfterSalesPageClient() {
   const t = useTranslations("qualitySale");
-  const tCommon = useTranslations("common");
-  const [openIndexes, setOpenIndexes] = useState<number[]>([0]);
+  const [openFaqIndex, setOpenFaqIndex] = useState(FAQ_DEFAULT_OPEN_INDEX);
 
-  const supportSteps = useMemo(
+  const features = useMemo(
     () =>
-      SUPPORT_STEP_KEYS.map((key, index) => ({
-        step: String(index + 1).padStart(2, "0"),
+      FEATURE_KEYS.map((key, index) => ({
         title: t(`${key}Title`),
-        text: t(`${key}Desc`),
-        image: MEDIA.qualitySupport[index],
-        imageRight: index % 2 === 1,
+        image: qualityGalleryImages[index]?.src ?? MEDIA.featured[index],
+        imageAlt: qualityGalleryImages[index]?.alt ?? "",
+        Icon: FEATURE_ICONS[index] ?? Atom,
       })),
     [t],
   );
@@ -46,129 +135,72 @@ export default function QualityAfterSalesPageClient() {
   );
 
   function toggleFAQ(index: number) {
-    setOpenIndexes((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
-    );
+    setOpenFaqIndex((prev) => (prev === index ? -1 : index));
   }
 
   return (
     <>
       <Navbar />
-      <main className={COMPANY_PAGE_BG}>
-        <CompanyHero title={t("heroTitle")} subtitle={t("heroSubtitle")}>
-          {t("heroBody")}
-        </CompanyHero>
-
-        <section className={`${COMPANY_SHELL} mb-20 md:mb-28`}>
-          <FadeInView className="grid gap-4 sm:grid-cols-2 lg:gap-5">
-            {qualityGalleryImages.map((item, i) => (
-              <div key={item.src} className={COMPANY_IMAGE_FRAME}>
-                <img
-                  src={item.src}
-                  alt={item.alt}
-                  className={`w-full object-cover transition duration-500 hover:scale-[1.02] ${
-                    i < 2 ? "aspect-[4/3]" : "aspect-[4/3] sm:aspect-[3/2]"
-                  }`}
-                />
-              </div>
-            ))}
+      <main className={`${QAS_MAIN} ${QAS_PAGE_BG}`}>
+        <section className={`${QAS_SHELL} ${QAS_SECTION_SPACING}`}>
+          <FadeInView>
+            <div className={QAS_HERO_BAND}>
+              <SectionHeading
+                title={t("heroTitle")}
+                subtitle={t("heroSubtitle")}
+                titleAs="h1"
+                expanded
+                noGradient
+                subtitleSentenceCase={false}
+                titleClassName={`${SECTION_TITLE_CLASS} px-0.5`}
+                subtitleClassName={`${SECTION_SUBTITLE_CLASS} mt-[clamp(1rem,3vw,1.875rem)] max-w-[min(100%,52rem)]`}
+                className="!p-0"
+              />
+              <p className={QAS_HERO_BODY}>{t("heroBody")}</p>
+            </div>
           </FadeInView>
         </section>
 
-        <section className={`${COMPANY_SHELL} mb-20 pt-10 md:mb-28 md:pt-16`}>
-          <div className="mb-12">
-            <CompanySectionHeading title={t("supportTitle")} subtitle={t("supportSubtitle")} />
-          </div>
-
-          <div className="relative mx-auto mt-16 max-w-4xl">
-            <div className="absolute bottom-0 left-[30px] top-0 z-0 w-0.5 -translate-x-1/2 bg-[#5c3d42]/30 md:left-1/2" />
-
-            <div className="relative z-10 space-y-16">
-              {supportSteps.map((item, i) => (
-                <FadeInView key={item.step} delay={i * 0.06}>
-                  <div
-                    className={`relative flex flex-col items-start justify-between gap-8 md:flex-row md:items-center md:gap-0 ${
-                      item.imageRight ? "md:flex-row-reverse" : ""
-                    }`}
-                  >
-                    <div
-                      className={`flex w-full justify-start pl-14 md:w-[42%] ${
-                        item.imageRight ? "md:pl-8" : "md:justify-end md:pl-0"
-                      }`}
-                    >
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        transition={companyTransition}
-                        className="flex aspect-square w-48 items-center justify-center rounded-[16px] border border-[#e5dcd3]/30 bg-[#F6EAEA] p-4 shadow-[0_4px_15px_rgba(0,0,0,0.01)]"
-                      >
-                        <img
-                          src={item.image}
-                          alt={`Step ${item.step}`}
-                          className="max-h-full max-w-full object-contain"
-                        />
-                      </motion.div>
-                    </div>
-
-                    <div className="absolute left-[30px] h-6 w-6 -translate-x-1/2 rounded-full border-4 border-[#f7f3f2] bg-[#5c3d42] md:left-1/2" />
-
-                    <div
-                      className={`w-full pl-14 text-left md:w-[42%] ${
-                        item.imageRight ? "md:pr-8 md:text-right" : "md:pl-8"
-                      }`}
-                    >
-                      <span className="text-xs font-bold uppercase leading-none tracking-widest text-[#e85d8a]">
-                        {tCommon("step", { step: item.step })}
-                      </span>
-                      <h4 className={`mt-1.5 ${SUBSECTION_TITLE_CLASS} text-lg`}>{item.title}</h4>
-                      <p className={`mt-2 ${SECTION_BODY_CLASS} leading-relaxed`}>{item.text}</p>
-                    </div>
-                  </div>
-                </FadeInView>
-              ))}
-            </div>
+        <section className={`${QAS_SHELL} ${QAS_SECTION_SPACING}`}>
+          <div className={QAS_FEATURE_GRID}>
+            {features.map((item, index) => (
+              <QualityFeatureColumn
+                key={FEATURE_KEYS[index]}
+                index={index}
+                title={item.title}
+                image={item.image}
+                imageAlt={item.imageAlt}
+                Icon={item.Icon}
+              />
+            ))}
           </div>
         </section>
 
-        <section className="bg-gradient-to-b from-[#F4EBEC]/80 via-[#F4EBEC]/30 to-[#f7f3f2] py-16 md:py-24">
-          <div className={COMPANY_SHELL}>
-            <CompanySectionHeading title={t("faqTitle")} subtitle={t("faqSubtitle")} className="mb-12 bg-transparent" />
+        <section className={`${QAS_SHELL} ${QAS_SECTION_SPACING}`}>
+          <QualitySupportProcessSection />
+        </section>
 
-            <div className="mx-auto max-w-4xl space-y-4">
-              {faqItems.map((item, index) => {
-                const isOpen = openIndexes.includes(index);
-                return (
-                  <FadeInView key={item.question} delay={index * 0.05}>
-                    <div className={`overflow-hidden rounded-[12px] ${COMPANY_CARD}`}>
-                      <button
-                        type="button"
-                        onClick={() => toggleFAQ(index)}
-                        className="flex w-full cursor-pointer items-center justify-between px-6 py-5 text-left text-[#5c3d42] hover:text-[#5c3d42]/90"
-                      >
-                        <span className={`${SECTION_BODY_CLASS} text-[0.95rem] font-semibold`}>{item.question}</span>
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#dfc2c6] text-[#5c3d42]">
-                          {isOpen ? <Minus className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
-                        </span>
-                      </button>
+        <section className={QAS_FAQ_BAND}>
+          <div className={QAS_SHELL}>
+            <CompanySectionHeading
+              title={t("faqTitle")}
+              subtitle={t("faqSubtitle")}
+              subtitleSentenceCase={false}
+              className="mb-[clamp(1.5rem,4vw,2.5rem)]"
+            />
 
-                      <AnimatePresence initial={false}>
-                        {isOpen && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                          >
-                            <div className={`border-t border-[#e5dcd3]/20 px-6 pb-6 pt-2 ${SECTION_BODY_CLASS} leading-7`}>
-                              {item.answer}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </FadeInView>
-                );
-              })}
-            </div>
+            <FadeInView>
+              <div className={QAS_FAQ_LIST_WRAP}>
+                <FaqAccordionList
+                  faqs={faqItems}
+                  listKey="quality-after-sales"
+                  openIndex={openFaqIndex}
+                  onToggle={toggleFAQ}
+                  accentLayoutId="quality-sale-faq-accent"
+                  inset
+                />
+              </div>
+            </FadeInView>
           </div>
         </section>
       </main>

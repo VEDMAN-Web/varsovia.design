@@ -33,8 +33,9 @@ type CatalogueProps = {
   contactImages?: string[];
 };
 
-const CARD_WIDTH = 221;
-const CARD_HEIGHT = 324;
+const CARD_WIDTH_DESKTOP = 221;
+const CARD_HEIGHT_DESKTOP = 324;
+const TRACK_HEIGHT_DESKTOP = 430;
 const MAX_VISIBLE_OFFSET = 2;
 const DRAG_THRESHOLD = 60;
 const AUTOPLAY_MS = 5500;
@@ -77,7 +78,10 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
   const length = CATALOGUES.length;
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [step, setStep] = useState(CARD_WIDTH + 56);
+  const [cardWidth, setCardWidth] = useState(CARD_WIDTH_DESKTOP);
+  const [cardHeight, setCardHeight] = useState(CARD_HEIGHT_DESKTOP);
+  const [trackHeight, setTrackHeight] = useState(TRACK_HEIGHT_DESKTOP);
+  const [step, setStep] = useState(CARD_WIDTH_DESKTOP + 56);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedDownloadUrl, setSelectedDownloadUrl] = useState("");
   const trackRef = useRef<HTMLDivElement>(null);
@@ -86,8 +90,32 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
-      const gap = w < 640 ? 36 : w < 1024 ? 52 : 68;
-      setStep(CARD_WIDTH + gap);
+      let width = CARD_WIDTH_DESKTOP;
+      let height = CARD_HEIGHT_DESKTOP;
+      let track = TRACK_HEIGHT_DESKTOP;
+      let gap = 68;
+
+      if (w < 380) {
+        width = Math.min(156, w - 56);
+        height = 228;
+        track = 300;
+        gap = 28;
+      } else if (w < 640) {
+        width = 176;
+        height = 258;
+        track = 340;
+        gap = 36;
+      } else if (w < 1024) {
+        width = 198;
+        height = 290;
+        track = 390;
+        gap = 52;
+      }
+
+      setCardWidth(width);
+      setCardHeight(height);
+      setTrackHeight(track);
+      setStep(width + gap);
     };
     update();
     window.addEventListener("resize", update);
@@ -144,7 +172,7 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
 
   return (
     <>
-      <section id="catalogue" className="bg-transparent py-16 md:py-20">
+      <section id="catalogue" className="bg-transparent py-14 sm:py-16 md:py-20">
         <div className={CATALOGUE_SECTION_SHELL}>
           <div className={CATALOGUE_CONTENT_WIDTH}>
             <SectionHeading
@@ -160,8 +188,8 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
             aria-roledescription="carousel"
             aria-label="Free catalogue previews"
             tabIndex={0}
-            className="relative mt-4 w-full cursor-grab overflow-x-hidden overflow-y-visible bg-transparent outline-none focus-visible:outline-none active:cursor-grabbing md:mt-8"
-            style={{ height: 430, perspective: 1400 }}
+            className="relative mt-4 w-full min-w-0 cursor-grab overflow-x-hidden overflow-y-visible bg-transparent outline-none focus-visible:outline-none active:cursor-grabbing md:mt-8"
+            style={{ height: trackHeight, perspective: Math.min(1400, trackHeight * 3.2) }}
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
             onKeyDown={handleKeyDown}
@@ -196,9 +224,9 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
                     aria-current={isCenter}
                     className="absolute left-1/2 top-4 bg-transparent p-0 outline-none"
                     style={{
-                      width: CARD_WIDTH,
-                      height: CARD_HEIGHT,
-                      marginLeft: -CARD_WIDTH / 2,
+                      width: cardWidth,
+                      height: cardHeight,
+                      marginLeft: -cardWidth / 2,
                       borderRadius: "6px 24px 24px 6px",
                       overflow: "hidden",
                       borderLeft: "4.6px solid #251B1E",
@@ -234,8 +262,8 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
                     <div className="pointer-events-none absolute inset-0 bg-black/20" />
 
                     <div className="relative z-10 flex h-full flex-col items-center justify-center px-3 text-center text-white">
-                      <p className="text-[0.65rem] tracking-[0.28em] opacity-90">2026</p>
-                      <p className="mt-2 text-[1.15rem] font-bold leading-[1.15] tracking-[0.04em] md:text-[1.3rem]">
+                      <p className="text-[0.6rem] tracking-[0.22em] opacity-90 sm:text-[0.65rem] sm:tracking-[0.28em]">2026</p>
+                      <p className="mt-1.5 text-[0.95rem] font-bold leading-[1.15] tracking-[0.04em] sm:mt-2 sm:text-[1.15rem] md:text-[1.3rem]">
                         EXPLORE
                         <br />
                         KITCHEN

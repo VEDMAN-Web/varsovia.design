@@ -10,8 +10,8 @@ export default function InteriorPageFallback() {
             <div className="mx-auto h-5 w-full max-w-xl rounded bg-[#ece6e4]" />
           </div>
           <div className="mt-10 flex justify-center gap-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-11 w-24 rounded-[6px] bg-[#e8e2e0]" />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-11 w-28 rounded-[6px] bg-[#e8e2e0]" />
             ))}
           </div>
         </PageShell>

@@ -18,43 +18,105 @@ type StatsProps = {
   statsImage?: string;
 };
 
+const PARALLAX_QUERY = "(min-width: 1024px) and (prefers-reduced-motion: no-preference)";
+
 /**
- * Image stays fixed in the viewport; only this clip frame scrolls with the page
- * (background-attachment: fixed window effect).
+ * Desktop shows a viewport-fixed window: the image holds still while the frame
+ * scrolls over it. Mobile and tablet render the image statically — the scroll-linked
+ * offset stutters during touch momentum, and `background-attachment: fixed` renders
+ * as a zoomed static crop there anyway.
  */
 function StatsFixedImage({ src, alt }: { src: string; alt: string }) {
-  const [fixedSupported, setFixedSupported] = useState(true);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const layerRef = useRef<HTMLDivElement>(null);
+  const [parallax, setParallax] = useState(false);
 
   useEffect(() => {
-    const test = document.createElement("div");
-    test.style.backgroundAttachment = "fixed";
-    setFixedSupported(test.style.backgroundAttachment === "fixed");
+    const query = window.matchMedia(PARALLAX_QUERY);
+    const sync = () => setParallax(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
   }, []);
+
+  useEffect(() => {
+    const frame = frameRef.current;
+    const layer = layerRef.current;
+    if (!parallax || !frame || !layer) return;
+
+    let frameId = 0;
+    let lastOffset = NaN;
+
+    const resize = () => {
+      const rect = frame.getBoundingClientRect();
+      layer.style.width = `${window.innerWidth}px`;
+      layer.style.height = `${window.innerHeight}px`;
+      layer.style.left = `${-rect.left}px`;
+      lastOffset = NaN;
+    };
+
+    // Whole-pixel offsets avoid subpixel re-rasterising on Safari
+    const tick = () => {
+      const offset = Math.round(-frame.getBoundingClientRect().top);
+      if (offset !== lastOffset) {
+        lastOffset = offset;
+        layer.style.transform = `translate3d(0,${offset}px,0)`;
+      }
+      frameId = requestAnimationFrame(tick);
+    };
+
+    const stop = () => {
+      cancelAnimationFrame(frameId);
+      frameId = 0;
+    };
+
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
+
+    // Only track while the frame is on screen
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (!frameId) frameId = requestAnimationFrame(tick);
+        } else {
+          stop();
+        }
+      },
+      { rootMargin: "100px" },
+    );
+    observer.observe(frame);
+
+    return () => {
+      stop();
+      observer.disconnect();
+      window.removeEventListener("resize", resize);
+      layer.style.cssText = "";
+    };
+  }, [parallax]);
 
   return (
     <div
-      className="stats-image-frame relative mx-auto h-[min(42vw,340px)] min-h-[220px] w-full overflow-hidden sm:h-[340px] md:h-[400px] lg:h-[440px]"
+      ref={frameRef}
+      className="stats-image-frame relative mx-auto h-[min(52vw,280px)] min-h-[200px] w-full max-w-full overflow-hidden sm:h-[300px] md:h-[400px] lg:h-[440px]"
       role="img"
       aria-label={alt}
     >
-      {fixedSupported ? (
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${src})`,
-            backgroundAttachment: "fixed",
-          }}
-        />
-      ) : (
-        // Mobile fallback where fixed backgrounds are unsupported
-        // eslint-disable-next-line @next/next/no-img-element
+      <div
+        ref={layerRef}
+        className={`absolute top-0 left-0 h-full w-full ${
+          parallax ? "[backface-visibility:hidden] [contain:paint] will-change-transform" : ""
+        }`}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
-          alt={alt}
-          className="h-full w-full object-cover object-center"
+          alt=""
+          aria-hidden="true"
           draggable={false}
+          decoding="async"
+          className="h-full w-full object-cover object-center select-none"
         />
-      )}
+      </div>
     </div>
   );
 }
@@ -109,9 +171,9 @@ export default function Stats({ stats, statsImage }: StatsProps) {
   const imageSrc = resolveMediaUrl(statsImage, MEDIA.stats);
 
   return (
-    <section ref={ref} className="bg-[#fdf2f0] pb-0 pt-10 md:pt-14">
+    <section ref={ref} className="bg-[#fdf2f0] pb-0 pt-8 sm:pt-10 md:pt-14">
       <SectionShell>
-        <div className="grid grid-cols-1 gap-10 text-center sm:grid-cols-3 sm:gap-6">
+        <div className="grid grid-cols-1 gap-8 text-center min-[480px]:grid-cols-3 min-[480px]:gap-4 sm:gap-6">
           {displayStats.map((stat, i) => (
             <motion.div
               key={stat.label}

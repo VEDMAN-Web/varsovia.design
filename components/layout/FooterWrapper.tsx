@@ -6,9 +6,6 @@ import Footer from "@/components/layout/Footer";
 
 type SiteFooter = {
   footerBio?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
 };
 
 export default function FooterWrapper({ site }: { site?: SiteFooter | null }) {
@@ -28,11 +25,6 @@ export default function FooterWrapper({ site }: { site?: SiteFooter | null }) {
   if (pathname === "/" && introPending) return null;
 
   return (
-    <Footer
-      bio={site?.footerBio}
-      phone={site?.phone}
-      email={site?.email}
-      address={site?.address}
-    />
+    <Footer bio={site?.footerBio} />
   );
 }

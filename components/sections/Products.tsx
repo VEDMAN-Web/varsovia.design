@@ -56,7 +56,7 @@ export default function Products({ products }: ProductsProps) {
   const displayProducts = products && products.length > 0 ? products : FALLBACK_PRODUCTS;
 
   return (
-    <section id="products" className="bg-[#fdf2f0] py-20 md:py-28">
+    <section id="products" className="bg-[#fdf2f0] py-14 sm:py-20 md:py-28">
       <SectionShell>
         <SectionHeading
           title="Our Products"
@@ -64,7 +64,7 @@ export default function Products({ products }: ProductsProps) {
           className={SECTION_HEADING_WIDE}
         />
 
-        <div className="mt-12 grid gap-5 md:grid-cols-3 md:gap-6 lg:gap-8">
+        <div className="mt-10 grid grid-cols-1 gap-5 min-[480px]:grid-cols-2 md:mt-12 md:grid-cols-3 md:gap-6 lg:gap-8">
           {displayProducts.map((product, i) => {
             const isOpen = hovered === i;
             const slug = product.slug || product._id;
@@ -76,7 +76,7 @@ export default function Products({ products }: ProductsProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.55 }}
-                className="group relative aspect-[3/4] overflow-hidden rounded-[22px]"
+                className="group relative aspect-[3/4] min-h-[280px] overflow-hidden rounded-[16px] sm:min-h-0 sm:rounded-[22px]"
                 onMouseEnter={() => setHovered(i)}
                 onMouseLeave={() => setHovered(null)}
                 onFocus={() => setHovered(i)}

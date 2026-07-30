@@ -397,25 +397,33 @@ export default function ContactInquiryForm({
             clearFieldError("message");
           }}
           placeholder={t("messagePh")}
-          className={`resize-none ${fieldErrorClass("message")} ${isModal ? `${fieldClass} h-[118px] py-3` : CONTACT_TEXTAREA}`}
+          className={`resize-none ${fieldErrorClass("message")} ${isModal ? `${fieldClass} h-[64px] py-2 sm:h-[84px] sm:py-3` : CONTACT_TEXTAREA}`}
         />
         {fieldErrors.message ? (
           <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{t(`validation.${fieldErrors.message}`)}</p>
         ) : null}
       </div>
 
-      {message ? (
-        <p className={`font-outfit text-[14px] ${status === "error" ? "text-red-700" : "text-[#6a414d]"}`}>
-          {message}
-        </p>
-      ) : null}
+      <div
+        className={
+          isModal
+            ? "sticky bottom-0 z-10 -mx-4 mt-1 flex shrink-0 flex-col items-center bg-gradient-to-t from-[#fff3f2] from-[72%] via-[#fff3f2]/95 to-transparent px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:-mx-6 sm:px-6 md:-mx-10 md:px-10 2xl:-mx-8 2xl:px-8"
+            : "flex shrink-0 flex-col items-center pt-10"
+        }
+      >
+        {message ? (
+          <p
+            className={`font-outfit mb-2 text-center text-[14px] ${status === "error" ? "text-red-700" : "text-[#6a414d]"}`}
+          >
+            {message}
+          </p>
+        ) : null}
 
-      <div className={`mt-auto flex shrink-0 justify-center ${isModal ? "pb-1 pt-2" : "pt-10"}`}>
         <button
           type="submit"
           disabled={status === "loading"}
-          className={`font-outfit rounded-[6px] bg-[#6a414d] font-normal text-white transition hover:bg-[#5a3640] disabled:opacity-70 ${
-            isModal ? "h-[46px] px-[18px] text-[18px]" : "h-[50px] px-5 text-[18px]"
+          className={`font-outfit w-full max-w-[280px] rounded-[6px] bg-[#6a414d] font-normal text-white transition hover:bg-[#5a3640] disabled:opacity-70 sm:max-w-none sm:w-auto ${
+            isModal ? "h-[44px] px-8 text-[16px] sm:h-[46px] sm:px-[18px] sm:text-[18px]" : "h-[50px] px-5 text-[18px]"
           }`}
         >
           {status === "loading" ? tCommon("submitting") : tCommon("submit")}

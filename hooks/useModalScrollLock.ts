@@ -3,10 +3,39 @@
 import { RefObject, useEffect } from "react";
 import { useLenis } from "lenis/react";
 
-/** Lock page scroll (incl. Lenis) while a modal is open; block wheel/touch outside the dialog */
+function getScrollableAncestor(
+  node: Node | null,
+  root: HTMLElement
+): HTMLElement | null {
+  let el = node instanceof HTMLElement ? node : null;
+  while (el && el !== root) {
+    const { overflowY } = getComputedStyle(el);
+    if (
+      (overflowY === "auto" || overflowY === "scroll") &&
+      el.scrollHeight > el.clientHeight
+    ) {
+      return el;
+    }
+    el = el.parentElement;
+  }
+  return null;
+}
+
+function scrollElement(el: HTMLElement, deltaY: number) {
+  const { scrollTop, scrollHeight, clientHeight } = el;
+  const maxScroll = scrollHeight - clientHeight;
+  if (maxScroll <= 0) return false;
+  const next = Math.max(0, Math.min(scrollTop + deltaY, maxScroll));
+  if (next === scrollTop) return false;
+  el.scrollTop = next;
+  return true;
+}
+
+/** Lock page scroll (incl. Lenis) while a modal is open; allow nested scroll inside the dialog */
 export function useModalScrollLock(
   open: boolean,
-  dialogRef: RefObject<HTMLElement | null>
+  dialogRef: RefObject<HTMLElement | null>,
+  scrollRootRef?: RefObject<HTMLElement | null>
 ) {
   const lenis = useLenis();
 
@@ -35,19 +64,55 @@ export function useModalScrollLock(
     bodyStyle.width = "100%";
     bodyStyle.touchAction = "none";
 
-    const blockBackgroundScroll = (e: Event) => {
+    const onWheel = (e: WheelEvent) => {
       const dialog = dialogRef.current;
       const target = e.target as Node | null;
-      if (dialog && target && dialog.contains(target)) return;
+      if (!dialog || !target || !dialog.contains(target)) {
+        e.preventDefault();
+        return;
+      }
+
+      const scrollRoot = scrollRootRef?.current;
+      if (scrollRoot && scrollRoot.contains(target)) {
+        if (scrollElement(scrollRoot, e.deltaY)) {
+          e.preventDefault();
+          return;
+        }
+        e.preventDefault();
+        return;
+      }
+
+      const scrollable = getScrollableAncestor(target, dialog);
+      if (scrollable && scrollElement(scrollable, e.deltaY)) {
+        e.preventDefault();
+        return;
+      }
+
       e.preventDefault();
     };
 
-    window.addEventListener("wheel", blockBackgroundScroll, { passive: false });
-    window.addEventListener("touchmove", blockBackgroundScroll, { passive: false });
+    const onTouchMove = (e: TouchEvent) => {
+      const dialog = dialogRef.current;
+      const target = e.target as Node | null;
+      if (!dialog || !target || !dialog.contains(target)) {
+        e.preventDefault();
+        return;
+      }
+
+      const scrollRoot = scrollRootRef?.current;
+      if (scrollRoot && scrollRoot.contains(target)) return;
+
+      if (!getScrollableAncestor(target, dialog)) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
 
     return () => {
-      window.removeEventListener("wheel", blockBackgroundScroll);
-      window.removeEventListener("touchmove", blockBackgroundScroll);
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchmove", onTouchMove);
 
       bodyStyle.overflow = prev.bodyOverflow;
       htmlStyle.overflow = prev.htmlOverflow;
@@ -59,5 +124,5 @@ export function useModalScrollLock(
       window.scrollTo(0, scrollY);
       lenis?.start();
     };
-  }, [open, lenis, dialogRef]);
+  }, [open, lenis, dialogRef, scrollRootRef]);
 }

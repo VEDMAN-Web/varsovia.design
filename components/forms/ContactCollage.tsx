@@ -55,7 +55,7 @@ function CollageTile({
       className={`${TILE_BASE} pointer-events-auto ${shadow ? TILE_SHADOW : ""} ${TILE_HOVER_SHADOW} ${className}`.trim()}
       style={style}
     >
-      <div className="relative h-full w-full overflow-hidden">
+      <div className="relative h-full min-h-0 w-full overflow-hidden">
         <div className="h-full w-full origin-center transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none motion-reduce:group-hover/tile:scale-100 group-hover/tile:scale-[1.07]">
           {children}
         </div>
@@ -122,33 +122,23 @@ export default function ContactCollage({
         ))}
       </div>
 
-      {/* Mobile / tablet — section only */}
+      {/* Mobile & tablet — horizontal scroll strip (< lg) */}
       <div
-        className={`grid auto-rows-[68px] grid-cols-12 gap-[14px] p-[12px] sm:auto-rows-[80px] sm:gap-[14px] lg:hidden ${
+        className={`w-full overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:hidden ${
           variant === "modal" ? "hidden" : ""
         } ${className}`.trim()}
       >
-        <CollageTile shadow className="col-span-5 col-start-1 row-span-4 row-start-1">
-          {renderImage(0, "Interior inspiration 1")}
-        </CollageTile>
-        <CollageTile className="col-span-4 col-start-6 row-span-1 row-start-1">
-          {renderImage(2, "Interior inspiration 3")}
-        </CollageTile>
-        <CollageTile className="col-span-4 col-start-6 row-span-3 row-start-2">
-          {renderImage(3, "Interior inspiration 4")}
-        </CollageTile>
-        <CollageTile className="col-span-5 col-start-1 row-span-2 row-start-5">
-          {renderImage(1, "Interior inspiration 2")}
-        </CollageTile>
-        <CollageTile className="col-span-4 col-start-6 row-span-2 row-start-5">
-          {renderImage(4, "Interior inspiration 5")}
-        </CollageTile>
-        <CollageTile className="col-span-5 col-start-1 row-span-2 row-start-7">
-          {renderImage(5, "Interior inspiration 6")}
-        </CollageTile>
-        <CollageTile className="col-span-7 col-start-6 row-span-2 row-start-7">
-          {renderImage(6, "Interior inspiration 7")}
-        </CollageTile>
+        <div className="flex gap-2.5 px-2.5 py-2 sm:gap-3 sm:px-4 sm:py-3" style={{ width: "max-content" }}>
+          {[0, 1, 2, 3, 4, 5, 6].map((idx) => (
+            <CollageTile
+              key={idx}
+              shadow={idx === 0}
+              className="h-[110px] w-[90px] shrink-0 sm:h-[160px] sm:w-[130px]"
+            >
+              {renderImage(idx, `Interior inspiration ${idx + 1}`)}
+            </CollageTile>
+          ))}
+        </div>
       </div>
     </>
   );

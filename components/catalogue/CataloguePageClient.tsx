@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useLocale } from "next-intl";
 import Navbar from "@/components/layout/Navbar";
 import CatalogueNotebookCard from "@/components/catalogue/CatalogueNotebookCard";
@@ -8,10 +9,9 @@ import DownloadCatalogueModal from "@/components/forms/DownloadCatalogueModal";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
 import {
-  CATALOGUE_CARD_HEIGHT,
+  CATALOGUE_CARD_SLOT,
   CATALOGUE_CONTENT_WIDTH,
   CATALOGUE_NOTEBOOK_GRID,
-  CATALOGUE_ROW_SLOT_HEIGHT,
   CATALOGUE_SECTION_SHELL,
 } from "@/components/catalogue/catalogueLayoutShared";
 import { fetchCatalogues } from "@/lib/api";
@@ -34,8 +34,10 @@ const FALLBACK_ITEMS: CatalogueItem[] = fallbackHomeData.catalogues.map((c) => (
 
 export default function CataloguePageClient() {
   const locale = useLocale();
+  const reducedMotion = useReducedMotion();
   const [items, setItems] = useState<CatalogueItem[]>(FALLBACK_ITEMS);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [hoverCapable, setHoverCapable] = useState(false);
   const [selected, setSelected] = useState<CatalogueItem | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -52,6 +54,15 @@ export default function CataloguePageClient() {
       );
     });
   }, [locale]);
+
+  // Touch devices keep a stale :hover after tapping, so lift only where hover exists
+  useEffect(() => {
+    const query = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const sync = () => setHoverCapable(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
 
   const displayItems = useMemo(() => {
     if (items.length >= 6) return items.slice(0, 6);
@@ -75,40 +86,51 @@ export default function CataloguePageClient() {
   return (
     <>
       <Navbar />
-      <main className="bg-cream min-h-screen pt-[72px] pb-16 md:pb-24">
-        <div className={`${CATALOGUE_SECTION_SHELL} pt-10 md:pt-14`}>
+      {/* overflow-x-clip: the hover lift scales cards past the edge column */}
+      <main className="bg-cream min-h-screen overflow-x-clip pt-[72px] pb-12 sm:pt-[102px] sm:pb-16 md:pb-24">
+        <div className={`${CATALOGUE_SECTION_SHELL} pt-8 sm:pt-10 md:pt-14`}>
           <div className={CATALOGUE_CONTENT_WIDTH}>
             <SectionHeading
               titleAs="h1"
               title="Free Catalogue"
               subtitle="Explore Our Interior Design Catalogue"
               subtitleSentenceCase
-              className={`${SECTION_HEADING_WIDE} mb-10 md:mb-14`}
+              className={`${SECTION_HEADING_WIDE} mb-8 sm:mb-10 md:mb-14`}
             />
 
-            <div className="space-y-14 md:space-y-16">
+            <div className="space-y-10 sm:space-y-12 lg:space-y-14">
               {[0, 1].map((row) => (
-                <div
-                  key={row}
-                  className={`${CATALOGUE_NOTEBOOK_GRID} ${CATALOGUE_ROW_SLOT_HEIGHT} ${row === 0 ? "items-end" : "items-start"}`}
-                >
+                <div key={row} className={CATALOGUE_NOTEBOOK_GRID}>
                   {displayItems.slice(row * 3, row * 3 + 3).map((item, col) => {
+                    const index = row * 3 + col;
                     const isHovered = hoveredId === item.id;
-                    const defaultHover = row === 0 && col === 1 && hoveredId === null;
+                    const isAccent = hoverCapable && row === 0 && col === 1 && hoveredId === null;
 
                     return (
-                      <div
+                      <motion.div
                         key={item.id}
-                        className={`relative flex ${CATALOGUE_ROW_SLOT_HEIGHT} w-full min-w-0 overflow-visible ${row === 0 ? "items-end" : "items-start"}`}
-                        onMouseEnter={() => setHoveredId(item.id)}
-                        onMouseLeave={() => setHoveredId(null)}
+                        className={CATALOGUE_CARD_SLOT}
+                        initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 28 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.2 }}
+                        transition={{
+                          duration: reducedMotion ? 0.2 : 0.55,
+                          delay: reducedMotion ? 0 : index * 0.07,
+                          ease: [0.22, 1, 0.36, 1],
+                        }}
+                        onPointerEnter={(e) => {
+                          if (e.pointerType === "mouse") setHoveredId(item.id);
+                        }}
+                        onPointerLeave={(e) => {
+                          if (e.pointerType === "mouse") setHoveredId(null);
+                        }}
                       >
                         <CatalogueNotebookCard
                           coverImage={item.coverImage}
-                          hovered={isHovered || defaultHover}
+                          hovered={isHovered || isAccent}
                           onClick={() => openDownload(item)}
                         />
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>

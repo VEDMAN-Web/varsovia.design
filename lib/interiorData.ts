@@ -625,12 +625,14 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
 ];
 
 export type SortOption =
+  | "all"
   | "newest"
   | "oldest"
   | "price-high"
   | "price-low";
 
 export const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: "all", label: "All" },
   { value: "newest", label: "Newest To Oldest" },
   { value: "oldest", label: "Oldest To Newest" },
   { value: "price-high", label: "High to Low Price" },
@@ -667,6 +669,9 @@ export function filterAndSortItems(
   });
 
   switch (sortBy) {
+    case "all":
+      list = [...list].sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+      break;
     case "newest":
       list = [...list].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()

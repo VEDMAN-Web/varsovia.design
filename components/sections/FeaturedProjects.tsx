@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "@/lib/i18n/navigation";
 import { motion } from "framer-motion";
 import SectionHeading from "@/components/ui/SectionHeading";
@@ -58,12 +58,34 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
   const [active, setActive] = useState(0);
   const [hovered, setHovered] = useState<number | null>(null);
   const [brokenImages, setBrokenImages] = useState<Record<string, string>>({});
+  const [projectLimit, setProjectLimit] = useState(8);
 
-  const displayProjects = useMemo(() => buildDisplayProjects(projects), [projects]);
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      if (w < 480) setProjectLimit(4);
+      else if (w < 768) setProjectLimit(5);
+      else if (w < 1024) setProjectLimit(6);
+      else setProjectLimit(8);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  const displayProjects = useMemo(
+    () => buildDisplayProjects(projects).slice(0, projectLimit),
+    [projects, projectLimit],
+  );
   const expandedIndex = hovered ?? active;
 
+  useEffect(() => {
+    if (active >= displayProjects.length) setActive(0);
+    if (hovered !== null && hovered >= displayProjects.length) setHovered(null);
+  }, [active, displayProjects.length, hovered]);
+
   return (
-    <section id="projects" className="bg-transparent py-16 sm:py-20 md:py-28">
+    <section id="projects" className="bg-transparent py-14 sm:py-20 md:py-28">
       <SectionShell>
         <SectionHeading
           title="Featured Projects"
@@ -71,8 +93,8 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
           className={SECTION_HEADING_WIDE}
         />
 
-        <div className="mt-8 w-full sm:mt-10 md:mt-12" onMouseLeave={() => setHovered(null)}>
-          <div className="flex h-[280px] w-full gap-1.5 overflow-hidden sm:h-[340px] sm:gap-2 md:h-[400px] md:gap-2.5">
+        <div className="mt-6 w-full min-w-0 sm:mt-10 md:mt-12" onMouseLeave={() => setHovered(null)}>
+          <div className="flex h-[240px] w-full min-w-0 gap-1 overflow-hidden sm:h-[300px] sm:gap-1.5 md:h-[360px] md:gap-2 lg:h-[400px] lg:gap-2.5">
             {displayProjects.map((item, i) => {
               const isExpanded = expandedIndex === i;
               const imageSrc = brokenImages[item._id] || resolveCover(item);
@@ -87,9 +109,7 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
                     setActive(i);
                     setHovered(i);
                   }}
-                  className={`relative h-full overflow-hidden rounded-[10px] outline-none sm:rounded-[12px] md:rounded-[14px] ${
-                    isExpanded ? "min-w-0" : "min-w-[22px] sm:min-w-[28px] md:min-w-[36px]"
-                  }`}
+                  className="relative h-full min-w-0 overflow-hidden rounded-[8px] outline-none sm:rounded-[12px] md:rounded-[14px]"
                   initial={false}
                   animate={{ flexGrow: isExpanded ? 12 : 1, flexShrink: 1, flexBasis: 0 }}
                   transition={{ type: "spring", stiffness: 280, damping: 32 }}

@@ -30,7 +30,7 @@ export default function Hero({
   const introComplete = useIntroComplete();
 
   return (
-    <section id="home" className="relative h-[100svh] min-h-[560px] w-full overflow-hidden">
+    <section id="home" className="relative h-[100svh] min-h-[460px] w-full overflow-hidden sm:min-h-[520px] md:min-h-[560px]">
       <div className="absolute inset-0">
         <img
           src={resolveMediaUrl(heroImage, MEDIA.hero)}
@@ -41,14 +41,14 @@ export default function Hero({
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-black/5" />
 
-      <div className="relative z-10 mx-auto flex h-full w-full max-w-[1440px] items-end px-[clamp(1.25rem,7vw,100px)] pb-16 md:pb-24">
-        <div className="max-w-3xl">
+      <div className="relative z-10 mx-auto flex h-full w-full max-w-[1440px] items-end px-[clamp(1rem,5vw,100px)] pb-10 sm:pb-16 md:pb-24">
+        <div className="max-w-3xl min-w-0">
           {eyebrow ? (
             <motion.p
               initial={{ opacity: 0, y: 16 }}
               animate={introComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
               transition={{ duration: 0.42, delay: 0.06, ease: REVEAL_EASE }}
-              className="mb-4 font-display text-sm tracking-[0.35em] text-white/85 md:text-base"
+              className="mb-3 font-display text-xs tracking-[0.22em] text-white/85 sm:mb-4 sm:text-sm sm:tracking-[0.35em] md:text-base"
             >
               {eyebrow}
             </motion.p>
@@ -58,7 +58,7 @@ export default function Hero({
             initial={{ opacity: 0, y: 22 }}
             animate={introComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 22 }}
             transition={{ duration: 0.45, delay: 0.1, ease: REVEAL_EASE }}
-            className="font-display text-[clamp(1.85rem,4.5vw,3.6rem)] font-bold leading-[1.12] tracking-[0.04em] text-white"
+            className="font-display text-balance break-words text-[clamp(1.55rem,5.2vw,3.6rem)] font-bold leading-[1.12] tracking-[0.03em] text-white sm:tracking-[0.04em]"
           >
             {headline}
           </motion.h1>
@@ -79,17 +79,17 @@ export default function Hero({
               initial={{ opacity: 0, y: 14 }}
               animate={introComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
               transition={{ duration: 0.4, delay: 0.14, ease: REVEAL_EASE }}
-              className="mt-8 flex flex-wrap gap-4"
+              className="mt-6 flex w-full flex-col gap-3 sm:mt-8 sm:w-auto sm:flex-row sm:flex-wrap sm:gap-4"
             >
               {primaryCtaLabel && primaryCtaHref ? (
-                <a href={primaryCtaHref} className="btn-primary rounded-md">
+                <a href={primaryCtaHref} className="btn-primary w-full rounded-md text-center sm:w-auto">
                   {primaryCtaLabel}
                 </a>
               ) : null}
               {secondaryCtaLabel && secondaryCtaHref ? (
                 <a
                   href={secondaryCtaHref}
-                  className="inline-flex items-center justify-center rounded-md border border-white/70 px-7 py-3 text-[0.8rem] tracking-[0.12em] uppercase text-white transition hover:bg-white hover:text-maroon"
+                  className="inline-flex w-full items-center justify-center rounded-md border border-white/70 px-6 py-3 text-[0.75rem] tracking-[0.1em] uppercase text-white transition hover:bg-white hover:text-maroon sm:w-auto sm:px-7 sm:text-[0.8rem] sm:tracking-[0.12em]"
                 >
                   {secondaryCtaLabel}
                 </a>

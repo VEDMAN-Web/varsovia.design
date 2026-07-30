@@ -14,13 +14,17 @@ type DownloadCatalogueModalProps = {
   downloadUrl?: string;
 };
 
+const SCROLL_AREA =
+  "min-h-0 overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden";
+
 function ModalContent({
   onClose,
   images,
   downloadUrl,
 }: Omit<DownloadCatalogueModalProps, "open">) {
   const dialogRef = useRef<HTMLDivElement>(null);
-  useModalScrollLock(true, dialogRef);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useModalScrollLock(true, dialogRef, scrollRef);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -32,50 +36,55 @@ function ModalContent({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-[rgba(37,27,30,0.55)] p-3 backdrop-blur-sm sm:p-5"
+      className="fixed inset-0 z-[100] flex items-end justify-center overflow-hidden bg-[rgba(37,27,30,0.55)] backdrop-blur-sm sm:items-center sm:p-4 md:p-6"
       onClick={onClose}
       role="presentation"
     >
       <div
         ref={dialogRef}
-        className="relative flex max-h-[96vh] w-full max-w-[1241px] flex-col overflow-hidden rounded-[16px] bg-[#fff3f2] shadow-[0_12px_50px_rgba(37,27,30,0.22)]"
+        className="relative grid h-[100dvh] max-h-[100dvh] w-full max-w-[1241px] grid-rows-[auto_1fr] overflow-hidden rounded-t-[20px] bg-[#fff3f2] shadow-[0_-8px_40px_rgba(37,27,30,0.18)] sm:h-[min(92dvh,900px)] sm:max-h-[92dvh] sm:rounded-[16px] sm:shadow-[0_12px_50px_rgba(37,27,30,0.22)]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="catalogue-download-title"
       >
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 z-30 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#6a414d] shadow-sm transition hover:bg-[#f6eaea] sm:right-5 sm:top-5"
-          aria-label="Close download form"
-        >
-          <X size={18} />
-        </button>
+        {/* Top bar — fixed height, never scrolls away */}
+        <div className="relative shrink-0 border-b border-[#ece3df]/60 px-4 pb-2.5 pt-2.5 sm:px-6 sm:pb-4 sm:pt-4 md:px-10">
+          <div className="flex justify-center pt-1 sm:hidden">
+            <div className="h-1 w-10 rounded-full bg-[#cfc4c6]" />
+          </div>
 
-        <div className="flex min-h-0 flex-col overflow-hidden px-5 pb-5 pt-7 sm:px-[55px] sm:pb-8 sm:pt-8">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-3 top-2.5 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#6a414d] shadow-sm transition hover:bg-[#f6eaea] sm:right-4 sm:top-4"
+            aria-label="Close download form"
+          >
+            <X size={18} />
+          </button>
+
           <p
             id="catalogue-download-title"
-            className="font-outfit mx-auto max-w-[653px] shrink-0 text-center text-[clamp(1rem,2vw,1.375rem)] font-medium leading-[30px] text-[#6a414d]"
+            className="font-outfit mx-auto max-w-[653px] pt-7 text-center text-[clamp(0.875rem,2.2vw,1.375rem)] font-medium leading-[1.4] text-[#6a414d] sm:pt-2 sm:leading-[1.5]"
           >
             &ldquo;{INQUIRY_COPY.catalogue.modalIntro}&rdquo;
           </p>
+        </div>
 
-          <div className="mt-6 min-h-0 flex-1 overflow-hidden sm:mt-[29px]">
-            <ContactFormPanel
-              images={images}
-              purpose="catalogue"
-              downloadUrl={downloadUrl}
-              variant="modal"
-            />
-          </div>
+        {/* Scrollable body — all form content */}
+        <div ref={scrollRef} className={SCROLL_AREA} data-lenis-prevent>
+          <ContactFormPanel
+            images={images}
+            purpose="catalogue"
+            downloadUrl={downloadUrl}
+            variant="modal"
+          />
         </div>
       </div>
     </div>
   );
 }
 
-/** Figma 4:4690 — locked overlay, form fully visible incl. submit */
 export default function DownloadCatalogueModal({
   open,
   onClose,

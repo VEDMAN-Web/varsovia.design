@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Link, useRouter } from "@/lib/i18n/navigation";
+import { Link } from "@/lib/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -11,7 +11,6 @@ import SectionHeading from "@/components/ui/SectionHeading";
 import PageShell from "@/components/ui/PageShell";
 import {
   CATEGORY_HERO,
-  CATEGORY_LABELS,
   CATEGORY_SUBCATEGORIES,
   EMPTY_FILTERS,
   INTERIOR_CATEGORIES,
@@ -27,18 +26,10 @@ import type { Locale } from "@/lib/i18n/routing";
 
 const INTERIOR_FALLBACK = MEDIA.interior[0];
 
-const TOOLBAR_PILL_BASE =
-  "inline-flex h-11 items-center gap-2 rounded-[6px] border px-5 font-outfit text-[15px] font-normal outline-none transition";
-
-/** Avoid appending active colors onto TOOLBAR_PILL ÔÇö Tailwind order can leave bg-white/text overrides winning. */
-function toolbarPillClass(active = false) {
-  return active
-    ? `${TOOLBAR_PILL_BASE} min-w-[128px] justify-center border-[#6a414d] bg-[#6a414d] text-white hover:border-[#5a3640] hover:bg-[#5a3640]`
-    : `${TOOLBAR_PILL_BASE} min-w-[128px] justify-center border-[#cfc4c6] bg-white text-[#6a414d] hover:border-[#6a414d]/40`;
-}
-
 const TOOLBAR_PILL =
-  `${TOOLBAR_PILL_BASE} border-[#cfc4c6] bg-white text-[#6a414d] hover:border-[#6a414d]/40`;
+  "inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-[#d4d4d4] bg-white px-3 font-outfit text-[14px] font-medium text-[#1f1f1f] outline-none transition hover:border-[#6a414d]/35 sm:h-10 sm:gap-2 sm:px-4 sm:text-[15px]";
+
+const TOOLBAR_COUNT_CLASS = "font-normal text-[#9a9a9a]";
 
 const GRID_FADE = {
   initial: { opacity: 0 },
@@ -92,19 +83,27 @@ function FilterIcon({ className = "" }: { className?: string }) {
   return (
     <svg
       className={className}
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
       fill="none"
       aria-hidden
     >
-      <path
-        d="M5 4h14l-5 7v5l-4 2v-7L5 4z"
+      <rect
+        x="1.25"
+        y="1.25"
+        width="17.5"
+        height="17.5"
+        rx="3.75"
         stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
+        strokeWidth="1.15"
       />
-      <path d="M8 7h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path
+        d="M5.25 6.25h9.5M6.25 10h7.5M7.25 13.75h5.5"
+        stroke="currentColor"
+        strokeWidth="1.15"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -155,7 +154,6 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
   const tCat = useTranslations("categories");
   const tHero = useTranslations("categoryHero");
   const tSort = useTranslations("sort");
-  const router = useRouter();
   const searchParams = useSearchParams();
   const urlCategory = useMemo(
     () => categoryFromQuery(searchParams.get("category"), initialCategory),
@@ -163,7 +161,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
   );
   const [category, setCategory] = useState<InteriorCategory>(urlCategory);
   const [subcategory, setSubcategory] = useState<string>("All");
-  const [sortBy, setSortBy] = useState<SortOption>("newest");
+  const [sortBy, setSortBy] = useState<SortOption>("all");
   const [filters, setFilters] = useState<AdvancedFilters>(EMPTY_FILTERS);
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
@@ -249,6 +247,9 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
     });
 
     switch (sortBy) {
+      case "all":
+        list = [...list].sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+        break;
       case "newest":
         list = [...list].sort(
           (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
@@ -265,8 +266,6 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
       case "price-low":
         list = [...list].sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
         break;
-      default:
-        list = [...list].sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
     }
     return list;
   }, [projects, category, subcategory, subcategoryOptions, sortBy, filters]);
@@ -300,6 +299,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
   const sortOptions = useMemo(
     () =>
       [
+        { value: "all" as SortOption, label: tSort("allOption") },
         { value: "newest" as SortOption, label: tSort("newest") },
         { value: "oldest" as SortOption, label: tSort("oldest") },
         { value: "price-high" as SortOption, label: tSort("priceHigh") },
@@ -309,16 +309,10 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
   );
 
   const activeFilterCount = countActiveFilters(filters);
-  const sortLabel = sortOptions.find((opt) => opt.value === sortBy)?.label ?? tSort("newest");
+  const sortLabel = sortOptions.find((opt) => opt.value === sortBy)?.label ?? tSort("allOption");
   const gridKey = `${category}-${subcategory}-${sortBy}-${activeFilterCount}`;
-
-  function selectCategory(cat: InteriorCategory) {
-    setCategory(cat);
-    setSubcategory("All");
-    setFilters(EMPTY_FILTERS);
-    const query = cat === "All" ? "/interior" : `/interior?category=${encodeURIComponent(cat)}`;
-    router.replace(query, { scroll: false });
-  }
+  const toolbarTitleLabel =
+    category === "All" ? tCommon("allInterior") : categoryLabels[category];
 
   function selectSubcategory(sub: string) {
     setSubcategory(sub);
@@ -326,7 +320,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
 
   return (
     <div className="bg-[#f7f3f2]">
-      <section className="pt-[calc(102px+24px)] md:pt-[calc(102px+32px)]">
+      <section className="pt-[calc(72px+20px)] sm:pt-[calc(102px+24px)] md:pt-[calc(102px+32px)]">
         <PageShell>
           <AnimatePresence mode="wait">
             <motion.div
@@ -346,35 +340,13 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
             </motion.div>
           </AnimatePresence>
 
-          <div className="mt-10 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:mt-[60px] [&::-webkit-scrollbar]:hidden">
-            <div className="mx-auto flex w-max min-w-full items-center justify-start gap-5 md:justify-center">
-              {INTERIOR_CATEGORIES.map((cat) => {
-                const active = category === cat;
-                return (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => selectCategory(cat)}
-                    className={`inline-flex h-11 shrink-0 items-center px-3 font-outfit text-[15px] font-normal transition-colors duration-200 md:px-3 ${
-                      active
-                        ? "rounded-[6px] bg-[#6a414d] text-white"
-                        : "bg-transparent text-[#6a414d]/70 hover:text-[#6a414d]"
-                    }`}
-                  >
-                    {categoryLabels[cat]}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="overflow-hidden">
+          <div className="mt-10 overflow-hidden md:mt-[60px]">
             <AnimatePresence initial={false}>
               {subcategoryOptions && (
                 <motion.div
                   key={`subnav-${category}`}
                   {...SUBNAV_FADE}
-                  className="mt-6 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:mt-8 [&::-webkit-scrollbar]:hidden"
+                  className="mt-8 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:mt-10 [&::-webkit-scrollbar]:hidden"
                 >
                   <div className="mx-auto flex w-max min-w-full items-center justify-start gap-4 md:justify-center">
                     <button
@@ -413,33 +385,40 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
         </PageShell>
       </section>
 
-      <section className="mt-10 md:mt-12">
+      <section className="mt-8 md:mt-10 lg:mt-12">
         <PageShell>
-          <div className="flex min-h-11 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="font-outfit text-[clamp(1rem,2vw,1.375rem)] font-normal leading-none text-[#6a414d] tabular-nums">
-              {tCommon("allInteriorCount", { count: items.length })}
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+            <p className="shrink-0 font-outfit text-[1.0625rem] font-semibold leading-none tabular-nums text-[#1f1f1f] sm:text-[1.125rem] md:text-[1.25rem] lg:text-[1.375rem]">
+              {toolbarTitleLabel}
+              <span className={TOOLBAR_COUNT_CLASS}>({items.length})</span>
             </p>
 
-            <div className="flex flex-wrap items-center gap-5">
-              <div ref={sortRef} className="relative flex items-center gap-3">
-                <span className="font-outfit text-[15px] font-normal text-[#6a414d]">{tCommon("sortBy")}</span>
+            <div className="flex w-full items-center gap-2 sm:gap-2.5 lg:w-auto lg:shrink-0">
+              <div
+                ref={sortRef}
+                className="relative flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5 lg:flex-none"
+              >
+                <span className="shrink-0 whitespace-nowrap font-outfit text-[13px] font-medium text-[#1f1f1f] sm:text-[14px] md:text-[15px]">
+                  {tCommon("sortBy")}
+                </span>
                 <button
                   type="button"
                   onClick={() => setSortOpen((open) => !open)}
-                  className={`${TOOLBAR_PILL} min-w-[180px] justify-between px-5`}
+                  className={`${TOOLBAR_PILL} min-w-0 flex-1 justify-between sm:min-w-[112px] sm:flex-none lg:min-w-[128px]`}
                   aria-expanded={sortOpen}
                   aria-haspopup="listbox"
                 >
                   <span className="truncate">{sortLabel}</span>
                   <ChevronDown
-                    size={16}
-                    className={`shrink-0 text-[#6a414d]/70 transition ${sortOpen ? "rotate-180" : ""}`}
+                    size={14}
+                    strokeWidth={2}
+                    className={`shrink-0 text-[#1f1f1f]/70 transition sm:h-[15px] sm:w-[15px] ${sortOpen ? "rotate-180" : ""}`}
                   />
                 </button>
                 {sortOpen && (
                   <div
                     role="listbox"
-                    className="absolute right-0 top-full z-20 mt-1 min-w-[220px] overflow-hidden rounded-[6px] border border-[#cfc4c6] bg-white py-1 shadow-lg"
+                    className="absolute left-0 top-[calc(100%+6px)] z-20 w-full min-w-[200px] overflow-hidden rounded-[8px] border border-[#d4d4d4] bg-white py-1 shadow-lg sm:left-auto sm:right-0 sm:w-[220px]"
                   >
                     {sortOptions.map((opt) => (
                       <button
@@ -451,10 +430,10 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
                           setSortBy(opt.value);
                           setSortOpen(false);
                         }}
-                        className={`flex w-full px-4 py-2.5 text-left font-outfit text-[15px] transition hover:bg-[#f7f1f2] ${
+                        className={`flex w-full px-3 py-2 text-left font-outfit text-[14px] transition hover:bg-[#f7f1f2] sm:px-4 sm:py-2.5 sm:text-[15px] ${
                           sortBy === opt.value
-                            ? "font-medium text-[#6a414d]"
-                            : "font-normal text-[#6a414d]/85"
+                            ? "font-medium text-[#1f1f1f]"
+                            : "font-normal text-[#1f1f1f]/80"
                         }`}
                       >
                         {opt.label}
@@ -467,13 +446,14 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
               <button
                 type="button"
                 onClick={() => setFilterOpen(true)}
-                className={toolbarPillClass(activeFilterCount > 0)}
+                className={`${TOOLBAR_PILL} shrink-0 justify-center sm:min-w-[112px] lg:min-w-[128px]`}
               >
                 <FilterIcon className="shrink-0" />
-                <span>
-                  {activeFilterCount > 0
-                    ? tCommon("filterCount", { count: activeFilterCount })
-                    : tCommon("filter")}
+                <span className="whitespace-nowrap">
+                  {tCommon("filter")}
+                  {activeFilterCount > 0 && (
+                    <span className={TOOLBAR_COUNT_CLASS}> ({activeFilterCount})</span>
+                  )}
                 </span>
               </button>
             </div>
@@ -483,7 +463,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
 
       <section className="mt-8 pb-20 md:mt-10 md:pb-28">
         <PageShell>
-          <div className="min-h-[420px] sm:min-h-[460px] lg:min-h-[500px]">
+          <div className="min-h-[300px] sm:min-h-[420px] lg:min-h-[500px]">
             <AnimatePresence mode="wait">
               {items.length === 0 ? (
                 <motion.p
@@ -497,13 +477,14 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
                 <motion.div
                   key={gridKey}
                   {...GRID_FADE}
-                  className="grid gap-[30px] sm:grid-cols-2 lg:grid-cols-3"
+                  className="grid gap-4 sm:gap-6 md:gap-[30px] grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
                 >
                   {items.map((item) => (
                     <Link
                       key={item._id}
                       href={`/interior/${item._id}`}
-                      className="group relative block h-[420px] overflow-hidden rounded-[10px] bg-[#e8e2e0] sm:h-[460px] lg:h-[500px]"
+                      className="group relative block overflow-hidden rounded-[10px] bg-[#e8e2e0]"
+                      style={{ aspectRatio: "3/4" }}
                     >
                       <ProjectCardImage
                         src={resolveMediaUrl(item.coverImage, INTERIOR_FALLBACK)}

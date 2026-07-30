@@ -49,21 +49,21 @@ function pickImage(images: string[], index: number, fallback: string) {
 function InteriorDetailGallery({ images, title }: { images: string[]; title: string }) {
   return (
     <section>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="overflow-hidden rounded-2xl">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+        <div className="overflow-hidden rounded-xl sm:rounded-2xl">
           <div className="aspect-[4/3] w-full">
             <DetailImage src={pickImage(images, 0, FALLBACK)} alt={`${title} detail left`} />
           </div>
         </div>
-        <div className="overflow-hidden rounded-2xl">
+        <div className="overflow-hidden rounded-xl sm:rounded-2xl">
           <div className="aspect-[4/3] w-full">
             <DetailImage src={pickImage(images, 1, FALLBACK)} alt={`${title} detail right`} />
           </div>
         </div>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-2xl">
-        <div className="aspect-[21/9] w-full md:aspect-[2.35/1]">
+      <div className="mt-4 overflow-hidden rounded-xl sm:mt-6 sm:rounded-2xl">
+        <div className="aspect-[4/3] w-full sm:aspect-[16/9] md:aspect-[2.35/1]">
           <DetailImage src={pickImage(images, 2, FALLBACK)} alt={`${title} panoramic`} />
         </div>
       </div>
@@ -83,16 +83,14 @@ function NarrativeBlock({
   title: string;
 }) {
   return (
-    <section className="grid grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-12 lg:gap-16">
+    <section className="grid grid-cols-1 items-center gap-6 sm:gap-8 md:grid-cols-2 md:gap-12 lg:gap-16">
       <div className={imageFirst ? "md:order-2" : "md:order-1"}>
-        <p className="max-w-[520px] font-outfit text-[15px] font-normal leading-[1.75] text-[#6a414d]/85 md:text-base md:leading-[1.8]">
+        <p className="font-outfit text-[14px] font-normal leading-[1.75] text-[#6a414d]/85 sm:text-[15px] md:text-base md:leading-[1.8]">
           {text}
         </p>
       </div>
-      <div
-        className={`overflow-hidden rounded-2xl ${imageFirst ? "md:order-1" : "md:order-2"}`}
-      >
-        <div className="aspect-[3/4] w-full md:aspect-[4/5]">
+      <div className={`overflow-hidden rounded-xl sm:rounded-2xl ${imageFirst ? "md:order-1" : "md:order-2"}`}>
+        <div className="aspect-[4/3] w-full sm:aspect-[3/4] md:aspect-[4/5]">
           <DetailImage src={image} alt={`${title} feature`} />
         </div>
       </div>
@@ -110,17 +108,18 @@ function YouMayLikeSection({
   if (items.length === 0) return null;
 
   return (
-    <section className="border-t border-[#e5dcd3] pt-12 md:pt-16">
-      <h2 className="font-outfit text-[clamp(1.25rem,2.2vw,1.75rem)] font-semibold text-[#6a414d]">
+    <section className="border-t border-[#e5dcd3] pt-10 sm:pt-12 md:pt-16">
+      <h2 className="font-outfit text-[clamp(1.1rem,2.2vw,1.75rem)] font-semibold text-[#6a414d]">
         You May Like
       </h2>
 
-      <div className="mt-8 grid gap-[30px] sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid gap-4 sm:gap-6 md:gap-[30px] grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (
           <Link
             key={item._id}
             href={`/interior/${item._id}`}
-            className="group relative block h-[420px] overflow-hidden rounded-[10px] bg-[#e8e2e0] sm:h-[460px] lg:h-[500px]"
+            className="group relative block overflow-hidden rounded-[10px] bg-[#e8e2e0]"
+            style={{ aspectRatio: "3/4" }}
           >
             <DetailImage
               src={item.coverImage || FALLBACK}
@@ -185,7 +184,7 @@ export default function InteriorDetail({ project }: Props) {
 
   return (
     <div style={{ backgroundColor: INTERIOR_DETAIL_BG }}>
-      <section className="relative h-[min(75vh,820px)] min-h-[420px] w-full overflow-hidden md:min-h-[480px]">
+      <section className="relative h-[40vh] min-h-[260px] w-full overflow-hidden sm:h-[50vh] sm:min-h-[320px] md:h-[min(75vh,820px)] md:min-h-[480px]">
         <DetailImage
           src={project.coverImage || FALLBACK}
           alt={project.detailTitle}
@@ -194,29 +193,29 @@ export default function InteriorDetail({ project }: Props) {
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/10" />
       </section>
 
-      <div className={`${INTERIOR_DETAIL_SHELL} pt-10 md:pt-14 lg:pt-16`}>
+      <div className={`${INTERIOR_DETAIL_SHELL} pt-6 sm:pt-8 md:pt-14 lg:pt-16`}>
         <Link
           href={backHref}
-          className="font-outfit mb-8 inline-flex items-center gap-1.5 text-[14px] font-medium text-[#6a414d]/65 transition hover:text-[#cf5374] md:mb-10"
+          className="font-outfit mb-5 inline-flex items-center gap-1.5 text-[13px] font-medium text-[#6a414d]/65 transition hover:text-[#cf5374] sm:mb-8 md:mb-10 sm:text-[14px]"
         >
           <ChevronLeft size={15} strokeWidth={2} aria-hidden />
           Back to Interior
         </Link>
 
         <header className="max-w-[920px]">
-          <h1 className="font-outfit text-[clamp(1.375rem,2.6vw,2.125rem)] font-semibold leading-[1.35] tracking-[-0.01em] text-[#6a414d]">
+          <h1 className="font-outfit text-[clamp(1.2rem,3vw,2.125rem)] font-semibold leading-[1.3] tracking-[-0.01em] text-[#6a414d]">
             {project.detailTitle}
           </h1>
-          <p className="mt-6 max-w-[820px] font-outfit text-[15px] font-normal leading-[1.75] text-[#6a414d]/85 md:mt-8 md:text-base md:leading-[1.8]">
+          <p className="mt-4 max-w-[820px] font-outfit text-[14px] font-normal leading-[1.75] text-[#6a414d]/85 sm:text-[15px] md:mt-8 md:text-base md:leading-[1.8]">
             {project.description}
           </p>
         </header>
 
-        <div className="mt-10 md:mt-14">
+        <div className="mt-6 sm:mt-10 md:mt-14">
           <InteriorDetailGallery images={gallery} title={project.detailTitle} />
         </div>
 
-        <div className="mt-14 space-y-14 md:mt-20 md:space-y-20">
+        <div className="mt-8 space-y-8 sm:mt-12 sm:space-y-12 md:mt-20 md:space-y-20">
           <NarrativeBlock
             text={project.narrativeOne || ""}
             image={pickImage(gallery, 2, project.coverImage || FALLBACK)}
@@ -230,18 +229,18 @@ export default function InteriorDetail({ project }: Props) {
           />
         </div>
 
-        <section className="mt-14 md:mt-20">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div className="overflow-hidden rounded-2xl">
-              <div className="aspect-[4/3] w-full md:aspect-[3/2]">
+        <section className="mt-8 sm:mt-12 md:mt-20">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+            <div className="overflow-hidden rounded-xl sm:rounded-2xl">
+              <div className="aspect-[4/3] w-full">
                 <DetailImage
                   src={pickImage(gallery, 3, FALLBACK)}
                   alt={`${project.detailTitle} detail`}
                 />
               </div>
             </div>
-            <div className="overflow-hidden rounded-2xl">
-              <div className="aspect-[4/3] w-full md:aspect-[3/2]">
+            <div className="overflow-hidden rounded-xl sm:rounded-2xl">
+              <div className="aspect-[4/3] w-full">
                 <DetailImage
                   src={pickImage(gallery, 4, FALLBACK)}
                   alt={`${project.detailTitle} detail`}
@@ -251,7 +250,7 @@ export default function InteriorDetail({ project }: Props) {
           </div>
         </section>
 
-        <div className="mt-14 pb-16 md:mt-20 md:pb-24">
+        <div className="mt-8 pb-12 sm:mt-12 sm:pb-16 md:mt-20 md:pb-24">
           <YouMayLikeSection items={related} category={project.category} />
         </div>
       </div>

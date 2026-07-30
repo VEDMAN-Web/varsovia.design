@@ -3,7 +3,9 @@ type SectionHeadingProps = {
   subtitle?: string;
   className?: string;
   titleAs?: "h1" | "h2" | "h3";
+  titleClassName?: string;
   subtitleSentenceCase?: boolean;
+  subtitleClassName?: string;
   children?: React.ReactNode;
   compact?: boolean;
   expanded?: boolean;
@@ -12,10 +14,10 @@ type SectionHeadingProps = {
 
 /** Shared homepage + inner-page section typography */
 export const SECTION_TITLE_CLASS =
-  "font-display text-[clamp(1.45rem,3.4vw,3.125rem)] font-normal tracking-[0.1em] text-[#6a414d] uppercase";
+  "font-display px-1 text-balance break-words text-[clamp(1.35rem,3.4vw,3.125rem)] font-normal uppercase tracking-[0.06em] text-[#6a414d] sm:tracking-[0.1em]";
 
 export const SECTION_SUBTITLE_CLASS =
-  "font-outfit mx-auto mt-[30px] max-w-[68rem] px-2 text-[clamp(0.875rem,1.6vw,1.375rem)] font-normal uppercase tracking-[0.3em] text-[#cf5374]";
+  "font-outfit mx-auto mt-4 max-w-[68rem] break-words px-2 text-[clamp(0.8125rem,2.4vw,1.375rem)] font-normal uppercase tracking-[0.14em] text-[#cf5374] sm:mt-[30px] sm:tracking-[0.3em]";
 
 export const SECTION_SUBTITLE_SENTENCE_CLASS =
   "font-outfit mx-auto mt-[30px] max-w-[68rem] px-2 text-[clamp(0.875rem,1.6vw,1.375rem)] font-normal normal-case tracking-normal text-[#cf5374]";
@@ -41,10 +43,10 @@ export const PAGE_ARTICLE_TITLE_CLASS =
   "font-outfit text-[clamp(1.375rem,2.6vw,2.125rem)] font-semibold leading-[1.35] tracking-[-0.01em] text-[#6a414d]";
 
 export const SECTION_BLOCK_CLASS =
-  "mx-auto flex min-h-[100px] w-full flex-col items-center justify-center px-4 py-6 sm:min-h-[130px] sm:px-6 md:h-[177px] md:py-0";
+  "mx-auto flex min-h-[84px] w-full flex-col items-center justify-center px-2 py-7 sm:min-h-[100px] sm:px-4 sm:py-6 md:min-h-[130px] md:h-[177px] md:px-6 md:py-0";
 
 export const SECTION_BLOCK_COMPACT_CLASS =
-  "mx-auto flex min-h-[88px] w-full flex-col items-center justify-center px-4 py-8 sm:min-h-[100px] sm:px-6 md:py-10";
+  "mx-auto flex min-h-[72px] w-full flex-col items-center justify-center px-3 py-6 sm:min-h-[88px] sm:px-6 sm:py-8 md:min-h-[100px] md:py-10";
 
 export const SECTION_BLOCK_EXPANDED_CLASS =
   "mx-auto flex w-full flex-col items-center px-6 py-12 text-center sm:px-8 md:px-10 md:py-16 lg:px-14";
@@ -63,7 +65,9 @@ export default function SectionHeading({
   subtitle,
   className = "",
   titleAs = "h2",
+  titleClassName,
   subtitleSentenceCase = false,
+  subtitleClassName,
   children,
   compact = false,
   expanded = false,
@@ -76,17 +80,17 @@ export default function SectionHeading({
       ? SECTION_BLOCK_COMPACT_CLASS
       : SECTION_BLOCK_CLASS;
 
+  const subtitleClass =
+    subtitleClassName ??
+    (subtitleSentenceCase ? SECTION_SUBTITLE_SENTENCE_CLASS : SECTION_SUBTITLE_CLASS);
+
   return (
     <div
       className={`${blockClass} ${className}`.trim()}
       style={noGradient ? undefined : { background: SECTION_BLOCK_GRADIENT }}
     >
-      <TitleTag className={SECTION_TITLE_CLASS}>{title}</TitleTag>
-      {subtitle && (
-        <p className={subtitleSentenceCase ? SECTION_SUBTITLE_SENTENCE_CLASS : SECTION_SUBTITLE_CLASS}>
-          {subtitle}
-        </p>
-      )}
+      <TitleTag className={titleClassName ?? SECTION_TITLE_CLASS}>{title}</TitleTag>
+      {subtitle && <p className={subtitleClass}>{subtitle}</p>}
       {children}
     </div>
   );

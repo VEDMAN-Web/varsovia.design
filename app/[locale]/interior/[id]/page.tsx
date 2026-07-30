@@ -10,9 +10,13 @@ type Props = {
   params: Promise<{ locale: string; id: string }>;
 };
 
+// Pre-render the 24 hardcoded items at build time
 export function generateStaticParams() {
   return interiorStaticParams();
 }
+
+// Allow API project IDs (MongoDB ObjectIds) not in static params to render dynamically
+export const dynamicParams = true;
 
 export default async function InteriorDetailPage({ params }: Props) {
   const { locale, id } = await params;

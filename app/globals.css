@@ -37,23 +37,18 @@
 }
 
 /* Partners strip — infinite horizontal marquee */
-.partner-logo-img {
-  filter: brightness(0) saturate(100%) invert(28%) sepia(18%) saturate(1400%) hue-rotate(295deg)
-    brightness(92%) contrast(92%);
-}
-
 .partners-marquee {
   overflow: hidden;
   width: 100%;
-  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
 }
 
 .partners-marquee-track {
   display: flex;
   width: max-content;
   align-items: center;
-  animation: partners-marquee 36s linear infinite;
+  animation: partners-marquee 40s linear infinite;
   will-change: transform;
 }
 
@@ -61,15 +56,8 @@
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  gap: 2rem;
-  padding-right: 2rem;
-}
-
-@media (min-width: 1024px) {
-  .partners-marquee-group {
-    gap: 3.125rem;
-    padding-right: 3.125rem;
-  }
+  gap: clamp(1.25rem, 2.75vw, 2rem);
+  padding-right: clamp(1.25rem, 2.75vw, 2rem);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -78,9 +66,15 @@
     flex-wrap: wrap;
     justify-content: center;
     width: 100%;
+    gap: clamp(1.25rem, 3vw, 2rem);
   }
 
-  .partners-marquee-group:last-child {
+  .partners-marquee-group {
+    padding-right: 0;
+    gap: clamp(1.25rem, 3vw, 2rem);
+  }
+
+  .partners-marquee-group:not(:first-child) {
     display: none;
   }
 }
@@ -125,10 +119,11 @@ body {
 }
 
 .container-1240 {
-  width: 90%;
+  width: min(100%, 1440px);
+  max-width: 1440px;
   min-width: 0;
   margin-inline: auto;
-  padding-inline: clamp(1.25rem, 4vw, 56px);
+  padding-inline: clamp(1rem, 4vw, 3.5rem);
 }
 
 .btn-primary {
