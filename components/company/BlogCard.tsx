@@ -1,9 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { Link } from "@/lib/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { Calendar, Clock } from "lucide-react";
+import {
+  BLOG_ACCENT_LINE,
+  BLOG_CARD_HOVER,
+  BLOG_CARD_IDLE,
+  BLOG_CARD_IMAGE_ASPECT,
+  BLOG_CARD_ROUNDED,
+  BLOG_META_PILL,
+  BLOG_META_PILL_ICON,
+} from "@/components/company/blogLayoutShared";
 import type { BlogPost } from "@/lib/companyData";
 
 type BlogCardProps = {
@@ -13,6 +23,7 @@ type BlogCardProps = {
 
 export default function BlogCard({ blog, index = 0 }: BlogCardProps) {
   const t = useTranslations("blogListing");
+  const [hovered, setHovered] = useState(false);
 
   return (
     <motion.article
@@ -21,39 +32,65 @@ export default function BlogCard({ blog, index = 0 }: BlogCardProps) {
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.5, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
       className="h-full min-w-0"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onFocus={() => setHovered(true)}
+      onBlur={() => setHovered(false)}
     >
       <Link
         href={`/blog/${blog._id}`}
-        className="group flex h-full flex-col overflow-hidden rounded-[14px] border border-transparent bg-[#f6eaea] shadow-[0_4px_20px_rgba(107,44,58,0.04)] transition-[border-color,box-shadow,transform] duration-300 hover:border-[#cf5374]/45 hover:shadow-[0_8px_28px_rgba(207,83,116,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cf5374] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f3f2] sm:rounded-[16px]"
+        className={`flex h-full flex-col overflow-hidden ${BLOG_CARD_ROUNDED} transition-[border-color,box-shadow,transform] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cf5374] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f3f2] ${
+          hovered ? BLOG_CARD_HOVER : BLOG_CARD_IDLE
+        }`}
       >
-        <div className="relative aspect-[440/280] w-full overflow-hidden sm:aspect-[4/3] lg:aspect-[440/280]">
+        <div
+          className={`relative overflow-hidden ${BLOG_CARD_IMAGE_ASPECT} rounded-t-[14px] sm:rounded-t-[16px]`}
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={blog.image}
             alt={blog.title}
-            className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]"
+            className={`h-full w-full object-cover transition duration-700 ease-out ${
+              hovered ? "scale-[1.03]" : "scale-100"
+            }`}
             loading="lazy"
             decoding="async"
           />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-3 pb-3 sm:px-4 sm:pb-4">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1 font-outfit text-[11px] font-medium text-white backdrop-blur-[2px] sm:gap-2 sm:px-3 sm:py-1.5 sm:text-[12px]">
-              <Calendar size={12} className="shrink-0 opacity-90" aria-hidden />
+            <span className={BLOG_META_PILL}>
+              <Calendar size={11} strokeWidth={2} className={BLOG_META_PILL_ICON} aria-hidden />
               {blog.date}
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1 font-outfit text-[11px] font-medium text-white backdrop-blur-[2px] sm:gap-2 sm:px-3 sm:py-1.5 sm:text-[12px]">
-              <Clock size={12} className="shrink-0 opacity-90" aria-hidden />
+            <span className={BLOG_META_PILL}>
+              <Clock size={11} strokeWidth={2} className={BLOG_META_PILL_ICON} aria-hidden />
               {blog.readTime}
             </span>
           </div>
         </div>
 
         <div className="flex flex-1 flex-col px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
-          <h3 className="font-outfit text-[clamp(0.9375rem,1.35vw,1.125rem)] font-semibold leading-snug text-[#1f1f1f] transition-colors duration-300 group-hover:text-[#6a414d] sm:leading-[1.35]">
+          <h3
+            className={`font-outfit text-[clamp(0.9375rem,1.35vw,1.125rem)] font-semibold leading-snug transition-colors duration-300 sm:leading-[1.35] ${
+              hovered ? "text-[#6a414d]" : "text-[#1f1f1f]"
+            }`}
+          >
             {blog.title}
           </h3>
+
+          <span
+            className={`${BLOG_ACCENT_LINE} ${hovered ? "w-full" : "w-10"}`}
+            aria-hidden
+          />
+
           <p className="mt-2.5 line-clamp-3 font-outfit text-[13px] font-normal leading-relaxed text-[#6a414d]/75 sm:mt-3 sm:text-[14px] sm:leading-6">
             {blog.excerpt}{" "}
-            <span className="font-semibold text-[#1f1f1f]">{t("readMore")}</span>
+            <span
+              className={`font-semibold transition-colors duration-300 ${
+                hovered ? "text-[#cf5374]" : "text-[#1f1f1f]"
+              }`}
+            >
+              {t("readMore")}
+            </span>
           </p>
 
           <div className="mt-auto border-t border-[#e5dcd3]/70 pt-4 sm:pt-5">

@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigation";
 import {
   mobileSubLinkFeatured,
@@ -8,7 +11,8 @@ import {
   NavDropdownRichLink,
   NavDropdownSectionLabel,
 } from "@/components/layout/NavDropdown";
-import { SHOWCASE_CATEGORY_META, SHOWCASE_TABS, type ShowcaseTab } from "@/lib/showcaseData";
+import { SHOWCASE_TABS, type ShowcaseTab } from "@/lib/showcaseData";
+import { showcaseTabMessageKey } from "@/lib/showcaseTabI18n";
 
 type ShowcaseNavDropdownProps = {
   onNavigate?: () => void;
@@ -26,16 +30,18 @@ function ShowcaseDropdownColumn({
   tabs: ShowcaseTab[];
   onNavigate?: () => void;
 }) {
+  const t = useTranslations("showcase");
+
   return (
     <div className="min-w-0 flex-1">
       {tabs.map((tab) => {
-        const meta = SHOWCASE_CATEGORY_META[tab];
+        const key = showcaseTabMessageKey(tab);
         return (
           <NavDropdownRichLink
             key={tab}
             href={showcaseHref(tab)}
-            title={meta.title}
-            subtitle={meta.subtitle}
+            title={t(`categoryMeta.${key}.title`)}
+            subtitle={t(`categoryMeta.${key}.subtitle`)}
             onNavigate={onNavigate}
           />
         );
@@ -46,6 +52,7 @@ function ShowcaseDropdownColumn({
 
 /** Showcase dropdown — two-column portfolio grid */
 export default function ShowcaseNavDropdown({ onNavigate }: ShowcaseNavDropdownProps) {
+  const t = useTranslations("showcase");
   const items = SHOWCASE_TABS.filter((tab) => tab !== "All");
   const leftColumn = items.filter((_, index) => index % 2 === 0);
   const rightColumn = items.filter((_, index) => index % 2 === 1);
@@ -54,11 +61,11 @@ export default function ShowcaseNavDropdown({ onNavigate }: ShowcaseNavDropdownP
     <NavDropdownPanel wide>
       <NavDropdownFeatured
         href="/showcase?tab=All"
-        label="Our Showcase"
-        subtitle="Every space, every story"
+        label={t("navFeaturedTitle")}
+        subtitle={t("navEverySpace")}
         onNavigate={onNavigate}
       />
-      <NavDropdownSectionLabel>By region & type</NavDropdownSectionLabel>
+      <NavDropdownSectionLabel>{t("navByRegion")}</NavDropdownSectionLabel>
       <NavDropdownBody className="pb-3 pt-0">
         <div className="flex divide-x divide-[#ece3df]/70">
           <ShowcaseDropdownColumn tabs={leftColumn} onNavigate={onNavigate} />
@@ -73,15 +80,16 @@ export { showcaseHref };
 
 /** Mobile showcase accordion links */
 export function MobileShowcaseLinks({ onNavigate }: { onNavigate: () => void }) {
+  const t = useTranslations("showcase");
   const items = SHOWCASE_TABS.filter((tab) => tab !== "All");
 
   return (
     <>
       <Link href="/showcase?tab=All" onClick={onNavigate} className={mobileSubLinkFeatured}>
-        Our Showcase
+        {t("navFeaturedTitle")}
       </Link>
       {items.map((tab) => {
-        const meta = SHOWCASE_CATEGORY_META[tab];
+        const key = showcaseTabMessageKey(tab);
         return (
           <Link
             key={tab}
@@ -89,9 +97,11 @@ export function MobileShowcaseLinks({ onNavigate }: { onNavigate: () => void }) 
             onClick={onNavigate}
             className={mobileSubLinkRich}
           >
-            <span className="block font-outfit text-[15px] font-medium text-maroon">{meta.title}</span>
+            <span className="block font-outfit text-[15px] font-medium text-maroon">
+              {t(`categoryMeta.${key}.title`)}
+            </span>
             <span className="mt-0.5 block font-outfit text-[12px] text-[#6a414d]/65">
-              {meta.subtitle}
+              {t(`categoryMeta.${key}.subtitle`)}
             </span>
           </Link>
         );

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { Award, CheckCircle2, Compass, Cpu, Layers, Box, Users } from "lucide-react";
+import { Award, CheckCircle2, Users } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import FadeInView from "@/components/company/FadeInView";
 import SectionHeading, { SECTION_TITLE_CLASS } from "@/components/ui/SectionHeading";
@@ -30,6 +30,7 @@ import {
   TEAM_TOOL_CARD_ACTIVE,
   TEAM_TOOL_CARD_BASE,
   TEAM_TOOL_CARD_IDLE,
+  TEAM_TOOL_ICON_GLOW,
   TEAM_TOOL_ICON_WRAP,
   TEAM_TOOLS_BODY,
   TEAM_TOOLS_GRID,
@@ -37,19 +38,62 @@ import {
 } from "@/components/company/teamLayoutShared";
 import { fetchTeamMembers } from "@/lib/api";
 import type { Locale } from "@/lib/i18n/routing";
-import { resolveTeamMembers, type TeamMember } from "@/lib/companyData";
+import { resolveTeamMembers, designTools, type TeamMember } from "@/lib/companyData";
 import { resolveMediaUrl, MEDIA } from "@/lib/mediaAssets";
 
 const TEAM_PORTRAIT_FALLBACK = MEDIA.about[0];
 
 const STAT_WATERMARKS = [CheckCircle2, Award] as const;
 
-const TOOLS = [
-  { name: "CAXA", icon: Compass },
-  { name: "AUTOCAD", icon: Cpu },
-  { name: "3D MAX", icon: Layers },
-  { name: "KD MAX", icon: Box },
-] as const;
+function DesignToolCard({
+  name,
+  image,
+  index,
+  emphasized,
+  onHover,
+  onLeave,
+}: {
+  name: string;
+  image: string;
+  index: number;
+  emphasized: boolean;
+  onHover: () => void;
+  onLeave: () => void;
+}) {
+  return (
+    <FadeInView delay={index * 0.06}>
+      <div className="h-full min-w-0">
+        <motion.div
+          onMouseEnter={onHover}
+          onMouseLeave={onLeave}
+          className={`${TEAM_TOOL_CARD_BASE} ${emphasized ? TEAM_TOOL_CARD_ACTIVE : TEAM_TOOL_CARD_IDLE}`}
+        >
+          <div
+            className={TEAM_TOOL_ICON_WRAP}
+            style={{ background: TEAM_TOOL_ICON_GLOW }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={image}
+              alt=""
+              className="h-11 w-11 object-contain sm:h-12 sm:w-12"
+              draggable={false}
+            />
+          </div>
+          <p className="w-full px-1 text-center font-outfit text-[clamp(0.75rem,2vw,0.875rem)] font-bold uppercase tracking-[0.05em] text-[#1f1f1f] sm:text-sm">
+            {name}
+          </p>
+          <span
+            className={`mt-3 h-[3px] rounded-full bg-[#cf5374] transition-all duration-300 ease-out ${
+              emphasized ? "w-[min(52%,4.75rem)]" : "w-4"
+            }`}
+            aria-hidden
+          />
+        </motion.div>
+      </div>
+    </FadeInView>
+  );
+}
 
 function TeamStatCard({
   value,
@@ -120,53 +164,6 @@ function TeamMemberPortraitCard({ member, index }: { member: TeamMember; index: 
   );
 }
 
-function DesignToolCard({
-  name,
-  icon: Icon,
-  index,
-}: {
-  name: string;
-  icon: typeof Compass;
-  index: number;
-}) {
-  const [hovered, setHovered] = useState(false);
-
-  return (
-    <FadeInView delay={index * 0.06}>
-      <div className="h-full min-w-0">
-        <motion.div
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-          className={`${TEAM_TOOL_CARD_BASE} ${hovered ? TEAM_TOOL_CARD_ACTIVE : TEAM_TOOL_CARD_IDLE}`}
-        >
-          <div
-            className={TEAM_TOOL_ICON_WRAP}
-            style={{
-              background:
-                "radial-gradient(circle at 35% 35%, rgba(207,83,116,0.35) 0%, rgba(248,236,238,0.95) 52%, rgba(253,247,248,1) 100%)",
-            }}
-          >
-            <Icon
-              className="h-[clamp(1.375rem,4.5vw,2.125rem)] w-[clamp(1.375rem,4.5vw,2.125rem)] text-[#6a414d]"
-              strokeWidth={1.4}
-              aria-hidden
-            />
-          </div>
-          <p className="w-full px-1 text-center font-outfit text-[clamp(0.6875rem,2vw,0.875rem)] font-bold uppercase tracking-[0.06em] text-[#1f1f1f] min-[480px]:text-sm">
-            {name}
-          </p>
-          <span
-            className={`mt-2.5 h-[3px] rounded-full bg-[#cf5374] transition-all duration-300 ease-out min-[480px]:mt-3 ${
-              hovered ? "w-[min(52%,4.5rem)]" : "w-4"
-            }`}
-            aria-hidden
-          />
-        </motion.div>
-      </div>
-    </FadeInView>
-  );
-}
-
 function TeamBlock({
   title,
   eyebrow,
@@ -196,11 +193,12 @@ export default function TeamPageClient() {
   const [designTeam, setDesignTeam] = useState<TeamMember[]>([]);
   const [architectTeam, setArchitectTeam] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [toolHover, setToolHover] = useState<number | null>(null);
 
   useEffect(() => {
     fetchTeamMembers(locale as Locale)
       .then((data) => {
-        const resolved = resolveTeamMembers(Array.isArray(data) ? data : []);
+        const resolved = resolveTeamMembers(Array.isArray(data) ? data : [], locale as Locale);
         setDesignTeam(resolved.designTeam);
         setArchitectTeam(resolved.architectTeam);
       })
@@ -282,8 +280,16 @@ export default function TeamPageClient() {
               <p className={TEAM_TOOLS_BODY}>{t("toolsBody")}</p>
             </FadeInView>
             <div className={TEAM_TOOLS_GRID}>
-              {TOOLS.map((tool, i) => (
-                <DesignToolCard key={tool.name} name={tool.name} icon={tool.icon} index={i} />
+              {designTools.map((tool, i) => (
+                <DesignToolCard
+                  key={tool.name}
+                  name={tool.name}
+                  image={tool.image}
+                  index={i}
+                  emphasized={toolHover === i}
+                  onHover={() => setToolHover(i)}
+                  onLeave={() => setToolHover(null)}
+                />
               ))}
             </div>
           </section>

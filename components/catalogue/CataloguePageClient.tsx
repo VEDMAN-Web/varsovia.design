@@ -14,6 +14,8 @@ import {
   CATALOGUE_NOTEBOOK_GRID,
   CATALOGUE_SECTION_SHELL,
 } from "@/components/catalogue/catalogueLayoutShared";
+import { catalogueCoverPhoto } from "@/components/catalogue/catalogueMedia";
+import { notebookBrochureTheme } from "@/components/catalogue/catalogueBrochureThemes";
 import { fetchCatalogues } from "@/lib/api";
 import type { Locale } from "@/lib/i18n/routing";
 import { fallbackHomeData } from "@/lib/fallbackData";
@@ -103,6 +105,7 @@ export default function CataloguePageClient() {
                 <div key={row} className={CATALOGUE_NOTEBOOK_GRID}>
                   {displayItems.slice(row * 3, row * 3 + 3).map((item, col) => {
                     const index = row * 3 + col;
+                    const theme = notebookBrochureTheme(index, item.title);
                     const isHovered = hoveredId === item.id;
                     const isAccent = hoverCapable && row === 0 && col === 1 && hoveredId === null;
 
@@ -126,7 +129,8 @@ export default function CataloguePageClient() {
                         }}
                       >
                         <CatalogueNotebookCard
-                          coverImage={item.coverImage}
+                          coverImage={catalogueCoverPhoto(item.coverImage, index, theme.photo)}
+                          room={theme.room}
                           hovered={isHovered || isAccent}
                           onClick={() => openDownload(item)}
                         />

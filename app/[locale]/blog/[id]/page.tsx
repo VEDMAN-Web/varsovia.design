@@ -25,9 +25,9 @@ export default async function BlogDetailPage({ params }: Props) {
   const { locale, id } = await params;
   setRequestLocale(locale);
 
-  const allBlogs = resolveBlogs(await fetchBlogs(locale as Locale));
+  const allBlogs = resolveBlogs(await fetchBlogs(locale as Locale), locale as Locale);
   const apiBlog = await fetchBlogById(id, locale as Locale);
-  const raw = getBlogById(id, apiBlog, allBlogs);
+  const raw = getBlogById(id, apiBlog, allBlogs, locale as Locale);
   if (!raw) notFound();
   const blog = enrichBlogForDetailPage(raw);
 

@@ -52,7 +52,7 @@ export default function ShowcaseSpecCard({ project, backHref }: ShowcaseSpecCard
   ] as const;
 
   return (
-    <article className="relative mx-auto w-full max-w-[1040px] overflow-hidden rounded-[6px] bg-[#f9f5f5] shadow-[0_10px_40px_rgba(42,34,34,0.07)]">
+    <article className="relative mx-auto w-full max-w-[1040px] overflow-hidden rounded-[8px] bg-[#f9f5f5] shadow-[0_12px_48px_rgba(42,34,34,0.08)]">
       <Link
         href={backHref}
         className="font-outfit inline-flex items-center gap-1.5 px-6 pt-5 text-[14px] font-medium text-[#6a414d]/65 transition hover:text-[#cf5374] sm:px-8 md:px-10 md:pt-6"

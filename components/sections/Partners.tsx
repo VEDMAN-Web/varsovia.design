@@ -4,49 +4,39 @@ import { useTranslations } from "next-intl";
 import SectionHeading from "@/components/ui/SectionHeading";
 import SectionShell, { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
 
+/** Figma logos — transparent PNGs (no tile background). */
 const PARTNER_LOGOS = [
-  { name: "Hettich", mask: "/partners/hettich-mask.svg", width: 191 },
-  { name: "Blum", mask: "/partners/blum-mask.svg", width: 120 },
-  { name: "Häfele", mask: "/partners/haefele-mask.svg", width: 191 },
-  { name: "Bosch", mask: "/partners/bosch-mask.svg", width: 166 },
-  { name: "Siemens", mask: "/partners/siemens-mask.svg", width: 191 },
-  { name: "Grohe", mask: "/partners/grohe-mask.svg", width: 134 },
+  { name: "fischer", src: "/partners/figma/fischer.png", width: 133, height: 48 },
+  { name: "Bostik", src: "/partners/figma/bostik.png", width: 101, height: 48 },
+  { name: "Egger", src: "/partners/figma/egger.png", width: 120, height: 48 },
+  { name: "Blum", src: "/partners/figma/blum.png", width: 118, height: 48 },
+  { name: "Jowat", src: "/partners/figma/jowat.png", width: 98, height: 48 },
+  { name: "Partner emblem", src: "/partners/figma/emblem.png", width: 29, height: 48 },
 ] as const;
 
 type PartnerLogo = (typeof PARTNER_LOGOS)[number];
 
-function MaskedLogo({ name, mask, width }: PartnerLogo) {
+function PartnerLogoImage({ name, src, width, height }: PartnerLogo) {
   return (
-    <div
-      role="img"
-      aria-label={name}
-      title={name}
-      className="partner-logo-mask shrink-0 bg-gradient-to-b from-[#cf5374] to-[#6a414d] h-[56px] sm:h-[64px] lg:h-[74px]"
-      style={{
-        aspectRatio: `${width} / 74`,
-        WebkitMaskImage: `url(${mask})`,
-        maskImage: `url(${mask})`,
-        WebkitMaskRepeat: "no-repeat",
-        maskRepeat: "no-repeat",
-        WebkitMaskPosition: "center",
-        maskPosition: "center",
-        WebkitMaskSize: "contain",
-        maskSize: "contain",
-      }}
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={name}
+      width={width}
+      height={height}
+      className="partners-marquee-logo shrink-0"
+      draggable={false}
+      loading="lazy"
+      decoding="async"
     />
   );
 }
 
-function PartnerLogoGroup({ duplicate = false }: { duplicate?: boolean }) {
-  const sequence = [...PARTNER_LOGOS, ...PARTNER_LOGOS, ...PARTNER_LOGOS];
-
+function PartnerLogoStrip({ duplicate = false }: { duplicate?: boolean }) {
   return (
-    <div className="partners-marquee-group" aria-hidden={duplicate || undefined}>
-      {sequence.map((partner, index) => (
-        <MaskedLogo
-          key={`${partner.name}-${duplicate ? "dup" : "orig"}-${index}`}
-          {...partner}
-        />
+    <div className="partners-marquee-strip" aria-hidden={duplicate || undefined}>
+      {PARTNER_LOGOS.map((partner) => (
+        <PartnerLogoImage key={`${partner.name}-${duplicate ? "b" : "a"}`} {...partner} />
       ))}
     </div>
   );
@@ -70,12 +60,14 @@ export default function Partners({ partners: _partners }: { partners: Partner[] 
         />
       </SectionShell>
 
-      <div className="partners-marquee mt-10 lg:mt-12" aria-label={t("partnersAria")}>
-        <div className="partners-marquee-track">
-          <PartnerLogoGroup />
-          <PartnerLogoGroup duplicate />
+      <SectionShell className="mt-10 overflow-hidden lg:mt-12" aria-label={t("partnersAria")}>
+        <div className="partners-marquee">
+          <div className="partners-marquee-track">
+            <PartnerLogoStrip />
+            <PartnerLogoStrip duplicate />
+          </div>
         </div>
-      </div>
+      </SectionShell>
     </section>
   );
 }

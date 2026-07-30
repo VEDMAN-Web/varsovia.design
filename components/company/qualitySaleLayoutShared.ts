@@ -18,10 +18,14 @@ export const QAS_FEATURE_GRID =
   "grid grid-cols-1 gap-[clamp(1.25rem,4vw,1.75rem)] min-[640px]:grid-cols-2 xl:grid-cols-4";
 
 export const QAS_FEATURE_CARD =
-  "relative flex min-h-[clamp(9.5rem,28vw,11.5rem)] flex-col justify-end overflow-hidden rounded-[14px] bg-gradient-to-br from-[#f6eaea] to-[#faf3f4] p-[clamp(1rem,3vw,1.25rem)] shadow-[0_4px_24px_rgba(106,65,77,0.06)] sm:rounded-[16px]";
+  "relative z-0 flex min-h-[clamp(9.5rem,28vw,11.5rem)] flex-col justify-end overflow-hidden rounded-[14px] bg-gradient-to-br from-[#f6eaea] to-[#faf3f4] p-[clamp(1rem,3vw,1.25rem)] shadow-[0_4px_24px_rgba(106,65,77,0.06)] will-change-transform sm:rounded-[16px]";
 
 export const QAS_FEATURE_IMAGE =
-  "w-full overflow-hidden rounded-[14px] bg-[#e8e2e0] shadow-[0_4px_20px_rgba(106,65,77,0.08)] sm:rounded-[16px]";
+  "relative z-0 w-full overflow-hidden rounded-[14px] bg-[#e8e2e0] shadow-[0_4px_20px_rgba(106,65,77,0.08)] will-change-transform sm:rounded-[16px]";
+
+/** Smooth hover scale for feature bento cards (text + photo) */
+export const QAS_FEATURE_HOVER =
+  "origin-center transform-gpu hover:z-10 motion-reduce:transform-none";
 
 export const QAS_SECTION_SPACING = "mb-[clamp(3rem,9vw,7rem)]";
 

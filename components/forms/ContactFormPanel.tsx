@@ -1,8 +1,23 @@
 "use client";
 
-import ContactCollage from "@/components/forms/ContactCollage";
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import { ContactCollageMobileSlider } from "@/components/forms/ContactCollage";
+import ContactMosaicBand from "@/components/forms/ContactMosaicBand";
 import ContactInquiryForm from "@/components/forms/ContactInquiryForm";
 import type { InquiryPurpose } from "@/components/forms/contactFormShared";
+import {
+  CONTACT_FORM_BAND,
+  CONTACT_FORM_PADDING,
+  CONTACT_PANEL_BG,
+  CONTACT_PANEL_RADIUS,
+} from "@/components/forms/contactLayoutShared";
+import {
+  MODAL_FORM_BAND,
+  MODAL_FORM_PADDING,
+  MODAL_FORM_SCROLL,
+  MODAL_MOSAIC_SHELL,
+  MODAL_MOBILE_SLIDER,
+} from "@/components/forms/contactModalLayoutShared";
 
 type ContactFormPanelProps = {
   images?: string[];
@@ -12,9 +27,10 @@ type ContactFormPanelProps = {
   panelClassName?: string;
   variant?: "section" | "modal";
   onSubmitted?: () => void;
+  /** Scroll container for modal form on small screens (wheel / touch lock) */
+  formScrollRef?: RefObject<HTMLElement | null>;
 };
 
-/** Shared Get In Touch panel — Figma 4:801 (section) / 4:4691 (modal) */
 export default function ContactFormPanel({
   images = [],
   purpose = "contact",
@@ -23,31 +39,56 @@ export default function ContactFormPanel({
   panelClassName = "",
   variant = "section",
   onSubmitted,
+  formScrollRef,
 }: ContactFormPanelProps) {
   const isModal = variant === "modal";
-  const panelBg = isModal ? "bg-[#fff3f2]" : "bg-[rgba(207,83,116,0.06)]";
+  const panelBg = isModal ? "bg-[#fff3f2]" : CONTACT_PANEL_BG;
+  const modalRowRef = useRef<HTMLDivElement>(null);
+  const [modalBodyHeight, setModalBodyHeight] = useState(0);
+
+  const measureModalRow = useCallback(() => {
+    const row = modalRowRef.current;
+    if (!row) return;
+    setModalBodyHeight(row.clientHeight);
+  }, []);
+
+  useEffect(() => {
+    if (!isModal) return;
+    measureModalRow();
+    const row = modalRowRef.current;
+    if (!row) return;
+    const ro = new ResizeObserver(measureModalRow);
+    ro.observe(row);
+    return () => ro.disconnect();
+  }, [isModal, measureModalRow]);
 
   if (isModal) {
     return (
-      <div className={`w-full min-w-0 ${panelBg} ${panelClassName}`.trim()}>
-        {/* Wide desktop — side-by-side; tablet/phone — form only, full width */}
-        <div className="flex flex-col 2xl:flex-row 2xl:items-start">
-          <div className="relative hidden shrink-0 2xl:block 2xl:w-[44%]">
-            <div className="relative mx-auto aspect-[4/5] w-full max-w-[520px] 2xl:max-w-none">
-              <ContactCollage images={images} variant="modal" />
-            </div>
-          </div>
+      <div
+        ref={modalRowRef}
+        className={`flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden lg:flex-row lg:items-stretch ${panelBg} ${panelClassName}`.trim()}
+      >
+        <ContactCollageMobileSlider
+          images={images}
+          compact
+          className={MODAL_MOBILE_SLIDER}
+        />
 
-          <div
-            className={`min-w-0 flex-1 px-4 pb-4 pt-3 sm:px-6 sm:pb-6 sm:pt-4 md:px-10 2xl:px-8 2xl:pb-8 2xl:pt-5 ${className}`.trim()}
-          >
-            <ContactInquiryForm
-              purpose={purpose}
-              downloadUrl={downloadUrl}
-              density="modal"
-              onSubmitted={onSubmitted}
-            />
-          </div>
+        <div className={MODAL_MOSAIC_SHELL}>
+          <ContactMosaicBand images={images} fillParent maxHeight={modalBodyHeight} />
+        </div>
+
+        <div
+          ref={formScrollRef as RefObject<HTMLDivElement | null>}
+          data-lenis-prevent
+          className={`${MODAL_FORM_BAND} ${MODAL_FORM_SCROLL} ${MODAL_FORM_PADDING} box-border ${className}`.trim()}
+        >
+          <ContactInquiryForm
+            purpose={purpose}
+            downloadUrl={downloadUrl}
+            density="modal"
+            onSubmitted={onSubmitted}
+          />
         </div>
       </div>
     );
@@ -55,19 +96,23 @@ export default function ContactFormPanel({
 
   return (
     <div
-      className={`relative w-full min-w-0 overflow-hidden ${panelBg} max-lg:rounded-[8px] lg:aspect-[1240/846] ${panelClassName}`.trim()}
+      className={`relative w-full min-w-0 ${CONTACT_PANEL_RADIUS} ${panelBg} ${panelClassName}`.trim()}
     >
-      <ContactCollage images={images} variant="section" />
+      <div className="relative flex min-w-0 flex-col md:flex-row md:items-stretch">
+        <ContactCollageMobileSlider images={images} className="shrink-0 md:hidden" />
 
-      <div
-        className={`relative z-10 min-w-0 px-3 pb-8 pt-4 sm:px-6 sm:pt-5 lg:absolute lg:bottom-[4.73%] lg:left-[47.5%] lg:top-[4.73%] lg:flex lg:w-[49.35%] lg:min-h-0 lg:flex-col lg:px-6 lg:pb-0 lg:pt-0 xl:px-8 ${className}`.trim()}
-      >
-        <ContactInquiryForm
-          purpose={purpose}
-          downloadUrl={downloadUrl}
-          density="section"
-          onSubmitted={onSubmitted}
-        />
+        <ContactMosaicBand images={images} className="hidden md:block md:self-stretch" />
+
+        <div
+          className={`${CONTACT_FORM_BAND} ${CONTACT_FORM_PADDING} md:flex md:flex-col md:justify-start ${className}`.trim()}
+        >
+          <ContactInquiryForm
+            purpose={purpose}
+            downloadUrl={downloadUrl}
+            density="section"
+            onSubmitted={onSubmitted}
+          />
+        </div>
       </div>
     </div>
   );

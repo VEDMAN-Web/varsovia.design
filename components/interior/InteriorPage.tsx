@@ -2,13 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Link } from "@/lib/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import FilterPanel from "@/components/interior/FilterPanel";
 import SectionHeading from "@/components/ui/SectionHeading";
 import PageShell from "@/components/ui/PageShell";
+import ShowcaseProductCard from "@/components/ui/ShowcaseProductCard";
+import {
+  SHOWCASE_LISTING_GRID,
+  SHOWCASE_LISTING_GRID_WRAP,
+} from "@/components/ui/showcaseGridShared";
 import {
   CATEGORY_HERO,
   CATEGORY_SUBCATEGORIES,
@@ -16,18 +20,17 @@ import {
   INTERIOR_CATEGORIES,
   buildInteriorCatalog,
   countActiveFilters,
-  SORT_OPTIONS,
   type AdvancedFilters,
   type InteriorCategory,
   type SortOption,
 } from "@/lib/interiorData";
-import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
+import { MEDIA } from "@/lib/mediaAssets";
 import type { Locale } from "@/lib/i18n/routing";
 
 const INTERIOR_FALLBACK = MEDIA.interior[0];
 
 const TOOLBAR_PILL =
-  "inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-[#d4d4d4] bg-white px-3 font-outfit text-[14px] font-medium text-[#1f1f1f] outline-none transition hover:border-[#6a414d]/35 sm:h-10 sm:gap-2 sm:px-4 sm:text-[15px]";
+  "inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-[#d4d4d4] bg-transparent px-3 font-outfit text-[14px] font-normal text-[#1f1f1f] outline-none transition hover:border-[#6a414d]/40 sm:h-10 sm:gap-2 sm:px-4 sm:text-[15px]";
 
 const TOOLBAR_COUNT_CLASS = "font-normal text-[#9a9a9a]";
 
@@ -108,46 +111,6 @@ function FilterIcon({ className = "" }: { className?: string }) {
   );
 }
 
-function ProjectCardImage({
-  src,
-  alt,
-  className = "",
-}: {
-  src: string;
-  alt: string;
-  className?: string;
-}) {
-  const [current, setCurrent] = useState(resolveMediaUrl(src, INTERIOR_FALLBACK));
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    const resolved = resolveMediaUrl(src, INTERIOR_FALLBACK);
-    if (resolved !== current) {
-      setLoaded(false);
-      setCurrent(resolved);
-    }
-  }, [src, current]);
-
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={current}
-      alt={alt}
-      decoding="async"
-      className={`h-full w-full object-cover transition-[opacity,transform] duration-500 group-hover:scale-[1.03] ${
-        loaded ? "opacity-100" : "opacity-0"
-      } ${className}`}
-      onLoad={() => setLoaded(true)}
-      onError={() => {
-        if (current !== INTERIOR_FALLBACK) {
-          setLoaded(false);
-          setCurrent(INTERIOR_FALLBACK);
-        }
-      }}
-    />
-  );
-}
-
 export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
   const locale = useLocale();
   const tCommon = useTranslations("common");
@@ -190,7 +153,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
       fetchProjects(locale as Locale)
         .then((data: ApiProject[]) => {
           if (!cancelled) {
-            setProjects(buildInteriorCatalog(data ?? []) as ApiProject[]);
+            setProjects(buildInteriorCatalog(data ?? [], locale as Locale) as ApiProject[]);
           }
         })
         .catch(() => {
@@ -398,7 +361,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
                 ref={sortRef}
                 className="relative flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5 lg:flex-none"
               >
-                <span className="shrink-0 whitespace-nowrap font-outfit text-[13px] font-medium text-[#1f1f1f] sm:text-[14px] md:text-[15px]">
+                <span className="shrink-0 whitespace-nowrap font-outfit text-[13px] font-normal text-[#1f1f1f] sm:text-[14px] md:text-[15px]">
                   {tCommon("sortBy")}
                 </span>
                 <button
@@ -474,36 +437,24 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
                   {tCommon("noProjectsFilter")}
                 </motion.p>
               ) : (
-                <motion.div
-                  key={gridKey}
-                  {...GRID_FADE}
-                  className="grid gap-4 sm:gap-6 md:gap-[30px] grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                >
-                  {items.map((item) => (
-                    <Link
-                      key={item._id}
-                      href={`/interior/${item._id}`}
-                      className="group relative block overflow-hidden rounded-[10px] bg-[#e8e2e0]"
-                      style={{ aspectRatio: "3/4" }}
-                    >
-                      <ProjectCardImage
-                        src={resolveMediaUrl(item.coverImage, INTERIOR_FALLBACK)}
-                        alt={item.title}
+                <motion.div key={gridKey} {...GRID_FADE} className={SHOWCASE_LISTING_GRID_WRAP}>
+                  <div className={SHOWCASE_LISTING_GRID}>
+                    {items.map((item, i) => (
+                      <ShowcaseProductCard
+                        key={item._id}
+                        index={i}
+                        variant="interior"
+                        title={item.title}
+                        description={item.description}
+                        category={item.category || category}
+                        image={item.coverImage}
+                        imageFallback={INTERIOR_FALLBACK}
+                        href={`/interior/${item._id}`}
+                        isNew={Boolean(item.isNew)}
+                        motionVariant="mount"
                       />
-
-                      {item.isNew && (
-                        <span className="absolute left-4 top-4 rounded-[4px] bg-[#cf5374] px-2.5 py-1 font-outfit text-[12px] font-medium text-white">
-                          New
-                        </span>
-                      )}
-
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent px-4 pb-4 pt-12">
-                        <h3 className="font-outfit text-[clamp(1rem,2vw,1.25rem)] font-medium leading-snug text-white drop-shadow-sm">
-                          {item.title}
-                        </h3>
-                      </div>
-                    </Link>
-                  ))}
+                    ))}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

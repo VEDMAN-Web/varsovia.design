@@ -30,6 +30,7 @@
     "catalogueAria": "ตัวอย่างแคตตาล็อก",
     "cataloguePrev": "แคตตาล็อกก่อนหน้า",
     "catalogueNext": "แคตตาล็อกถัดไป",
+    "catalogueDownload": "ดาวน์โหลด",
     "featuredTitle": "โครงการเด่น",
     "featuredSubtitle": "ออกแบบเพื่อสร้างแรงบันดาลใจ สร้างมาให้อยู่ยาวนาน",
     "testimonialsTitle": "เรื่องจริง พื้นที่จริง",
@@ -76,7 +77,32 @@
     "kitchenGallery": "ครัว",
     "bathroomGallery": "ห้องน้ำ",
     "navEverySpace": "ทุกพื้นที่ ทุกเรื่องราว",
-    "navByRegion": "ตามภูมิภาคและประเภท"
+    "navByRegion": "ตามภูมิภาคและประเภท",
+    "navFeaturedTitle": "ผลงานของเรา",
+    "tabLabels": {
+      "all": "แสดงทั้งหมด",
+      "homeCase": "โครงการบ้าน",
+      "northAmerica": "อเมริกาเหนือ",
+      "southAmerica": "อเมริกาใต้",
+      "africa": "แอฟริกา",
+      "commercialProject": "โครงการเชิงพาณิชย์",
+      "europe": "ยุโรป",
+      "australia": "ออสเตรเลีย",
+      "middleEast": "ตะวันออกกลาง",
+      "asia": "เอเชีย"
+    },
+    "categoryMeta": {
+      "all": { "title": "ผลงานของเรา", "subtitle": "ทุกพื้นที่ ทุกเรื่องราว" },
+      "homeCase": { "title": "โครงการบ้าน", "subtitle": "พื้นที่ที่ออกแบบเพื่อสร้างแรงบันดาลใจ" },
+      "northAmerica": { "title": "อเมริกาเหนือ", "subtitle": "ดีไซน์กล้า ใช้ชีวิตสมัยใหม่" },
+      "southAmerica": { "title": "อเมริกาใต้", "subtitle": "พื้นที่มีชีวิตชีวา อบอุ่นเป็นเอกลักษณ์" },
+      "africa": { "title": "แอฟริกา", "subtitle": "รากในวัฒนธรรม อุดมด้วยดีไซน์" },
+      "commercialProject": { "title": "โครงการเชิงพาณิชย์", "subtitle": "ฟังก์ชันพบกับวิสัยทัศน์" },
+      "europe": { "title": "ยุโรป", "subtitle": "ความหรูเหนือกาลเวลา การอยู่อย่างประณีต" },
+      "australia": { "title": "ออสเตรเลีย", "subtitle": "พื้นที่สว่าง สไตล์ effortless" },
+      "middleEast": { "title": "ตะวันออกกลาง", "subtitle": "ความหรูหราที่ยึดโยงประเพณี" },
+      "asia": { "title": "เอเชีย", "subtitle": "ความกลมกลืนของพื้นที่และความสงบ" }
+    }
   },
   "product": {
     "backToProducts": "กลับไปผลิตภัณฑ์",

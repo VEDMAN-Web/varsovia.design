@@ -36,28 +36,51 @@
   font-family: var(--font-outfit), system-ui, sans-serif;
 }
 
-/* Partners strip — infinite horizontal marquee */
+/* Partners strip — infinite horizontal marquee (contained in section shell) */
 .partners-marquee {
   overflow: hidden;
   width: 100%;
-  mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
 }
 
 .partners-marquee-track {
   display: flex;
   width: max-content;
   align-items: center;
-  animation: partners-marquee 40s linear infinite;
+  animation: partners-marquee 36s linear infinite;
   will-change: transform;
 }
 
-.partners-marquee-group {
+.partners-marquee-strip {
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  gap: clamp(1.25rem, 2.75vw, 2rem);
-  padding-right: clamp(1.25rem, 2.75vw, 2rem);
+  gap: clamp(2.5rem, 5vw, 4.5rem);
+  padding-right: clamp(2.5rem, 5vw, 4.5rem);
+}
+
+.partners-marquee-logo {
+  display: block;
+  height: clamp(44px, 5vw, 56px);
+  width: auto;
+  max-height: 56px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  object-fit: contain;
+}
+
+@media (min-width: 640px) {
+  .partners-marquee-logo {
+    height: clamp(52px, 6vw, 64px);
+    max-height: 64px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .partners-marquee-logo {
+    height: 74px;
+    max-height: 74px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -66,15 +89,15 @@
     flex-wrap: wrap;
     justify-content: center;
     width: 100%;
-    gap: clamp(1.25rem, 3vw, 2rem);
+    gap: clamp(1.5rem, 4vw, 2.5rem);
   }
 
-  .partners-marquee-group {
+  .partners-marquee-strip {
+    gap: clamp(1.5rem, 4vw, 2.5rem);
     padding-right: 0;
-    gap: clamp(1.25rem, 3vw, 2rem);
   }
 
-  .partners-marquee-group:not(:first-child) {
+  .partners-marquee-strip:not(:first-child) {
     display: none;
   }
 }
@@ -103,6 +126,32 @@ body {
   font-family: var(--font-oswald), system-ui, sans-serif;
   overflow-x: hidden;
   max-width: 100vw;
+}
+
+/* Download modal — visible, draggable scrollbar when form overflows */
+.modal-form-scroll {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(106, 65, 77, 0.45) rgba(106, 65, 77, 0.08);
+}
+
+.modal-form-scroll::-webkit-scrollbar {
+  width: 9px;
+}
+
+.modal-form-scroll::-webkit-scrollbar-track {
+  background: rgba(106, 65, 77, 0.07);
+  border-radius: 9px;
+}
+
+.modal-form-scroll::-webkit-scrollbar-thumb {
+  background: rgba(106, 65, 77, 0.38);
+  border-radius: 9px;
+  border: 2px solid rgba(255, 243, 242, 0.9);
+}
+
+.modal-form-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(106, 65, 77, 0.58);
 }
 
 ::selection {

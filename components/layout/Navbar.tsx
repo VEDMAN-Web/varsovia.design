@@ -20,6 +20,7 @@ import {
 } from "@/components/layout/NavDropdown";
 import { getNavDropdownSubtitle } from "@/components/layout/navDropdownMeta";
 import { locales, type Locale } from "@/lib/i18n/routing";
+import { useNavBackdropTone } from "@/hooks/useNavBackdropTone";
 
 type NavItem = {
   id: string;
@@ -171,6 +172,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   const [searchFocused, setSearchFocused] = useState(false);
   const [query, setQuery] = useState("");
   const navRef = useRef<HTMLElement>(null);
+  const overDarkBackdrop = useNavBackdropTone(navRef);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -322,7 +324,8 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
 
   const headerSolid = scrolled || openMenu !== null || langOpen || mobileOpen;
   const searchExpanded = searchHover || searchFocused || query.length > 0;
-  const frostedHeroBar = overlayHero && !headerSolid;
+  const frostedBar = headerSolid || overDarkBackdrop || overlayHero;
+  const strongFrost = (overDarkBackdrop || overlayHero) && !headerSolid;
 
   return (
     <header
@@ -330,10 +333,10 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-out ${
         mobileOpen
           ? "border-b border-white/50 bg-white/85 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md"
-          : headerSolid || frostedHeroBar
-            ? frostedHeroBar
-              ? "border-b border-white/35 bg-white/78 shadow-[0_4px_28px_rgba(0,0,0,0.1)] backdrop-blur-lg backdrop-saturate-150"
-              : "border-b border-white/40 bg-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md"
+          : frostedBar
+            ? strongFrost
+              ? "border-b border-white/40 bg-white/82 shadow-[0_4px_28px_rgba(0,0,0,0.12)] backdrop-blur-xl backdrop-saturate-150"
+              : "border-b border-white/45 bg-white/68 shadow-[0_4px_20px_rgba(0,0,0,0.08)] backdrop-blur-md backdrop-saturate-125"
             : "border-b border-transparent bg-transparent shadow-none backdrop-blur-none"
       }`}
     >
@@ -507,7 +510,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
             <button
               type="button"
               className={`${headerBtnBase} w-[110px] gap-[6px] px-[17px] ${
-                headerSolid
+                frostedBar
                   ? "border border-[#d8d8d8] bg-white/95 text-[#444] hover:border-[#b8b8b8]"
                   : "border border-[#d8d8d8]/90 bg-transparent text-[#444] hover:bg-white/40"
               }`}

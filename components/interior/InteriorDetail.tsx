@@ -5,6 +5,11 @@ import { ChevronLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { InteriorDetailProject } from "@/lib/interiorData";
 import { getInteriorBackHref } from "@/lib/interiorData";
+import ShowcaseProductCard from "@/components/ui/ShowcaseProductCard";
+import {
+  SHOWCASE_LISTING_GRID,
+  SHOWCASE_LISTING_GRID_WRAP,
+} from "@/components/ui/showcaseGridShared";
 import {
   INTERIOR_DETAIL_BG,
   INTERIOR_DETAIL_SHELL,
@@ -113,36 +118,24 @@ function YouMayLikeSection({
         You May Like
       </h2>
 
-      <div className="mt-6 grid gap-4 sm:gap-6 md:gap-[30px] grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((item) => (
-          <Link
-            key={item._id}
-            href={`/interior/${item._id}`}
-            className="group relative block overflow-hidden rounded-[10px] bg-[#e8e2e0]"
-            style={{ aspectRatio: "3/4" }}
-          >
-            <DetailImage
-              src={item.coverImage || FALLBACK}
-              alt={item.title}
-              className="transition duration-700 group-hover:scale-[1.03]"
+      <div className={`mt-6 ${SHOWCASE_LISTING_GRID_WRAP}`}>
+        <div className={SHOWCASE_LISTING_GRID}>
+          {items.map((item, i) => (
+            <ShowcaseProductCard
+              key={item._id}
+              index={i}
+              variant="interior"
+              title={item.title}
+              description={item.description}
+              category={item.category || category}
+              image={item.coverImage}
+              imageFallback={FALLBACK}
+              href={`/interior/${item._id}`}
+              isNew={Boolean(item.isNew)}
+              motionVariant="mount"
             />
-
-            {item.isNew && (
-              <span className="absolute left-4 top-4 rounded-[4px] bg-[#cf5374] px-2.5 py-1 font-outfit text-[12px] font-medium text-white">
-                New
-              </span>
-            )}
-
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent px-4 pb-4 pt-12">
-              <p className="font-outfit text-[11px] font-medium uppercase tracking-[0.14em] text-[#cf5374]">
-                {item.category || category || "Interior"}
-              </p>
-              <h3 className="mt-1 font-outfit text-[clamp(1rem,2vw,1.25rem)] font-medium leading-snug text-white drop-shadow-sm">
-                {item.title}
-              </h3>
-            </div>
-          </Link>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );

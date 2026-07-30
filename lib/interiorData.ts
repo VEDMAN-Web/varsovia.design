@@ -1,3 +1,7 @@
+import { getLocaleOrDefault } from "@/lib/i18n/messageCatalog";
+import { pickLocalized } from "@/lib/i18n/pickLocalized";
+import type { Locale } from "@/lib/i18n/routing";
+
 export type InteriorCategory =
   | "All"
   | "Kitchen"
@@ -732,8 +736,10 @@ export function resolveInteriorImage(
 
 export function normalizeInteriorProject(
   item: Record<string, unknown>,
-  index = 0
+  index = 0,
+  locale?: Locale,
 ) {
+  const loc = getLocaleOrDefault(locale);
   const id = String(item._id ?? item.id ?? index);
   const gallery = (item.gallery as string[] | undefined) ?? [];
   const image = item.image as string | undefined;
@@ -741,9 +747,22 @@ export function normalizeInteriorProject(
   const category = (item.category as string | undefined) || "Kitchen";
   const mockItem = INTERIOR_ITEMS.find((m) => m.id === id) ?? INTERIOR_ITEMS[index % INTERIOR_ITEMS.length];
 
+  const title =
+    pickLocalized(item.title, loc) ||
+    (typeof item.title === "string" ? item.title : "") ||
+    mockItem?.title ||
+    "";
+  const description =
+    pickLocalized(item.description, loc) ||
+    (typeof item.description === "string" ? item.description : "") ||
+    mockItem?.description ||
+    "";
+
   return {
     ...item,
     _id: id,
+    title,
+    description,
     category,
     subcategory: (item.subcategory as string | undefined) ?? mockItem?.subcategory,
     price: (item.price as number | undefined) ?? mockItem?.price ?? 0,
@@ -779,14 +798,14 @@ function isInteriorCatalogItem(item: Record<string, unknown>) {
 }
 
 /** Interior listing uses mock catalog; merges API rows only when they carry interior metadata. */
-export function buildInteriorCatalog(apiProjects: Record<string, unknown>[] = []) {
+export function buildInteriorCatalog(apiProjects: Record<string, unknown>[] = [], locale?: Locale) {
   const mockNormalized = INTERIOR_ITEMS.map((item, index) =>
-    normalizeInteriorProject({ ...item, _id: item.id }, index)
+    normalizeInteriorProject({ ...item, _id: item.id }, index, locale),
   );
 
   const fromApi = apiProjects
     .filter(isInteriorCatalogItem)
-    .map((item, index) => normalizeInteriorProject(item, index));
+    .map((item, index) => normalizeInteriorProject(item, index, locale));
 
   if (fromApi.length === 0) return mockNormalized;
 

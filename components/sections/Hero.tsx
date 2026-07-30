@@ -36,7 +36,11 @@ export default function Hero({
   const resolvedSecondaryCta = secondaryCtaLabel ?? t("heroSecondaryCta");
 
   return (
-    <section id="home" className="relative h-[100svh] min-h-[460px] w-full overflow-hidden sm:min-h-[520px] md:min-h-[560px]">
+    <section
+      id="home"
+      data-nav-backdrop="dark"
+      className="relative h-[100svh] min-h-[460px] w-full overflow-hidden sm:min-h-[520px] md:min-h-[560px]"
+    >
       <div className="absolute inset-0">
         <img
           src={resolveMediaUrl(heroImage, MEDIA.hero)}

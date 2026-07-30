@@ -30,6 +30,7 @@
     "catalogueAria": "Podgląd katalogów",
     "cataloguePrev": "Poprzedni katalog",
     "catalogueNext": "Następny katalog",
+    "catalogueDownload": "Pobierz",
     "featuredTitle": "Wyróżnione projekty",
     "featuredSubtitle": "Zaprojektowane, by inspirować. Zbudowane na lata",
     "testimonialsTitle": "Prawdziwe historie. Prawdziwe przestrzenie.",
@@ -76,7 +77,32 @@
     "kitchenGallery": "Kuchnia",
     "bathroomGallery": "Łazienka",
     "navEverySpace": "Każda przestrzeń, każda historia",
-    "navByRegion": "Według regionu i typu"
+    "navByRegion": "Według regionu i typu",
+    "navFeaturedTitle": "Nasze realizacje",
+    "tabLabels": {
+      "all": "Pokaż wszystkie",
+      "homeCase": "Domy",
+      "northAmerica": "Ameryka Północna",
+      "southAmerica": "Ameryka Południowa",
+      "africa": "Afryka",
+      "commercialProject": "Projekty komercyjne",
+      "europe": "Europa",
+      "australia": "Australia",
+      "middleEast": "Bliski Wschód",
+      "asia": "Azja"
+    },
+    "categoryMeta": {
+      "all": { "title": "Nasze realizacje", "subtitle": "Każda przestrzeń, każda historia" },
+      "homeCase": { "title": "Domy", "subtitle": "Przestrzenie, które inspirują" },
+      "northAmerica": { "title": "Ameryka Północna", "subtitle": "Odważny design, nowoczesne życie" },
+      "southAmerica": { "title": "Ameryka Południowa", "subtitle": "Żywe przestrzenie, ciepły charakter" },
+      "africa": { "title": "Afryka", "subtitle": "Korzenie w kulturze, bogactwo designu" },
+      "commercialProject": { "title": "Projekty komercyjne", "subtitle": "Gdzie funkcja spotyka wizję" },
+      "europe": { "title": "Europa", "subtitle": "Ponadczasowa elegancja" },
+      "australia": { "title": "Australia", "subtitle": "Jasne wnętrza, swobodny styl" },
+      "middleEast": { "title": "Bliski Wschód", "subtitle": "Luksus osadzony w tradycji" },
+      "asia": { "title": "Azja", "subtitle": "Harmonia przestrzeni i spokoju" }
+    }
   },
   "product": {
     "backToProducts": "Wróć do produktów",

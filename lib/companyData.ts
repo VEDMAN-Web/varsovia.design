@@ -1,5 +1,10 @@
 /** Fallback content for Company pages when API is empty */
 
+import { getLocaleOrDefault } from "@/lib/i18n/messageCatalog";
+import { hasLocalizedMap, pickLocalized } from "@/lib/i18n/pickLocalized";
+import type { Locale } from "@/lib/i18n/routing";
+import blogContentPl from "../messages/locale/blog.content.pl.json";
+import blogContentTh from "../messages/locale/blog.content.th.json";
 import { MEDIA, resolveMediaUrl } from "./mediaAssets";
 
 export type BlogAuthor = { name: string; avatar: string };
@@ -97,6 +102,18 @@ export const FIGMA_BLOG_DETAIL_SECTIONS: BlogSection[] = [
     text: "Natural stone, warm wood grains, and layered textiles add depth and character. The best interiors mix materials intentionally — pairing matte surfaces with subtle gloss, or smooth cabinetry with textured wall panels so every room feels layered, calm, and complete.",
   },
 ];
+
+type BlogLocaleSlice = {
+  title?: string;
+  excerpt?: string;
+  category?: string;
+  content?: string;
+};
+
+const BLOG_BY_LOCALE: Partial<Record<Locale, Record<string, BlogLocaleSlice>>> = {
+  th: blogContentTh as Record<string, BlogLocaleSlice>,
+  pl: blogContentPl as Record<string, BlogLocaleSlice>,
+};
 
 export const fallbackBlogs: BlogPost[] = [
   {
@@ -618,10 +635,9 @@ export const fallbackArchitectTeam: TeamMember[] = [
 export const fallbackHqTeam = fallbackArchitectTeam;
 
 export const designTools = [
-  { name: "CAXA", icon: "caxa" },
-  { name: "AUTOCAD", icon: "autocad" },
-  { name: "3D MAX", icon: "3dmax" },
-  { name: "KD MAX", icon: "kdmax" },
+  { name: "CAXA", icon: "caxa", image: "/team/design-tools/caxa.svg" },
+  { name: "AUTO CAD", icon: "autocad", image: "/team/design-tools/autocad.svg" },
+  { name: "3D MAX", icon: "3dmax", image: "/team/design-tools/3dmax.svg" },
 ] as const;
 
 export const qualityGalleryImages = [
@@ -652,21 +668,61 @@ function resolveAuthorName(name: unknown, fallback: string): string {
   return fallback;
 }
 
-export function normalizeBlog(raw: Partial<BlogPost> & { id?: string }): BlogPost | null {
+export function normalizeBlog(
+  raw: Partial<BlogPost> & { id?: string },
+  locale?: Locale,
+): BlogPost | null {
+  const loc = getLocaleOrDefault(locale);
   const id = String(raw._id ?? raw.id ?? "").trim();
-  if (!id || !raw.title) return null;
-  const title = typeof raw.title === "string" ? raw.title : String(raw.title);
-  if (!title.trim()) return null;
+  if (!id) return null;
   const fallback = fallbackBlogs.find((b) => b._id === id);
-  const bodyText = String(raw.content || raw.excerpt || "").trim();
+  const apiHasLocale =
+    hasLocalizedMap(raw.title, loc) ||
+    hasLocalizedMap(raw.excerpt, loc) ||
+    hasLocalizedMap(raw.content, loc);
+  const localePack = loc !== "en" ? BLOG_BY_LOCALE[loc]?.[id] : undefined;
+
+  let title =
+    pickLocalized(raw.title, loc) ||
+    (typeof raw.title === "string" ? raw.title : "") ||
+    localePack?.title ||
+    fallback?.title ||
+    "";
+  if (!title.trim()) return null;
+  let excerpt =
+    pickLocalized(raw.excerpt, loc) ||
+    (typeof raw.excerpt === "string" ? raw.excerpt : "") ||
+    localePack?.excerpt ||
+    fallback?.excerpt ||
+    "";
+  const contentRaw = raw.content ?? raw.excerpt;
+  let content =
+    pickLocalized(contentRaw, loc) ||
+    (typeof contentRaw === "string" ? contentRaw : undefined) ||
+    localePack?.content ||
+    fallback?.content;
+
+  if (loc !== "en" && !apiHasLocale && localePack) {
+    if (localePack.title) title = localePack.title;
+    if (localePack.excerpt) excerpt = localePack.excerpt;
+    if (localePack.content) content = localePack.content;
+  }
+
+  const bodyText = String(content || excerpt || "").trim();
+  let category =
+    pickLocalized(raw.category, loc) ||
+    (typeof raw.category === "string" ? raw.category : "") ||
+    localePack?.category ||
+    fallback?.category ||
+    "Design";
   return {
     _id: id,
     title,
-    excerpt: raw.excerpt || fallback?.excerpt || "",
-    content: raw.content || fallback?.content,
+    excerpt,
+    content,
     date: raw.date || fallback?.date || "—",
     readTime: raw.readTime || fallback?.readTime || "—",
-    category: raw.category || fallback?.category || "Design",
+    category,
     image: raw.image || fallback?.image || IMG.f1,
     author: {
       name: resolveAuthorName(raw.author?.name, fallback?.author.name || "Varsovia Design"),
@@ -681,12 +737,16 @@ export function normalizeBlog(raw: Partial<BlogPost> & { id?: string }): BlogPos
   };
 }
 
-export function resolveBlogs(apiData: unknown[]): BlogPost[] {
-  if (!Array.isArray(apiData) || apiData.length === 0) return fallbackBlogs;
+export function resolveBlogs(apiData: unknown[], locale?: Locale): BlogPost[] {
+  const loc = getLocaleOrDefault(locale);
+  const localizedFallbacks = () =>
+    fallbackBlogs.map((item) => normalizeBlog(item, loc)).filter(Boolean) as BlogPost[];
+
+  if (!Array.isArray(apiData) || apiData.length === 0) return localizedFallbacks();
   const normalized = apiData
-    .map((item) => normalizeBlog(item as Partial<BlogPost> & { id?: string }))
+    .map((item) => normalizeBlog(item as Partial<BlogPost> & { id?: string }, loc))
     .filter(Boolean) as BlogPost[];
-  if (normalized.length === 0) return fallbackBlogs;
+  if (normalized.length === 0) return localizedFallbacks();
   if (normalized.length >= fallbackBlogs.length) return normalized;
 
   const seen = new Set(normalized.map((b) => b._id));
@@ -694,7 +754,8 @@ export function resolveBlogs(apiData: unknown[]): BlogPost[] {
   for (const post of fallbackBlogs) {
     if (padded.length >= fallbackBlogs.length) break;
     if (!seen.has(post._id)) {
-      padded.push(post);
+      const localized = normalizeBlog(post, loc);
+      if (localized) padded.push(localized);
       seen.add(post._id);
     }
   }
@@ -741,9 +802,13 @@ export function enrichBlogForDetailPage(blog: BlogPost): BlogPost {
   };
 }
 
-function mergeBlogDetailFromFallback(post: BlogPost): BlogPost {
+function mergeBlogDetailFromFallback(post: BlogPost, locale?: Locale): BlogPost {
+  const loc = getLocaleOrDefault(locale);
   const fallback = fallbackBlogs.find((b) => b._id === post._id);
   if (!fallback) return post;
+  if (loc !== "en") {
+    return post;
+  }
   return {
     ...post,
     sections: fallback.sections,
@@ -755,20 +820,23 @@ export function getBlogById(
   id: string,
   apiBlog?: unknown | null,
   fromList?: BlogPost[],
+  locale?: Locale,
 ): BlogPost | null {
   const needle = String(id).trim();
   if (!needle) return null;
+  const loc = getLocaleOrDefault(locale);
 
   if (apiBlog && typeof apiBlog === "object" && "title" in apiBlog) {
-    const normalized = normalizeBlog(apiBlog as Partial<BlogPost> & { id?: string });
-    if (normalized) return mergeBlogDetailFromFallback(normalized);
+    const normalized = normalizeBlog(apiBlog as Partial<BlogPost> & { id?: string }, loc);
+    if (normalized) return mergeBlogDetailFromFallback(normalized, loc);
   }
 
   const inList = fromList?.find((b) => String(b._id) === needle);
-  if (inList) return mergeBlogDetailFromFallback(inList);
+  if (inList) return mergeBlogDetailFromFallback(inList, loc);
 
   const fallback = fallbackBlogs.find((b) => b._id === needle);
-  return fallback ?? null;
+  if (!fallback) return null;
+  return normalizeBlog(fallback, loc) ?? fallback;
 }
 
 export function getRelatedBlogs(currentId: string, blogs: BlogPost[], limit = 3): BlogPost[] {
@@ -802,20 +870,32 @@ export function sortBlogPosts(posts: BlogPost[], sortBy: BlogSortOption): BlogPo
   return sortBy === "newest" ? byNewest : byNewest.reverse();
 }
 
-export function resolveTeamMembers(apiData: unknown[]): {
+export function resolveTeamMembers(
+  apiData: unknown[],
+  locale?: Locale,
+): {
   designTeam: TeamMember[];
   architectTeam: TeamMember[];
 } {
+  const loc = getLocaleOrDefault(locale);
   if (!Array.isArray(apiData) || apiData.length === 0) {
     return { designTeam: fallbackDesignTeam, architectTeam: fallbackArchitectTeam };
   }
 
   const members = apiData.map((m, i) => {
     const raw = m as TeamMember;
+    const name =
+      pickLocalized(raw.name, loc) ||
+      (typeof raw.name === "string" ? raw.name : "") ||
+      "Team Member";
+    const role =
+      pickLocalized(raw.role, loc) ||
+      (typeof raw.role === "string" ? raw.role : "") ||
+      "Junior Designer";
     return {
       _id: raw._id || raw.id || `team-${i}`,
-      name: raw.name || "Team Member",
-      role: raw.role || "Junior Designer",
+      name,
+      role,
       image: raw.image || IMG.a2,
       teamType: raw.teamType,
     };

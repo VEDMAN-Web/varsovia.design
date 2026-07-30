@@ -58,16 +58,20 @@ export const TEAM_BLOCK_SPACING = "mb-[clamp(2.5rem,8vw,7rem)]";
 export const TEAM_BLOCK_INNER = "mt-[clamp(2rem,5vw,3.5rem)]";
 
 export const TEAM_TOOLS_GRID =
-  "mt-[clamp(1.75rem,4vw,2.5rem)] grid grid-cols-1 gap-[clamp(0.75rem,2.5vw,2rem)] min-[420px]:grid-cols-2 md:grid-cols-4";
+  "mt-[clamp(1.75rem,4vw,2.5rem)] grid grid-cols-1 gap-[30px] min-[540px]:grid-cols-3";
 
 export const TEAM_TOOL_CARD_BASE =
-  "flex h-full min-h-[clamp(11.5rem,32vw,15rem)] flex-col items-center justify-center rounded-[10px] px-3 py-6 transition-all duration-300 min-[480px]:px-4 min-[480px]:py-8 sm:min-h-[240px] sm:py-10";
+  "flex h-full min-h-[220px] flex-col items-center justify-center rounded-[12px] px-4 py-8 transition-all duration-300 sm:min-h-[240px] sm:py-10";
 
 export const TEAM_TOOL_CARD_IDLE =
-  "border border-transparent bg-[#faf4f4]/90 shadow-[0_4px_18px_rgba(106,65,77,0.06)]";
+  "border border-transparent bg-white shadow-[0_4px_22px_rgba(106,65,77,0.07)]";
 
 export const TEAM_TOOL_CARD_ACTIVE =
-  "border border-[#e5ccd2] bg-gradient-to-b from-[#faf0f2] to-[#fdf8f8] shadow-[0_10px_32px_rgba(214,90,124,0.14)]";
+  "border border-[#ecd5db] bg-white shadow-[0_10px_36px_rgba(214,90,124,0.12)]";
 
 export const TEAM_TOOL_ICON_WRAP =
-  "mb-4 flex h-[clamp(4.25rem,16vw,6rem)] w-[clamp(4.25rem,16vw,6rem)] items-center justify-center rounded-full min-[480px]:mb-5 min-[480px]:h-24 min-[480px]:w-24";
+  "mb-5 flex h-[88px] w-[88px] shrink-0 items-center justify-center rounded-full sm:mb-6 sm:h-24 sm:w-24";
+
+/** Figma radial glow behind tool logos */
+export const TEAM_TOOL_ICON_GLOW =
+  "radial-gradient(circle at 38% 32%, rgba(207,83,116,0.38) 0%, rgba(248,236,238,0.92) 48%, rgba(255,252,252,1) 100%)";

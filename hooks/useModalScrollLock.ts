@@ -9,11 +9,14 @@ function getScrollableAncestor(
 ): HTMLElement | null {
   let el = node instanceof HTMLElement ? node : null;
   while (el && el !== root) {
-    const { overflowY } = getComputedStyle(el);
-    if (
+    const { overflowY, overflowX } = getComputedStyle(el);
+    const canScrollY =
       (overflowY === "auto" || overflowY === "scroll") &&
-      el.scrollHeight > el.clientHeight
-    ) {
+      el.scrollHeight > el.clientHeight + 1;
+    const canScrollX =
+      (overflowX === "auto" || overflowX === "scroll") &&
+      el.scrollWidth > el.clientWidth + 1;
+    if (canScrollY || canScrollX) {
       return el;
     }
     el = el.parentElement;
@@ -21,14 +24,8 @@ function getScrollableAncestor(
   return null;
 }
 
-function scrollElement(el: HTMLElement, deltaY: number) {
-  const { scrollTop, scrollHeight, clientHeight } = el;
-  const maxScroll = scrollHeight - clientHeight;
-  if (maxScroll <= 0) return false;
-  const next = Math.max(0, Math.min(scrollTop + deltaY, maxScroll));
-  if (next === scrollTop) return false;
-  el.scrollTop = next;
-  return true;
+function isVerticallyScrollable(el: HTMLElement) {
+  return el.scrollHeight > el.clientHeight + 1;
 }
 
 /** Lock page scroll (incl. Lenis) while a modal is open; allow nested scroll inside the dialog */
@@ -73,18 +70,11 @@ export function useModalScrollLock(
       }
 
       const scrollRoot = scrollRootRef?.current;
-      if (scrollRoot && scrollRoot.contains(target)) {
-        if (scrollElement(scrollRoot, e.deltaY)) {
-          e.preventDefault();
-          return;
-        }
-        e.preventDefault();
+      if (scrollRoot?.contains(target) && isVerticallyScrollable(scrollRoot)) {
         return;
       }
 
-      const scrollable = getScrollableAncestor(target, dialog);
-      if (scrollable && scrollElement(scrollable, e.deltaY)) {
-        e.preventDefault();
+      if (getScrollableAncestor(target, dialog)) {
         return;
       }
 
@@ -100,11 +90,15 @@ export function useModalScrollLock(
       }
 
       const scrollRoot = scrollRootRef?.current;
-      if (scrollRoot && scrollRoot.contains(target)) return;
-
-      if (!getScrollableAncestor(target, dialog)) {
-        e.preventDefault();
+      if (scrollRoot?.contains(target) && isVerticallyScrollable(scrollRoot)) {
+        return;
       }
+
+      if (getScrollableAncestor(target, dialog)) {
+        return;
+      }
+
+      e.preventDefault();
     };
 
     window.addEventListener("wheel", onWheel, { passive: false });

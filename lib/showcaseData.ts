@@ -23,7 +23,7 @@ export const SHOWCASE_CATEGORY_META: Record<
     subtitle: "Every Space, Every Story",
   },
   "Home case": {
-    title: "Home case",
+    title: "Home Case",
     subtitle: "Spaces Designed to Inspire",
   },
   "North America": {
@@ -101,6 +101,14 @@ const SLUG_TO_TAB: Record<string, ShowcaseTab> = {
 
 function buildProjectsForTab(tab: ShowcaseTab): ShowcaseProject[] {
   const titles: Partial<Record<ShowcaseTab, string[]>> = {
+    "Home case": [
+      "Custom Dark Wood Grain Cabinetry Project in Czech Republic, USA",
+      "High-End Dark Custom Cabinets Project in Hungary",
+      "Luxury Walnut Custom Cabinetry Project in Pescara, Italy",
+      "Custom Dark Wood Grain Cabinetry Project in Czech Republic, USA",
+      "High-End Dark Custom Cabinets Project in Hungary",
+      "Luxury Walnut Custom Cabinetry Project in Pescara, Italy",
+    ],
     "Commercial Project": [
       "Custom Dark Wood Grain Cabinetry Project in Czech Republic, USA",
       "Custom Dark Wood Grain Cabinetry Project in Czech Republic, Canada",

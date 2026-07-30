@@ -2,7 +2,9 @@
 
 import { useRouter } from "@/lib/i18n/navigation";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { SHOWCASE_TABS, type ShowcaseTab } from "@/lib/showcaseData";
+import { showcaseTabMessageKey } from "@/lib/showcaseTabI18n";
 
 type ShowcaseFilterTabsProps = {
   activeTab: ShowcaseTab;
@@ -12,6 +14,7 @@ type ShowcaseFilterTabsProps = {
 export default function ShowcaseFilterTabs({ activeTab, onTabChange }: ShowcaseFilterTabsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations("showcase");
 
   function selectTab(tab: ShowcaseTab) {
     onTabChange(tab);
@@ -26,18 +29,19 @@ export default function ShowcaseFilterTabs({ activeTab, onTabChange }: ShowcaseF
   }
 
   return (
-    <div className="mb-10 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:mb-12 [&::-webkit-scrollbar]:hidden">
-      <div className="mx-auto flex w-max min-w-full flex-wrap items-center justify-start gap-3 md:justify-center md:gap-5">
+    <div className="mt-8 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:mt-10 md:mb-10 [&::-webkit-scrollbar]:hidden">
+      <div className="mx-auto flex w-max min-w-full items-center justify-start gap-4 md:justify-center">
         {SHOWCASE_TABS.map((tab) => {
           const active = activeTab === tab;
-          const label = tab === "All" ? "Show all" : tab;
+          const key = showcaseTabMessageKey(tab);
+          const label = t(`tabLabels.${key}`);
 
           return (
             <button
               key={tab}
               type="button"
               onClick={() => selectTab(tab)}
-              className={`inline-flex h-11 shrink-0 items-center px-3 font-outfit text-[15px] font-normal transition md:px-4 ${
+              className={`inline-flex h-11 shrink-0 items-center px-3 font-outfit text-[15px] font-normal transition-colors duration-200 md:px-4 ${
                 active
                   ? "rounded-[6px] bg-[#6a414d] text-white"
                   : "bg-transparent text-[#6a414d]/70 hover:text-[#6a414d]"

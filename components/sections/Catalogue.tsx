@@ -9,8 +9,14 @@ import DownloadCatalogueModal from "@/components/forms/DownloadCatalogueModal";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
 import { CATALOGUE_CONTENT_WIDTH, CATALOGUE_SECTION_SHELL } from "@/components/catalogue/catalogueLayoutShared";
+import { catalogueCoverPhoto } from "@/components/catalogue/catalogueMedia";
+import CatalogueBrochureFace from "@/components/catalogue/CatalogueBrochureFace";
+import {
+  brochureThemeForIndex,
+  HOME_CAROUSEL_DEFAULT_ACTIVE,
+} from "@/components/catalogue/catalogueBrochureThemes";
 import { fallbackHomeData } from "@/lib/fallbackData";
-import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
+import { MEDIA } from "@/lib/mediaAssets";
 
 const FALLBACK_CATALOGUES = [
   { id: "1", image: MEDIA.catalogues[0], title: "Classic Collection 2026", downloadUrl: "" },
@@ -41,44 +47,45 @@ const MAX_VISIBLE_OFFSET = 2;
 const DRAG_THRESHOLD = 60;
 const AUTOPLAY_MS = 5500;
 
-/** 3D coverflow arc — spaced cards on a circular loop track */
-function getCoverflowStyle(offset: number) {
-  const abs = Math.min(Math.abs(offset), MAX_VISIBLE_OFFSET);
-  const sign = offset === 0 ? 0 : offset < 0 ? -1 : 1;
-
-  if (abs === 0) {
-    return { rotateY: 0, rotateZ: 0, scale: 1.08, z: 40, y: 0, opacity: 1, blur: 0 };
-  }
-
-  const t = abs / MAX_VISIBLE_OFFSET;
-
+/** Uniform resting appearance for every visible slide */
+function getCoverflowStyle() {
   return {
-    rotateY: sign * (18 + t * 22),
-    rotateZ: sign * (4 + t * 6),
-    scale: 1.02 - t * 0.14,
-    z: -abs * 90,
-    y: abs * 10 + t * 8,
-    opacity: 1 - t * 0.22,
-    blur: t * 1.1,
+    rotateY: 0,
+    rotateZ: 0,
+    scale: 1,
+    z: 0,
+    y: 0,
+    opacity: 1,
+    blur: 0,
   };
 }
 
+const CARD_HOVER_SHADOW = "0 22px 48px rgba(70,40,50,0.24)";
+const CARD_REST_SHADOW = "0 12px 32px rgba(70,40,50,0.14)";
+
 function catalogueImage(item: CatalogueItem, index: number) {
+  const theme = brochureThemeForIndex(index, item.title);
   const cover = item.coverImage ?? item.image;
-  return resolveMediaUrl(cover, MEDIA.catalogues[index % MEDIA.catalogues.length]);
+  return catalogueCoverPhoto(cover, index, theme.photo);
 }
 
 export default function Catalogue({ catalogues, contactImages = fallbackHomeData.site.contactImages }: CatalogueProps) {
   const t = useTranslations("home");
   const raw: CatalogueItem[] = catalogues && catalogues.length > 0 ? catalogues : FALLBACK_CATALOGUES;
-  const CATALOGUES = raw.map((c, index) => ({
-    id: c._id || c.id || c.title,
-    image: catalogueImage(c, index),
-    title: c.title,
-    downloadUrl: c.downloadUrl || "",
-  }));
+  const CATALOGUES = raw.map((c, index) => {
+    const theme = brochureThemeForIndex(index, c.title);
+    return {
+      id: c._id || c.id || c.title,
+      image: catalogueImage(c, index),
+      title: c.title,
+      downloadUrl: c.downloadUrl || "",
+      room: theme.room,
+    };
+  });
   const length = CATALOGUES.length;
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState(
+    length > HOME_CAROUSEL_DEFAULT_ACTIVE ? HOME_CAROUSEL_DEFAULT_ACTIVE : 0,
+  );
   const [paused, setPaused] = useState(false);
   const [cardWidth, setCardWidth] = useState(CARD_WIDTH_DESKTOP);
   const [cardHeight, setCardHeight] = useState(CARD_HEIGHT_DESKTOP);
@@ -86,8 +93,67 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
   const [step, setStep] = useState(CARD_WIDTH_DESKTOP + 56);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedDownloadUrl, setSelectedDownloadUrl] = useState("");
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const hoverLockedRef = useRef(true);
+  const pointerDownRef = useRef<{ x: number; y: number } | null>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
+
+  function hitTestCatalogueIndex(clientX: number, clientY: number): number | null {
+    const track = trackRef.current;
+    if (!track) return null;
+
+    const rect = track.getBoundingClientRect();
+    const cardTop = rect.top + 16;
+    const cardBottom = cardTop + cardHeight;
+    if (clientY < cardTop || clientY > cardBottom) return null;
+
+    const centerX = rect.left + rect.width / 2;
+    const relX = clientX - centerX;
+    const half = cardWidth / 2;
+
+    let bestIndex: number | null = null;
+    let bestDist = Infinity;
+
+    for (let index = 0; index < length; index++) {
+      const offset = getRelativeOffset(index, active, length);
+      if (Math.abs(offset) > MAX_VISIBLE_OFFSET) continue;
+
+      const cardCenterX = offset * step;
+      const dist = Math.abs(relX - cardCenterX);
+      if (dist <= half && dist < bestDist) {
+        bestDist = dist;
+        bestIndex = index;
+      }
+    }
+
+    return bestIndex;
+  }
+
+  function updateHoverFromPointer(clientX: number, clientY: number) {
+    if (hoverLockedRef.current || prefersReducedMotion) {
+      setHoveredIndex(null);
+      return;
+    }
+    setHoveredIndex(hitTestCatalogueIndex(clientX, clientY));
+  }
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const lockHover = () => {
+      hoverLockedRef.current = true;
+      setHoveredIndex(null);
+    };
+
+    window.addEventListener("scroll", lockHover, { passive: true, capture: true });
+    window.addEventListener("wheel", lockHover, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", lockHover, true);
+      window.removeEventListener("wheel", lockHover);
+    };
+  }, []);
 
   useEffect(() => {
     const update = () => {
@@ -190,10 +256,43 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
             aria-roledescription="carousel"
             aria-label={t("catalogueAria")}
             tabIndex={0}
-            className="relative mt-4 w-full min-w-0 cursor-grab overflow-x-hidden overflow-y-visible bg-transparent outline-none focus-visible:outline-none active:cursor-grabbing md:mt-8"
+            className="relative mt-4 w-full min-w-0 cursor-grab overflow-x-hidden overflow-y-visible bg-transparent outline-none focus-visible:outline-none active:cursor-grabbing md:mt-8 [@media(hover:hover)]:cursor-grab"
             style={{ height: trackHeight, perspective: Math.min(1400, trackHeight * 3.2) }}
             onMouseEnter={() => setPaused(true)}
-            onMouseLeave={() => setPaused(false)}
+            onMouseLeave={() => {
+              setPaused(false);
+              hoverLockedRef.current = true;
+              setHoveredIndex(null);
+            }}
+            onPointerDown={(e) => {
+              if (e.pointerType === "mouse") {
+                pointerDownRef.current = { x: e.clientX, y: e.clientY };
+              }
+            }}
+            onPointerMove={(e) => {
+              if (e.pointerType !== "mouse") return;
+              hoverLockedRef.current = false;
+              updateHoverFromPointer(e.clientX, e.clientY);
+            }}
+            onPointerLeave={(e) => {
+              if (e.pointerType === "mouse") {
+                setHoveredIndex(null);
+                pointerDownRef.current = null;
+              }
+            }}
+            onPointerUp={(e) => {
+              if (e.button !== 0) return;
+              const start = pointerDownRef.current;
+              pointerDownRef.current = null;
+              if (start) {
+                const moved = Math.hypot(e.clientX - start.x, e.clientY - start.y);
+                if (moved > 8) return;
+              }
+              const hit = hitTestCatalogueIndex(e.clientX, e.clientY);
+              if (hit === null) return;
+              const offset = getRelativeOffset(hit, active, length);
+              if (offset !== 0) goTo(hit);
+            }}
             onKeyDown={handleKeyDown}
           >
             <motion.div
@@ -211,20 +310,26 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
                 if (Math.abs(offset) > MAX_VISIBLE_OFFSET) return null;
 
                 const isCenter = offset === 0;
-                const style = getCoverflowStyle(offset);
+                const style = getCoverflowStyle();
+                const isHovered = hoveredIndex === index;
+                const displayScale = isHovered && !prefersReducedMotion ? 1.05 : 1;
 
                 return (
-                  <motion.button
+                  <motion.div
                     key={item.id}
-                    type="button"
+                    data-catalogue-card
                     tabIndex={-1}
-                    onClick={() => {
-                      if (isCenter) openDownload(item);
-                      else goTo(index);
+                    role={isCenter ? undefined : "presentation"}
+                    onKeyDown={(e) => {
+                      if (isCenter) return;
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        goTo(index);
+                      }
                     }}
                     aria-label={`Show catalogue ${item.title}${isCenter ? " (current)" : ""}`}
                     aria-current={isCenter}
-                    className="absolute left-1/2 top-4 bg-transparent p-0 outline-none"
+                    className="absolute left-1/2 top-4 cursor-default bg-transparent p-0 outline-none pointer-events-none"
                     style={{
                       width: cardWidth,
                       height: cardHeight,
@@ -232,54 +337,46 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
                       borderRadius: "6px 24px 24px 6px",
                       overflow: "hidden",
                       borderLeft: "4.6px solid #251B1E",
-                      boxShadow: isCenter
-                        ? "0 22px 48px rgba(70,40,50,0.24)"
-                        : "0 12px 32px rgba(70,40,50,0.14)",
+                      boxShadow: isHovered ? CARD_HOVER_SHADOW : CARD_REST_SHADOW,
                       transformOrigin: "center center",
                       transformStyle: "preserve-3d",
                       backfaceVisibility: "hidden",
                       willChange: "transform, filter, opacity",
-                      pointerEvents: "auto",
                     }}
                     initial={false}
                     animate={{
                       x: offset * step,
                       y: style.y,
                       z: style.z,
-                      rotateY: prefersReducedMotion ? 0 : -style.rotateY,
-                      rotateZ: prefersReducedMotion ? 0 : style.rotateZ,
-                      scale: style.scale,
-                      zIndex: 30 - Math.abs(offset),
-                      filter: `blur(${style.blur}px)`,
+                      rotateY: 0,
+                      rotateZ: 0,
+                      scale: displayScale,
+                      zIndex: 10 + (isHovered ? 5 : 0) - Math.abs(offset),
+                      filter: "none",
                       opacity: style.opacity,
                     }}
                     transition={springTransition}
                   >
                     <img
                       src={item.image}
-                      alt={`Catalogue ${item.title}`}
-                      className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                      alt=""
+                      className="pointer-events-none absolute inset-0 h-full w-full scale-[1.04] object-cover object-center"
                       draggable={false}
                     />
-                    <div className="pointer-events-none absolute inset-0 bg-black/20" />
 
-                    <div className="relative z-10 flex h-full flex-col items-center justify-center px-3 text-center text-white">
-                      <p className="text-[0.6rem] tracking-[0.22em] opacity-90 sm:text-[0.65rem] sm:tracking-[0.28em]">2026</p>
-                      <p className="mt-1.5 text-[0.95rem] font-bold leading-[1.15] tracking-[0.04em] sm:mt-2 sm:text-[1.15rem] md:text-[1.3rem]">
-                        EXPLORE
-                        <br />
-                        KITCHEN
-                        <br />
-                        DESIGN
-                      </p>
-                      <span className="mt-4 inline-flex items-center gap-1.5 text-[0.75rem] underline decoration-white/70 underline-offset-4">
-                        Download
-                        <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/80 text-[9px] leading-none">
-                          ↓
-                        </span>
-                      </span>
-                    </div>
-                  </motion.button>
+                    <CatalogueBrochureFace
+                      year="2026"
+                      room={item.room}
+                      variant="carousel"
+                      metrics={{ width: cardWidth, height: cardHeight }}
+                      downloadInteractive
+                      className="pointer-events-none [&_button]:pointer-events-auto"
+                      onDownload={(e) => {
+                        e.stopPropagation();
+                        openDownload(item);
+                      }}
+                    />
+                  </motion.div>
                 );
               })}
             </motion.div>

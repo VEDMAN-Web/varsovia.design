@@ -20,6 +20,7 @@ import {
   QAS_FAQ_LIST_WRAP,
   QAS_FEATURE_CARD,
   QAS_FEATURE_GRID,
+  QAS_FEATURE_HOVER,
   QAS_FEATURE_IMAGE,
   QAS_HERO_BAND,
   QAS_HERO_BODY,
@@ -48,6 +49,11 @@ const fadeUp = {
   }),
 };
 
+const featureHover = {
+  scale: 1.035,
+  transition: { duration: 0.48, ease: [0.22, 1, 0.36, 1] as const },
+};
+
 function QualityFeatureColumn({
   index,
   title,
@@ -65,7 +71,11 @@ function QualityFeatureColumn({
   const number = String(index + 1).padStart(2, "0");
 
   const card = (
-    <div className={QAS_FEATURE_CARD}>
+    <motion.div
+      className={`${QAS_FEATURE_CARD} ${QAS_FEATURE_HOVER}`}
+      initial={false}
+      whileHover={featureHover}
+    >
       <span
         className="pointer-events-none absolute right-3 top-2 font-display text-[clamp(2.5rem,8vw,3.75rem)] font-bold leading-none text-[#6a414d]/[0.08]"
         aria-hidden
@@ -76,18 +86,22 @@ function QualityFeatureColumn({
       <p className="relative z-[1] mt-6 text-pretty font-outfit text-[clamp(0.8125rem,2vw,0.9375rem)] font-semibold leading-snug text-[#1f1f1f]">
         {title}
       </p>
-    </div>
+    </motion.div>
   );
 
   const photo = (
-    <div className={QAS_FEATURE_IMAGE}>
+    <motion.div
+      className={`${QAS_FEATURE_IMAGE} ${QAS_FEATURE_HOVER}`}
+      initial={false}
+      whileHover={featureHover}
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={resolveMediaUrl(image, MEDIA.featured[0])}
         alt={imageAlt}
         className="aspect-[3/4] w-full object-cover min-[640px]:aspect-[4/5]"
       />
-    </div>
+    </motion.div>
   );
 
   return (

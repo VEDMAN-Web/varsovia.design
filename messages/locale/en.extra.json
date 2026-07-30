@@ -30,6 +30,7 @@
     "catalogueAria": "Free catalogue previews",
     "cataloguePrev": "Previous catalogue",
     "catalogueNext": "Next catalogue",
+    "catalogueDownload": "Download",
     "featuredTitle": "Featured Projects",
     "featuredSubtitle": "Designed to inspire. Built to last",
     "testimonialsTitle": "Real Stories. Real Spaces.",
@@ -76,7 +77,32 @@
     "kitchenGallery": "Kitchen",
     "bathroomGallery": "Bathroom",
     "navEverySpace": "Every space, every story",
-    "navByRegion": "By region & type"
+    "navByRegion": "By region & type",
+    "navFeaturedTitle": "Our Showcase",
+    "tabLabels": {
+      "all": "Show all",
+      "homeCase": "Home case",
+      "northAmerica": "North America",
+      "southAmerica": "South America",
+      "africa": "Africa",
+      "commercialProject": "Commercial Project",
+      "europe": "Europe",
+      "australia": "Australia",
+      "middleEast": "Middle East",
+      "asia": "Asia"
+    },
+    "categoryMeta": {
+      "all": { "title": "Our Showcase", "subtitle": "Every Space, Every Story" },
+      "homeCase": { "title": "Home Case", "subtitle": "Spaces Designed to Inspire" },
+      "northAmerica": { "title": "North America", "subtitle": "Bold Design, Modern Living" },
+      "southAmerica": { "title": "South America", "subtitle": "Vibrant Spaces, Warm Character" },
+      "africa": { "title": "Africa", "subtitle": "Rooted in Culture, Rich in Design" },
+      "commercialProject": { "title": "Commercial Project", "subtitle": "Where Function Meets Vision" },
+      "europe": { "title": "Europe", "subtitle": "Timeless Elegance, Refined Living" },
+      "australia": { "title": "Australia", "subtitle": "Light-Filled Spaces, Effortless Style" },
+      "middleEast": { "title": "Middle East", "subtitle": "Luxury Rooted in Tradition" },
+      "asia": { "title": "Asia", "subtitle": "Harmony of Space and Serenity" }
+    }
   },
   "product": {
     "backToProducts": "Back to Products",

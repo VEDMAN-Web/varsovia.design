@@ -187,7 +187,12 @@ export default function ContactInquiryForm({
   }
 
   return (
-    <form key={formKey} onSubmit={onSubmit} noValidate className={`${formGapClass} ${className}`.trim()}>
+    <form
+      key={formKey}
+      onSubmit={onSubmit}
+      noValidate
+      className={`${formGapClass} ${isModal ? "flex w-full min-w-0 flex-col" : ""} ${className}`.trim()}
+    >
       <div>
         <label className={labelClass} htmlFor="contact-name">
           {t("fullName")}
@@ -256,14 +261,13 @@ export default function ContactInquiryForm({
           <label className={labelClass} htmlFor="contact-phone">
             {t("phone")}
           </label>
-          <div className={`${fieldClass} flex items-center gap-2 px-3 ${fieldErrorClass("phone")}`}>
+          <div className={`${fieldClass} flex min-w-0 items-center gap-2 px-3 ${fieldErrorClass("phone")}`}>
             <img
               src={phoneConfig.flag}
               alt=""
-              className="h-[18px] w-auto shrink-0 rounded-[2px] object-cover"
-              style={{ minWidth: "22px" }}
+              className="h-[18px] w-[22px] shrink-0 rounded-[2px] object-cover"
             />
-            <span className="shrink-0 text-[14px] font-medium text-[#251b1e]">{phoneConfig.dialCode}</span>
+            <span className="shrink-0 text-[13px] font-medium text-[#251b1e] sm:text-[14px]">{phoneConfig.dialCode}</span>
             <span className="h-4 w-px shrink-0 bg-[#6a414d]/20" aria-hidden />
             <input
               id="contact-phone"
@@ -276,7 +280,7 @@ export default function ContactInquiryForm({
               }}
               inputMode="numeric"
               placeholder={phoneConfig.placeholder}
-              className="min-w-0 flex-1 bg-transparent text-[14px] text-[#251b1e] outline-none placeholder:text-[rgba(37,27,30,0.45)]"
+              className="min-w-0 flex-1 bg-transparent text-[13px] text-[#251b1e] outline-none placeholder:text-[rgba(37,27,30,0.45)] sm:text-[14px]"
             />
           </div>
           {fieldErrors.phone ? (
@@ -384,7 +388,7 @@ export default function ContactInquiryForm({
         </div>
       </div>
 
-      <div className={`flex min-h-0 flex-col ${isModal ? "" : "min-h-[146px] flex-1"}`}>
+      <div className={`flex min-h-0 flex-col ${isModal ? "min-h-[48px]" : ""}`}>
         <label className={labelClass} htmlFor="contact-message">
           {t("message")}
         </label>
@@ -397,7 +401,11 @@ export default function ContactInquiryForm({
             clearFieldError("message");
           }}
           placeholder={t("messagePh")}
-          className={`resize-none ${fieldErrorClass("message")} ${isModal ? `${fieldClass} h-[64px] py-2 sm:h-[84px] sm:py-3` : CONTACT_TEXTAREA}`}
+          className={`resize-none ${fieldErrorClass("message")} ${
+            isModal
+              ? `${fieldClass} min-h-[48px] max-h-[112px] py-2 sm:max-h-[120px] lg:max-h-[140px]`
+              : CONTACT_TEXTAREA
+          }`}
         />
         {fieldErrors.message ? (
           <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{t(`validation.${fieldErrors.message}`)}</p>
@@ -407,8 +415,8 @@ export default function ContactInquiryForm({
       <div
         className={
           isModal
-            ? "sticky bottom-0 z-10 -mx-4 mt-1 flex shrink-0 flex-col items-center bg-gradient-to-t from-[#fff3f2] from-[72%] via-[#fff3f2]/95 to-transparent px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:-mx-6 sm:px-6 md:-mx-10 md:px-10 2xl:-mx-8 2xl:px-8"
-            : "flex shrink-0 flex-col items-center pt-10"
+            ? "flex w-full shrink-0 flex-col items-stretch pt-2 sm:items-end"
+            : "flex w-full shrink-0 flex-col items-center pt-4 sm:pt-5"
         }
       >
         {message ? (
@@ -422,8 +430,10 @@ export default function ContactInquiryForm({
         <button
           type="submit"
           disabled={status === "loading"}
-          className={`font-outfit w-full max-w-[280px] rounded-[6px] bg-[#6a414d] font-normal text-white transition hover:bg-[#5a3640] disabled:opacity-70 sm:max-w-none sm:w-auto ${
-            isModal ? "h-[44px] px-8 text-[16px] sm:h-[46px] sm:px-[18px] sm:text-[18px]" : "h-[50px] px-5 text-[18px]"
+          className={`font-outfit rounded-[6px] bg-[#6a414d] font-normal text-white transition hover:bg-[#5a3640] disabled:opacity-70 ${
+            isModal
+              ? "h-[44px] w-full px-6 text-[16px] sm:w-auto sm:min-w-[200px] sm:text-[17px]"
+              : "h-[48px] w-full max-w-[320px] px-6 text-[16px] sm:h-[50px] sm:px-5 sm:text-[18px] min-[520px]:w-auto min-[520px]:max-w-none"
           }`}
         >
           {status === "loading" ? tCommon("submitting") : tCommon("submit")}

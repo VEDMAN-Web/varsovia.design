@@ -32,10 +32,10 @@ export default function BlogPagination({ currentPage, totalPages, onPageChange }
     "inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-[6px] text-[#6a414d] transition hover:bg-[#f4ebec] disabled:cursor-not-allowed disabled:opacity-35 sm:h-10 sm:w-10";
 
   const pageBtn = (active: boolean) =>
-    `inline-flex h-9 min-w-9 shrink-0 cursor-pointer items-center justify-center rounded-[6px] px-2 font-outfit text-[14px] font-medium transition sm:h-10 sm:min-w-10 sm:text-[15px] ${
+    `inline-flex h-9 min-w-9 shrink-0 cursor-pointer items-center justify-center rounded-[8px] px-2 font-outfit text-[14px] font-medium transition sm:h-10 sm:min-w-10 sm:text-[15px] ${
       active
         ? "bg-[#6a414d] text-white shadow-[0_2px_8px_rgba(106,65,77,0.25)]"
-        : "text-[#6a414d] hover:bg-[#f4ebec]"
+        : "text-[#1f1f1f] hover:bg-[#f4ebec]"
     }`;
 
   return (

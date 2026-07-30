@@ -1,4 +1,6 @@
 import { resolveMediaUrl, resolveMediaUrls, MEDIA } from "./mediaAssets";
+import { getLocaleOrDefault } from "./i18n/messageCatalog";
+import { pickLocalized } from "./i18n/pickLocalized";
 import type { Locale } from "./i18n/routing";
 import type { ApiProject, HomeData, SiteBlock, SiteContent } from "./siteTypes";
 
@@ -19,15 +21,21 @@ function pickString(value: unknown, fallback: unknown) {
   return typeof value === "string" && value.trim() ? value : fallback;
 }
 
-function pickBlock(value: unknown, fallback: SiteBlock): SiteBlock {
+function pickBlock(value: unknown, fallback: SiteBlock, locale?: Locale): SiteBlock {
+  const loc = getLocaleOrDefault(locale);
   if (value && typeof value === "object") {
     const block = value as Record<string, unknown>;
-    return {
-      title: String(pickString(block.title, fallback.title)),
-      text: String(pickString(block.text, fallback.text)),
-    };
+    const title = pickLocalized(block.title, loc) || String(pickString(block.title, fallback.title));
+    const text = pickLocalized(block.text, loc) || String(pickString(block.text, fallback.text));
+    return { title, text };
   }
   return fallback;
+}
+
+function pickLocalizedString(value: unknown, locale: Locale | undefined, fallback: string | undefined): string {
+  const loc = getLocaleOrDefault(locale);
+  const fb = fallback && fallback.trim() ? fallback : "";
+  return pickLocalized(value, loc) || (typeof value === "string" && value.trim() ? value : fb);
 }
 
 async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale): Promise<SiteContent> {
@@ -36,13 +44,13 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
   return {
     ...fb,
     ...(data as SiteContent),
-    heroEyebrow: String(pickString(data.heroEyebrow, fb.heroEyebrow)),
-    heroHeadline: String(pickString(data.heroHeadline, fb.heroHeadline)),
-    heroSubtitle: String(pickString(data.heroSubtitle, fb.heroSubtitle)),
+    heroEyebrow: pickLocalizedString(data.heroEyebrow, locale, fb.heroEyebrow),
+    heroHeadline: pickLocalizedString(data.heroHeadline, locale, fb.heroHeadline),
+    heroSubtitle: pickLocalizedString(data.heroSubtitle, locale, fb.heroSubtitle),
     heroImage: resolveMediaUrl(pickString(data.heroImage, fb.heroImage) as string, MEDIA.hero),
-    heroPrimaryCtaLabel: String(pickString(data.heroPrimaryCtaLabel, fb.heroPrimaryCtaLabel)),
+    heroPrimaryCtaLabel: pickLocalizedString(data.heroPrimaryCtaLabel, locale, fb.heroPrimaryCtaLabel),
     heroPrimaryCtaHref: String(pickString(data.heroPrimaryCtaHref, fb.heroPrimaryCtaHref)),
-    heroSecondaryCtaLabel: String(pickString(data.heroSecondaryCtaLabel, fb.heroSecondaryCtaLabel)),
+    heroSecondaryCtaLabel: pickLocalizedString(data.heroSecondaryCtaLabel, locale, fb.heroSecondaryCtaLabel),
     heroSecondaryCtaHref: String(pickString(data.heroSecondaryCtaHref, fb.heroSecondaryCtaHref)),
     stats: (data.stats as SiteContent["stats"])?.length ? (data.stats as SiteContent["stats"]) : fb.stats,
     statsImage: resolveMediaUrl(pickString(data.statsImage, fb.statsImage) as string, MEDIA.stats),
@@ -57,20 +65,21 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
     processSteps: (data.processSteps as SiteContent["processSteps"])?.length
       ? (data.processSteps as SiteContent["processSteps"])
       : fb.processSteps,
-    vision: pickBlock(data.vision, fb.vision as SiteBlock),
-    mission: pickBlock(data.mission, fb.mission as SiteBlock),
-    values: pickBlock(data.values, fb.values as SiteBlock),
+    vision: pickBlock(data.vision, fb.vision as SiteBlock, locale),
+    mission: pickBlock(data.mission, fb.mission as SiteBlock, locale),
+    values: pickBlock(data.values, fb.values as SiteBlock, locale),
   };
 }
 
-function normalizeTestimonials(items: unknown[]) {
+function normalizeTestimonials(items: unknown[], locale?: Locale) {
+  const loc = getLocaleOrDefault(locale);
   return items.map((item, index) => {
     const row = item as Record<string, unknown>;
     return {
       _id: String(row._id ?? index),
-      name: String(row.name ?? "Client"),
-      role: String(row.role ?? ""),
-      quote: String(row.quote ?? ""),
+      name: pickLocalized(row.name, loc) || String(row.name ?? "Client"),
+      role: pickLocalized(row.role, loc) || String(row.role ?? ""),
+      quote: pickLocalized(row.quote, loc) || String(row.quote ?? ""),
       rating: Number(row.rating ?? 5),
       image: resolveMediaUrl(row.image as string | undefined, MEDIA.stories[index % MEDIA.stories.length]),
     };
@@ -229,7 +238,7 @@ export async function fetchHomeData(locale?: Locale): Promise<HomeData> {
       data.site = await mergeSiteFallback(data.site as Record<string, unknown>, locale);
     }
     if (Array.isArray(data.testimonials) && data.testimonials.length > 0) {
-      data.testimonials = normalizeTestimonials(data.testimonials);
+      data.testimonials = normalizeTestimonials(data.testimonials, locale);
     } else {
       const { fallbackHomeData } = await import("./fallbackData");
       data.testimonials = fallbackHomeData.testimonials;
@@ -309,8 +318,8 @@ export async function fetchBlogs(locale?: Locale) {
   } catch {
     /* fall through to fallback */
   }
-  const { fallbackBlogs } = await import("@/lib/companyData");
-  return fallbackBlogs;
+  const { fallbackBlogs, resolveBlogs } = await import("@/lib/companyData");
+  return resolveBlogs(fallbackBlogs, locale);
 }
 
 export async function fetchBlogById(id: string, locale?: Locale) {
@@ -330,8 +339,8 @@ export async function fetchBlogById(id: string, locale?: Locale) {
   try {
     const list = await fetchBlogs(locale);
     const { resolveBlogs, getBlogById } = await import("@/lib/companyData");
-    const resolved = resolveBlogs(Array.isArray(list) ? list : []);
-    const fromList = getBlogById(id, null, resolved);
+    const resolved = resolveBlogs(Array.isArray(list) ? list : [], locale);
+    const fromList = getBlogById(id, null, resolved, locale);
     if (fromList) {
       return {
         _id: fromList._id,
@@ -351,7 +360,7 @@ export async function fetchBlogById(id: string, locale?: Locale) {
   }
 
   const { getBlogById } = await import("@/lib/companyData");
-  return getBlogById(id) ?? null;
+  return getBlogById(id, null, undefined, locale) ?? null;
 }
 
 export async function fetchTeamMembers(locale?: Locale) {
@@ -404,10 +413,10 @@ export async function fetchProjectById(id: string, locale?: Locale) {
 
     return {
       _id: String(apiProject._id ?? id),
-      title: apiProject.title || "Interior Project",
-      detailTitle: apiProject.title || "Interior Project",
+      title: pickLocalizedString(apiProject.title, locale, "Interior Project"),
+      detailTitle: pickLocalizedString(apiProject.title, locale, "Interior Project"),
       description:
-        apiProject.description ||
+        pickLocalizedString(apiProject.description, locale, "") ||
         "A beautifully crafted interior designed for everyday living.",
       coverImage: cover,
       gallery,

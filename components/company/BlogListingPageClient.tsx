@@ -8,6 +8,7 @@ import CompanyHero from "@/components/company/CompanyHero";
 import BlogCard from "@/components/company/BlogCard";
 import BlogPagination from "@/components/company/BlogPagination";
 import { COMPANY_PAGE_BG, COMPANY_SHELL } from "@/components/company/companyLayoutShared";
+import { BLOG_LISTING_GRID } from "@/components/company/blogLayoutShared";
 import { fetchBlogs } from "@/lib/api";
 import type { Locale } from "@/lib/i18n/routing";
 import {
@@ -30,9 +31,6 @@ const TOOLBAR_PILL =
 
 const TOOLBAR_COUNT_CLASS = "font-normal text-[#9a9a9a]";
 
-const BLOG_GRID =
-  "grid w-full min-w-0 grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-x-[clamp(1.25rem,3vw,2rem)] sm:gap-y-10 lg:grid-cols-3 lg:gap-x-[clamp(1.5rem,4vw,2.5rem)] lg:gap-y-12";
-
 export default function BlogListingPageClient() {
   const locale = useLocale();
   const tBlog = useTranslations("blogListing");
@@ -47,7 +45,7 @@ export default function BlogListingPageClient() {
   useEffect(() => {
     setLoading(true);
     fetchBlogs(locale as Locale)
-      .then((data) => setBlogs(resolveBlogs(Array.isArray(data) ? data : [])))
+      .then((data) => setBlogs(resolveBlogs(Array.isArray(data) ? data : [], locale as Locale)))
       .finally(() => setLoading(false));
   }, [locale]);
 
@@ -160,7 +158,7 @@ export default function BlogListingPageClient() {
 
         <section className={`${COMPANY_SHELL} mb-8 md:mb-10`}>
           {loading ? (
-            <div className={BLOG_GRID}>
+            <div className={BLOG_LISTING_GRID}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
@@ -176,7 +174,7 @@ export default function BlogListingPageClient() {
               ))}
             </div>
           ) : (
-            <div className={BLOG_GRID}>
+            <div className={BLOG_LISTING_GRID}>
               {items.map((blog, i) => (
                 <BlogCard key={blog._id} blog={blog} index={i} />
               ))}

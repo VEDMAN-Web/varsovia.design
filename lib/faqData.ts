@@ -1,3 +1,8 @@
+import type { Locale } from "@/lib/i18n/routing";
+import { hasLocalizedMap, pickLocalized } from "@/lib/i18n/pickLocalized";
+import faqContentPl from "../messages/locale/faq.content.pl.json";
+import faqContentTh from "../messages/locale/faq.content.th.json";
+
 export const FAQ_TOPICS = [
   "Kitchen Interior",
   "Bedroom Interior",
@@ -118,13 +123,67 @@ export const FAQ_DATA: Record<FaqTopic, FaqItem[]> = {
   ],
 };
 
+const FAQ_BY_LOCALE: Partial<Record<Locale, Record<FaqTopic, FaqItem[]>>> = {
+  th: faqContentTh as Record<FaqTopic, FaqItem[]>,
+  pl: faqContentPl as Record<FaqTopic, FaqItem[]>,
+};
+
+export function getFaqDataForLocale(locale: Locale): Record<FaqTopic, FaqItem[]> {
+  return FAQ_BY_LOCALE[locale] ?? FAQ_DATA;
+}
+
+export type ApiFaqRow = {
+  category?: unknown;
+  question?: unknown;
+  answer?: unknown;
+};
+
+export function normalizeFaqsFromApi(raw: unknown[], locale: Locale) {
+  if (!Array.isArray(raw)) return [] as Array<{ category: string; question: string; answer: string }>;
+
+  return raw
+    .map((row) => {
+      const item = row as ApiFaqRow;
+      const category =
+        pickLocalized(item.category, locale) || pickLocalized(item.category, "en");
+      const question = pickLocalized(item.question, locale);
+      const answer = pickLocalized(item.answer, locale);
+      if (!category || !question || !answer) return null;
+      return { category, question, answer, _raw: item };
+    })
+    .filter(Boolean) as Array<{
+    category: string;
+    question: string;
+    answer: string;
+    _raw: ApiFaqRow;
+  }>;
+}
+
 export function resolveFaqsForTopic(
   topic: FaqTopic,
-  apiFaqs: Array<{ category?: string; question?: string; answer?: string }>
+  apiFaqs: Array<{ category?: string; question?: string; answer?: string; _raw?: ApiFaqRow }>,
+  locale: Locale = "en",
 ): FaqItem[] {
-  const matched = apiFaqs.filter((f) => f.category === topic && f.question && f.answer);
-  if (matched.length > 0) {
-    return matched.map((f) => ({ question: f.question!, answer: f.answer! }));
+  const localizedStatic = getFaqDataForLocale(locale)[topic] ?? [];
+
+  const apiForTopic = apiFaqs.filter(
+    (f) => f.category === topic && f.question && f.answer,
+  );
+
+  if (locale !== "en" && localizedStatic.length > 0) {
+    const apiHasLocaleFields = apiForTopic.some(
+      (f) =>
+        f._raw &&
+        (hasLocalizedMap(f._raw.question, locale) || hasLocalizedMap(f._raw.answer, locale)),
+    );
+    if (!apiHasLocaleFields) {
+      return localizedStatic;
+    }
   }
-  return FAQ_DATA[topic] || [];
+
+  if (apiForTopic.length > 0) {
+    return apiForTopic.map((f) => ({ question: f.question!, answer: f.answer! }));
+  }
+
+  return localizedStatic.length > 0 ? localizedStatic : FAQ_DATA[topic] || [];
 }
