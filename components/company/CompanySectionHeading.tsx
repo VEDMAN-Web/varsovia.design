@@ -10,6 +10,8 @@ type CompanySectionHeadingProps = {
   className?: string;
   subtitleSentenceCase?: boolean;
   noGradient?: boolean;
+  /** Corner radius of the heading band */
+  radiusClassName?: string;
 };
 
 export default function CompanySectionHeading({
@@ -18,6 +20,7 @@ export default function CompanySectionHeading({
   className = "",
   subtitleSentenceCase = true,
   noGradient = false,
+  radiusClassName = "rounded-[16px]",
 }: CompanySectionHeadingProps) {
   return (
     <FadeInView className={className}>
@@ -27,7 +30,7 @@ export default function CompanySectionHeading({
         titleAs="h2"
         subtitleSentenceCase={subtitleSentenceCase}
         noGradient={noGradient}
-        className={`w-full rounded-[16px] ${SECTION_HEADING_WIDE}`}
+        className={`w-full ${radiusClassName} ${SECTION_HEADING_WIDE}`}
       />
     </FadeInView>
   );
