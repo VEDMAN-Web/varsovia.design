@@ -100,41 +100,30 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
 
   return (
     <div className="bg-[#f7f3f2] pt-[72px] pb-20 font-outfit md:pb-28">
-      {/* Hero — title, subtitle, intro inside one band (Figma) */}
+      {/* Hero — title, subtitle, intro inside one band */}
       <section className={`${COMPANY_SHELL} pb-8 pt-10 md:pb-10 md:pt-16`}>
-        <FadeInView className="mb-8 md:mb-12">
+        <FadeInView className="mb-6 md:mb-8">
           <SectionHeading
             title="About Us"
             subtitle={heroSubtitle || undefined}
             titleAs="h1"
             expanded
-            className="w-full rounded-[16px]"
+            className="w-full rounded-[16px] !pb-6 md:!pb-8"
           >
             <p className={`mx-auto mt-8 max-w-4xl px-2 md:px-4 ${PAGE_BODY_LEAD_CLASS} !text-black`}>{intro}</p>
           </SectionHeading>
         </FadeInView>
-      </section>
 
-      {/* Three-image gallery */}
-      <section className={`${COMPANY_SHELL} mb-20 md:mb-28`}>
-        <div className="grid gap-4 md:grid-cols-12 md:gap-5">
-          {[
-            { src: heroGallery[0], alt: "Interior detail", className: "md:col-span-3", imgClass: "aspect-[3/4] md:min-h-[360px] md:aspect-auto md:h-full" },
-            { src: heroGallery[1], alt: "Varsovia Design interior", className: "md:col-span-6", imgClass: "aspect-[16/10] md:aspect-[2/1] md:min-h-[360px]" },
-            { src: heroGallery[2], alt: "Interior craftsmanship", className: "md:col-span-3", imgClass: "aspect-[3/4] md:min-h-[360px] md:aspect-auto md:h-full" },
-          ].map((item, i) => (
-            <motion.div
-              key={item.src}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.55, delay: i * 0.08 }}
-              className={`${item.className} ${COMPANY_IMAGE_FRAME}`}
-            >
-              <img src={item.src} alt={item.alt} className={`w-full object-cover transition duration-500 hover:scale-[1.02] ${item.imgClass}`} />
-            </motion.div>
-          ))}
-        </div>
+        {/* Single Featured Image */}
+        <FadeInView delay={0.1}>
+          <div className="overflow-hidden rounded-[16px] border border-[#e5dcd3]/30 shadow-[0_10px_30px_rgba(107,44,58,0.04)] w-full bg-white">
+            <img
+              src={heroGallery[1] || heroGallery[0]}
+              alt="About Us Featured"
+              className="w-full h-auto aspect-[16/7] md:aspect-[2.1/1] object-cover transition duration-500 hover:scale-[1.01]"
+            />
+          </div>
+        </FadeInView>
       </section>
 
       {/* Vision / Mission / Value */}
