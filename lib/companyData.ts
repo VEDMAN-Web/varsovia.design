@@ -6,6 +6,7 @@ import type { Locale } from "@/lib/i18n/routing";
 import blogContentPl from "../messages/locale/blog.content.pl.json";
 import blogContentTh from "../messages/locale/blog.content.th.json";
 import { MEDIA, resolveMediaUrl } from "./mediaAssets";
+import { LISTING_PAGE_SIZE, paginateItems } from "./pagination";
 
 export type BlogAuthor = { name: string; avatar: string };
 
@@ -46,7 +47,7 @@ export type TeamStat = {
   label: string;
 };
 
-export const BLOGS_PER_PAGE = 6;
+export const BLOGS_PER_PAGE = LISTING_PAGE_SIZE.blog;
 
 export const COMPANY_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -605,6 +606,48 @@ export const fallbackDesignTeam: TeamMember[] = [
     image: IMG.a3,
     teamType: "Design",
   },
+  {
+    _id: "tm-4",
+    name: "Annette Black",
+    role: "Senior Interior Designer",
+    image: IMG.f1,
+    teamType: "Design",
+  },
+  {
+    _id: "tm-5",
+    name: "Cameron Williamson",
+    role: "Design Lead — Kitchens",
+    image: IMG.f2,
+    teamType: "Design",
+  },
+  {
+    _id: "tm-6",
+    name: "Esther Howard",
+    role: "Visualisation Specialist",
+    image: IMG.f3,
+    teamType: "Design",
+  },
+  {
+    _id: "tm-7",
+    name: "Robert Fox",
+    role: "Materials Consultant",
+    image: IMG.f4,
+    teamType: "Design",
+  },
+  {
+    _id: "tm-8",
+    name: "Leslie Alexander",
+    role: "Junior Designer",
+    image: IMG.a1,
+    teamType: "Design",
+  },
+  {
+    _id: "tm-9",
+    name: "Theresa Webb",
+    role: "Design Coordinator",
+    image: IMG.a2,
+    teamType: "Design",
+  },
 ];
 
 export const fallbackArchitectTeam: TeamMember[] = [
@@ -627,6 +670,48 @@ export const fallbackArchitectTeam: TeamMember[] = [
     name: "David Okonkwo",
     role: "Junior Engineer",
     image: IMG.a1,
+    teamType: "Architect",
+  },
+  {
+    _id: "arch-4",
+    name: "James Wilson",
+    role: "Project Architect",
+    image: IMG.f5,
+    teamType: "Architect",
+  },
+  {
+    _id: "arch-5",
+    name: "Sophie Laurent",
+    role: "Technical Lead",
+    image: IMG.f6,
+    teamType: "Architect",
+  },
+  {
+    _id: "arch-6",
+    name: "Michael Torres",
+    role: "Site Supervisor",
+    image: IMG.f7,
+    teamType: "Headquarter",
+  },
+  {
+    _id: "arch-7",
+    name: "Priya Sharma",
+    role: "Structural Engineer",
+    image: IMG.a3,
+    teamType: "Engineer",
+  },
+  {
+    _id: "arch-8",
+    name: "Emma Collins",
+    role: "MEP Coordinator",
+    image: IMG.f2,
+    teamType: "Engineer",
+  },
+  {
+    _id: "arch-9",
+    name: "Daniel Kim",
+    role: "Junior Architect",
+    image: IMG.f3,
     teamType: "Architect",
   },
 ];
@@ -844,15 +929,7 @@ export function getRelatedBlogs(currentId: string, blogs: BlogPost[], limit = 3)
 }
 
 export function paginateBlogs<T>(items: T[], page: number, perPage = BLOGS_PER_PAGE) {
-  const totalPages = Math.max(1, Math.ceil(items.length / perPage));
-  const safePage = Math.min(Math.max(1, page), totalPages);
-  const start = (safePage - 1) * perPage;
-  return {
-    items: items.slice(start, start + perPage),
-    currentPage: safePage,
-    totalPages,
-    totalItems: items.length,
-  };
+  return paginateItems(items, page, perPage);
 }
 
 export type BlogSortOption = "all" | "newest" | "oldest";
@@ -907,8 +984,8 @@ export function resolveTeamMembers(
   );
 
   return {
-    designTeam: (italian.length > 0 ? italian : fallbackDesignTeam).slice(0, 3),
-    architectTeam: (architects.length > 0 ? architects : fallbackArchitectTeam).slice(0, 3),
+    designTeam: italian.length > 0 ? italian : fallbackDesignTeam,
+    architectTeam: architects.length > 0 ? architects : fallbackArchitectTeam,
   };
 }
 

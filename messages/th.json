@@ -109,6 +109,9 @@
     "allInterior": "อินทีเรียทั้งหมด",
     "allInteriorCount": "อินทีเรียทั้งหมด ({count})",
     "noProjectsFilter": "ไม่พบโปรเจกต์สำหรับตัวกรองนี้",
+    "paginationNavLabel": "การแบ่งหน้า",
+    "paginationPrev": "หน้าก่อนหน้า",
+    "paginationNext": "หน้าถัดไป",
     "topic": "หัวข้อ",
     "questionsAndAnswers": "คำถามและคำตอบ",
     "step": "ขั้นตอน {step}"
@@ -204,6 +207,14 @@
     "sortOldest": "เก่าไปใหม่",
     "discoverMore": "บล็อกที่คุณอาจสนใจ",
     "backToBlog": "กลับไปบล็อก"
+  },
+  "productsListing": {
+    "heroTitle": "ผลิตภัณฑ์ของเรา",
+    "heroSubtitle": "อินทีเรียที่ออกแบบให้เข้ากับไลฟ์สไตล์ของคุณ",
+    "allProducts": "ผลิตภัณฑ์ทั้งหมด",
+    "sortAll": "ทั้งหมด",
+    "sortNewest": "ใหม่ไปเก่า",
+    "sortOldest": "เก่าไปใหม่"
   },
   "teamPage": {
     "heroTitle": "Our Team",

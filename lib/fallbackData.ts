@@ -111,6 +111,9 @@ export const fallbackHomeData = {
     { _id: "3", title: "Explore Modern Design", coverImage: MEDIA.catalogues[2], downloadUrl: "" },
     { _id: "4", title: "Warm Neutrals", coverImage: MEDIA.catalogues[3], downloadUrl: "" },
     { _id: "5", title: "Urban Kitchens", coverImage: MEDIA.catalogues[4], downloadUrl: "" },
+    { _id: "6", title: "Coastal Living", coverImage: MEDIA.catalogues[2], downloadUrl: "" },
+    { _id: "7", title: "Luxury Suites", coverImage: MEDIA.catalogues[3], downloadUrl: "" },
+    { _id: "8", title: "Compact Spaces", coverImage: MEDIA.catalogues[1], downloadUrl: "" },
   ],
   testimonials: [
     {

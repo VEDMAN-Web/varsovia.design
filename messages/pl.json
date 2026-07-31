@@ -109,6 +109,9 @@
     "allInterior": "Wszystkie wnętrza",
     "allInteriorCount": "Wszystkie wnętrza ({count})",
     "noProjectsFilter": "Nie znaleziono projektów dla tego filtra.",
+    "paginationNavLabel": "Paginacja",
+    "paginationPrev": "Poprzednia strona",
+    "paginationNext": "Następna strona",
     "topic": "Temat",
     "questionsAndAnswers": "Pytania i odpowiedzi",
     "step": "Krok {step}"
@@ -204,6 +207,14 @@
     "sortOldest": "Od najstarszych",
     "discoverMore": "Więcej wpisów na blogu",
     "backToBlog": "Wróć do bloga"
+  },
+  "productsListing": {
+    "heroTitle": "Nasze produkty",
+    "heroSubtitle": "Wnętrza dopasowane do Twojego stylu życia",
+    "allProducts": "Wszystkie produkty",
+    "sortAll": "Wszystkie",
+    "sortNewest": "Od najnowszych",
+    "sortOldest": "Od najstarszych"
   },
   "teamPage": {
     "heroTitle": "Our Team",

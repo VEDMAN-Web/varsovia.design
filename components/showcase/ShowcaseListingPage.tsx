@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
@@ -24,6 +24,8 @@ import {
 import { pickLocalized } from "@/lib/i18n/pickLocalized";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 import type { Locale } from "@/lib/i18n/routing";
+import ListingPagination from "@/components/ui/ListingPagination";
+import { LISTING_PAGE_SIZE, paginateItems } from "@/lib/pagination";
 
 type ApiShowcase = {
   _id: string;
@@ -63,6 +65,8 @@ function ShowcaseListingInner() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<ShowcaseTab>("Home case");
   const [apiProjects, setApiProjects] = useState<ShowcaseProject[] | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const tabParam = searchParams.get("tab");
@@ -87,6 +91,10 @@ function ShowcaseListingInner() {
     });
   }, [locale]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
+
   const tabKey = showcaseTabMessageKey(activeTab);
   const meta = {
     title: tShowcase(`categoryMeta.${tabKey}.title`),
@@ -101,6 +109,16 @@ function ShowcaseListingInner() {
     if (activeTab === "All") return source;
     return source.filter((p) => p.category === activeTab);
   })();
+
+  const { items: pageProjects, totalPages } = useMemo(
+    () => paginateItems(projects, currentPage, LISTING_PAGE_SIZE.showcase),
+    [projects, currentPage],
+  );
+
+  function handlePageChange(page: number) {
+    setCurrentPage(page);
+    gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <>
@@ -117,19 +135,26 @@ function ShowcaseListingInner() {
 
             <ShowcaseFilterTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-            <div className={SHOWCASE_PROJECT_GRID_WRAP}>
+            <div ref={gridRef} className={SHOWCASE_PROJECT_GRID_WRAP}>
               <div className={SHOWCASE_PROJECT_GRID}>
                 {projects.length === 0 ? (
                   <p className="col-span-full py-16 text-center font-outfit text-[#6a414d]/70">
                     {tShowcase("emptyState")}
                   </p>
                 ) : (
-                  projects.map((project, i) => (
+                  pageProjects.map((project, i) => (
                     <ShowcaseProjectCard key={project.id} project={project} index={i} />
                   ))
                 )}
               </div>
             </div>
+
+            <ListingPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              className="flex select-none items-center justify-center gap-1.5 pb-2 pt-8 sm:gap-2 md:pt-10"
+            />
           </div>
         </div>
       </main>

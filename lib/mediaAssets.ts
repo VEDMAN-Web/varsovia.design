@@ -1,8 +1,8 @@
 /** Self-hosted assets under /public — mapped from legacy /home/* paths. */
 
 export const MEDIA = {
-  hero: "/home/home-front-page.png",
-  stats: "/home/counting.png",
+  hero: "/home/hero.jpg",
+  stats: "/home/stats.jpg",
   team: "/team/team.jpg",
   blog: "/blog/blog1.jpg",
   about: ["/home/about-1.png", "/home/about-2.png", "/home/about-3.png"],
@@ -60,11 +60,37 @@ export const MEDIA = {
   ],
 } as const;
 
-/** Only rewrite API paths that are not stored under the same URL in /public. */
+/** Legacy CMS / seed paths → files under /public (see scripts/download-media.ps1). */
 const LOCAL_ALIASES: Record<string, string> = {
   "/home/catalog-1.jpg": MEDIA.catalogues[1],
   "/home/product/product-3.jpg": MEDIA.products[2],
+  "/home/home-front-page.png": "/home/hero.jpg",
+  "/home/counting.png": MEDIA.stats,
+  "/home/about-1.png": MEDIA.about[0],
+  "/home/about-2.png": MEDIA.about[1],
+  "/home/about-3.png": MEDIA.about[2],
+  "/home/product/product-1.png": MEDIA.products[0],
+  "/home/product/product-2.png": MEDIA.products[1],
+  "/home/catalog.png": MEDIA.catalogues[0],
+  "/home/catalog-2.png": MEDIA.catalogues[1],
+  "/home/catalog-3.png": MEDIA.catalogues[2],
+  "/home/catalog-4.png": MEDIA.catalogues[3],
+  "/team/team.png": MEDIA.team,
+  "/blog/blog1.png": MEDIA.blog,
+  "/Interior-kitchen/kitchen1.png": MEDIA.interior[0],
+  "/Interior-kitchen/kitchen2.png": MEDIA.interior[1],
 };
+
+for (let i = 1; i <= 8; i += 1) {
+  const featured = MEDIA.featured[i - 1] ?? MEDIA.featured[0];
+  LOCAL_ALIASES[`/home/featured-project/feature-${i}.jpg`] = featured;
+  LOCAL_ALIASES[`/home/featured-project/feature-${i}.png`] = featured;
+}
+
+for (let i = 1; i <= 7; i += 1) {
+  const story = MEDIA.stories[i - 1] ?? MEDIA.stories[0];
+  LOCAL_ALIASES[`/home/stories/story-${i}.jpg`] = story;
+}
 
 export function resolveMediaUrl(src?: string | null, fallback: string = MEDIA.hero as string): string {
   if (!src || !src.trim()) return fallback;

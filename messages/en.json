@@ -112,6 +112,9 @@
     "allInterior": "All Interior",
     "allInteriorCount": "All Interior ({count})",
     "noProjectsFilter": "No projects found for this filter.",
+    "paginationNavLabel": "Pagination",
+    "paginationPrev": "Previous page",
+    "paginationNext": "Next page",
     "topic": "Topic",
     "questionsAndAnswers": "Questions & Answer",
     "step": "Step {step}"
@@ -207,6 +210,14 @@
     "sortOldest": "Oldest To Newest",
     "discoverMore": "Discover More Blog",
     "backToBlog": "Back to Blog"
+  },
+  "productsListing": {
+    "heroTitle": "Our Products",
+    "heroSubtitle": "Interiors made for the way you actually live",
+    "allProducts": "All Products",
+    "sortAll": "All",
+    "sortNewest": "Newest To Oldest",
+    "sortOldest": "Oldest To Newest"
   },
   "teamPage": {
     "heroTitle": "Our Team",

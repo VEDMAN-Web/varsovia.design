@@ -164,7 +164,7 @@ export default function Products({ products }: ProductsProps) {
 
           <Link
 
-            href="/interior"
+            href="/products"
 
             className="inline-flex rounded-md bg-[#5c3d42] px-8 py-3 text-sm font-medium text-white transition hover:bg-[#4a2f34]"
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { Award, CheckCircle2, Users } from "lucide-react";
@@ -40,6 +40,8 @@ import { fetchTeamMembers } from "@/lib/api";
 import type { Locale } from "@/lib/i18n/routing";
 import { resolveTeamMembers, designTools, type TeamMember } from "@/lib/companyData";
 import { resolveMediaUrl, MEDIA } from "@/lib/mediaAssets";
+import ListingPagination from "@/components/ui/ListingPagination";
+import { LISTING_PAGE_SIZE, paginateItems } from "@/lib/pagination";
 
 const TEAM_PORTRAIT_FALLBACK = MEDIA.about[0];
 
@@ -194,6 +196,8 @@ export default function TeamPageClient() {
   const [architectTeam, setArchitectTeam] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [toolHover, setToolHover] = useState<number | null>(null);
+  const [designPage, setDesignPage] = useState(1);
+  const [architectPage, setArchitectPage] = useState(1);
 
   useEffect(() => {
     fetchTeamMembers(locale as Locale)
@@ -204,6 +208,16 @@ export default function TeamPageClient() {
       })
       .finally(() => setLoading(false));
   }, [locale]);
+
+  const { items: designPageItems, totalPages: designTotalPages } = useMemo(
+    () => paginateItems(designTeam, designPage, LISTING_PAGE_SIZE.team),
+    [designTeam, designPage],
+  );
+
+  const { items: architectPageItems, totalPages: architectTotalPages } = useMemo(
+    () => paginateItems(architectTeam, architectPage, LISTING_PAGE_SIZE.team),
+    [architectTeam, architectPage],
+  );
 
   const stats = [
     { value: t("statProjectsValue"), label: t("statProjectsLabel"), watermark: STAT_WATERMARKS[0] },
@@ -260,18 +274,30 @@ export default function TeamPageClient() {
                       <div className="-mt-10 mx-5 h-[4.5rem] animate-pulse rounded-[8px] bg-[#f0e4e4]/70" />
                     </div>
                   ))
-                : designTeam.map((member, i) => (
+                : designPageItems.map((member, i) => (
                     <TeamMemberPortraitCard key={member._id} member={member} index={i} />
                   ))}
             </div>
+            <ListingPagination
+              currentPage={designPage}
+              totalPages={designTotalPages}
+              onPageChange={setDesignPage}
+              className="flex select-none items-center justify-center gap-1.5 pb-2 pt-8 sm:gap-2"
+            />
           </TeamBlock>
 
           <TeamBlock title={t("architectTitle")} eyebrow={t("architectEyebrow")} body={t("architectBody")}>
             <div className={TEAM_MEMBER_GRID}>
-              {architectTeam.map((member, i) => (
+              {architectPageItems.map((member, i) => (
                 <TeamMemberPortraitCard key={member._id} member={member} index={i} />
               ))}
             </div>
+            <ListingPagination
+              currentPage={architectPage}
+              totalPages={architectTotalPages}
+              onPageChange={setArchitectPage}
+              className="flex select-none items-center justify-center gap-1.5 pb-2 pt-8 sm:gap-2"
+            />
           </TeamBlock>
 
           <section className="pb-[clamp(0.5rem,2vw,1rem)]">

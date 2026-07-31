@@ -1,6 +1,7 @@
 import { getLocaleOrDefault } from "@/lib/i18n/messageCatalog";
 import { pickLocalized } from "@/lib/i18n/pickLocalized";
 import type { Locale } from "@/lib/i18n/routing";
+import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 
 export type InteriorCategory =
   | "All"
@@ -711,14 +712,7 @@ export function countActiveFilters(filters: AdvancedFilters) {
   );
 }
 
-const INTERIOR_FALLBACK_IMAGES = [
-  "/Interior-kitchen/kitchen1.png",
-  "/Interior-kitchen/kitchen2.png",
-  "/home/featured-project/feature-1.jpg",
-  "/home/featured-project/feature-2.jpg",
-  "/home/featured-project/feature-3.jpg",
-  "/home/featured-project/feature-4.jpg",
-];
+const INTERIOR_FALLBACK_IMAGES = [...MEDIA.featured];
 
 export function resolveInteriorImage(
   coverImage?: string,
@@ -726,12 +720,12 @@ export function resolveInteriorImage(
   image?: string,
   index = 0
 ) {
-  return (
+  const raw =
     coverImage ||
     gallery?.[0] ||
     image ||
-    INTERIOR_FALLBACK_IMAGES[index % INTERIOR_FALLBACK_IMAGES.length]
-  );
+    INTERIOR_FALLBACK_IMAGES[index % INTERIOR_FALLBACK_IMAGES.length];
+  return resolveMediaUrl(raw, INTERIOR_FALLBACK_IMAGES[index % INTERIOR_FALLBACK_IMAGES.length]);
 }
 
 export function normalizeInteriorProject(
@@ -825,13 +819,7 @@ export function buildInteriorCatalog(
   return Array.from(byId.values());
 }
 
-const INTERIOR_GALLERY_FALLBACKS = [
-  "/Interior-kitchen/kitchen1.png",
-  "/Interior-kitchen/kitchen2.png",
-  "/home/featured-project/feature-1.jpg",
-  "/home/featured-project/feature-2.jpg",
-  "/home/featured-project/feature-3.jpg",
-];
+const INTERIOR_GALLERY_FALLBACKS = [...MEDIA.featured.slice(0, 5)];
 
 function buildInteriorGallery(primary: string, extra?: string[]) {
   if (extra && extra.length >= 3) return extra;

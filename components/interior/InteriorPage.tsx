@@ -7,8 +7,14 @@ import { ChevronDown } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import FilterPanel from "@/components/interior/FilterPanel";
 import SectionHeading from "@/components/ui/SectionHeading";
-import { SECTION_HEADING_WIDE, SITE_PAGE_HERO_SECTION_PAD } from "@/components/ui/SectionShell";
 import PageShell from "@/components/ui/PageShell";
+import {
+  INTERIOR_LISTING_GRID_MT,
+  INTERIOR_LISTING_HEADING_CLASS,
+  INTERIOR_LISTING_HERO_PAD,
+  INTERIOR_LISTING_SUBTITLE_CLASS,
+  INTERIOR_LISTING_TOOLBAR_MT,
+} from "@/components/interior/interiorLayoutShared";
 import ShowcaseProductCard from "@/components/ui/ShowcaseProductCard";
 import {
   SHOWCASE_LISTING_GRID,
@@ -28,6 +34,8 @@ import {
 import { MEDIA } from "@/lib/mediaAssets";
 import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import type { Locale } from "@/lib/i18n/routing";
+import ListingPagination from "@/components/ui/ListingPagination";
+import { LISTING_PAGE_SIZE, paginateItems } from "@/lib/pagination";
 
 const INTERIOR_FALLBACK = MEDIA.interior[0];
 
@@ -132,11 +140,13 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
   const [filters, setFilters] = useState<AdvancedFilters>(EMPTY_FILTERS);
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const [projects, setProjects] = useState<ApiProject[]>(
     () => buildInteriorCatalog() as ApiProject[]
   );
   const [, startTransition] = useTransition();
   const sortRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const subcategoryOptions = useMemo(() => {
     if (category === "All" || !CATEGORY_SUBCATEGORIES[category as Exclude<InteriorCategory, "All">]) {
@@ -182,6 +192,10 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [sortOpen]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [category, subcategory, sortBy, filters]);
+
   const categoryCount = useMemo(() => {
     return projects.filter((item) => {
       const projectCategory = item.category || "Kitchen";
@@ -189,7 +203,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
     }).length;
   }, [projects, category]);
 
-  const items = useMemo(() => {
+  const filteredItems = useMemo(() => {
     let list = projects.filter((item) => {
       const projectCategory = item.category || "Kitchen";
       const catOk = category === "All" || projectCategory === category;
@@ -239,6 +253,11 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
     return list;
   }, [projects, category, subcategory, subcategoryOptions, sortBy, filters]);
 
+  const { items: pageItems, totalPages } = useMemo(
+    () => paginateItems(filteredItems, currentPage, LISTING_PAGE_SIZE.interior),
+    [filteredItems, currentPage],
+  );
+
   const hero = useMemo(() => {
     const map: Record<InteriorCategory, { title: string; subtitle: string }> = {
       All: { title: tHero("allTitle"), subtitle: tHero("allSubtitle") },
@@ -279,7 +298,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
 
   const activeFilterCount = countActiveFilters(filters);
   const sortLabel = sortOptions.find((opt) => opt.value === sortBy)?.label ?? tSort("allOption");
-  const gridKey = `${category}-${subcategory}-${sortBy}-${activeFilterCount}`;
+  const gridKey = `${category}-${subcategory}-${sortBy}-${activeFilterCount}-${currentPage}`;
   const toolbarTitleLabel =
     category === "All" ? tCommon("allInterior") : categoryLabels[category];
 
@@ -287,10 +306,15 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
     setSubcategory(sub);
   }
 
+  function handleInteriorPageChange(page: number) {
+    setCurrentPage(page);
+    gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
     <div className="bg-[#f7f3f2]">
       <section className="pt-[72px] sm:pt-[102px]">
-        <PageShell className={SITE_PAGE_HERO_SECTION_PAD}>
+        <PageShell className={INTERIOR_LISTING_HERO_PAD}>
           <AnimatePresence mode="wait">
             <motion.div
               key={category}
@@ -303,19 +327,21 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
                 title={hero.title}
                 subtitle={hero.subtitle}
                 titleAs="h1"
+                compact
                 subtitleSentenceCase
-                className={SECTION_HEADING_WIDE}
+                className={INTERIOR_LISTING_HEADING_CLASS}
+                subtitleClassName={INTERIOR_LISTING_SUBTITLE_CLASS}
               />
             </motion.div>
           </AnimatePresence>
 
-          <div className="mt-10 overflow-hidden md:mt-[60px]">
-            <AnimatePresence initial={false}>
-              {subcategoryOptions && (
+          {subcategoryOptions && (
+            <div className="overflow-hidden">
+              <AnimatePresence initial={false}>
                 <motion.div
                   key={`subnav-${category}`}
                   {...SUBNAV_FADE}
-                  className="mt-8 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:mt-10 [&::-webkit-scrollbar]:hidden"
+                  className="mt-5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:mt-6 [&::-webkit-scrollbar]:hidden"
                 >
                   <div className="mx-auto flex w-max min-w-full items-center justify-start gap-4 md:justify-center">
                     <button
@@ -348,18 +374,16 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
                     })}
                   </div>
                 </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </PageShell>
-      </section>
+              </AnimatePresence>
+            </div>
+          )}
 
-      <section className="mt-8 md:mt-10 lg:mt-12">
-        <PageShell>
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+          <div
+            className={`${INTERIOR_LISTING_TOOLBAR_MT} flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-6`}
+          >
             <p className="shrink-0 font-outfit text-[1.0625rem] font-semibold leading-none tabular-nums text-[#1f1f1f] sm:text-[1.125rem] md:text-[1.25rem] lg:text-[1.375rem]">
               {toolbarTitleLabel}
-              <span className={TOOLBAR_COUNT_CLASS}>({items.length})</span>
+              <span className={TOOLBAR_COUNT_CLASS}>({filteredItems.length})</span>
             </p>
 
             <div className="flex w-full items-center gap-2 sm:gap-2.5 lg:w-auto lg:shrink-0">
@@ -430,11 +454,11 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
         </PageShell>
       </section>
 
-      <section className="mt-8 pb-20 md:mt-10 md:pb-28">
+      <section ref={gridRef} className={`${INTERIOR_LISTING_GRID_MT} pb-8 md:pb-10`}>
         <PageShell>
           <div className="min-h-[300px] sm:min-h-[420px] lg:min-h-[500px]">
             <AnimatePresence mode="wait">
-              {items.length === 0 ? (
+              {filteredItems.length === 0 ? (
                 <motion.p
                   key="empty"
                   {...GRID_FADE}
@@ -445,7 +469,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
               ) : (
                 <motion.div key={gridKey} {...GRID_FADE} className={SHOWCASE_LISTING_GRID_WRAP}>
                   <div className={SHOWCASE_LISTING_GRID}>
-                    {items.map((item, i) => (
+                    {pageItems.map((item, i) => (
                       <ShowcaseProductCard
                         key={item._id}
                         index={i}
@@ -465,6 +489,12 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
               )}
             </AnimatePresence>
           </div>
+          <ListingPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handleInteriorPageChange}
+            className="flex select-none items-center justify-center gap-1.5 pb-4 pt-6 sm:gap-2 md:pb-6 md:pt-8"
+          />
         </PageShell>
       </section>
 

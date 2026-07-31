@@ -18,6 +18,23 @@ const FALLBACK_LOGOS = [
 
 type PartnerLogo = { name: string; src: string; width: number; height: number };
 
+function isUsablePartnerLogo(logo?: string) {
+  const s = String(logo || "").trim();
+  if (!s || s === "text") return false;
+  return s.startsWith("http://") || s.startsWith("https://") || s.startsWith("/");
+}
+
+function buildLogosFromApi(partners: Partner[]): PartnerLogo[] {
+  return partners
+    .filter((p) => isUsablePartnerLogo(p.logo))
+    .map((p, index) => ({
+      name: p.name || "Partner",
+      src: resolveMediaUrl(p.logo, FALLBACK_LOGOS[index % FALLBACK_LOGOS.length].src),
+      width: FALLBACK_LOGOS[index % FALLBACK_LOGOS.length]?.width ?? 120,
+      height: 48,
+    }));
+}
+
 function PartnerLogoImage({ name, src, width, height }: PartnerLogo) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
@@ -56,15 +73,9 @@ export default function Partners({ partners = [] }: { partners?: Partner[] }) {
   const section = site?.sectionCopy?.partners;
 
   const logos = useMemo((): PartnerLogo[] => {
-    const fromApi = partners
-      .filter((p) => p.logo && String(p.logo).trim())
-      .map((p) => ({
-        name: p.name || "Partner",
-        src: resolveMediaUrl(p.logo, "/partners/figma/fischer.png"),
-        width: 120,
-        height: 48,
-      }));
-    if (fromApi.length > 0) return fromApi;
+    const fromApi = buildLogosFromApi(partners);
+    const uniqueSrc = new Set(fromApi.map((l) => l.src));
+    if (fromApi.length >= 2 && uniqueSrc.size >= 2) return fromApi;
     return [...FALLBACK_LOGOS];
   }, [partners]);
 
