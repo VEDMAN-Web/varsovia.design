@@ -18,6 +18,7 @@ const {
   localizeModelDoc,
   localizeModelDocs,
 } = require("../utils/locale");
+const { getInteriorCatalogFieldSpec } = require("../validation/projectInteriorCatalog");
 
 async function getHomeData(req, res) {
   try {
@@ -192,6 +193,10 @@ async function getProjectById(req, res) {
   }
 }
 
+function getInteriorCatalogFieldSpecHandler(_req, res) {
+  res.json(getInteriorCatalogFieldSpec());
+}
+
 async function getProductBySlug(req, res) {
   try {
     const { slug } = req.params;
@@ -261,6 +266,7 @@ module.exports = {
   updateSite,
   getBlogById,
   getProjectById,
+  getInteriorCatalogFieldSpec: getInteriorCatalogFieldSpecHandler,
   getProductBySlug,
   products: crud(Product, "Product"),
   projects: crud(Project, "Project"),

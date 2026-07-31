@@ -1,6 +1,7 @@
 const express = require("express");
 const adminAuth = require("../middleware/adminAuth");
 const { contactLimiter, adminLimiter, searchLimiter } = require("../middleware/rateLimiter");const { validate, schemas } = require("../middleware/validate");
+const validateProjectInteriorCatalog = require("../middleware/validateProjectInteriorCatalog");
 const ctrl = require("../controllers/apiController");
 const { searchSite } = require("../controllers/searchController");
 
@@ -37,6 +38,8 @@ router.put("/site", validate(schemas.siteUpdate), ctrl.updateSite);
 router.get("/contacts", ctrl.listContacts);
 router.patch("/contacts/:id", ctrl.updateContactStatus);
 
+router.get("/projects/interior-catalog/spec", ctrl.getInteriorCatalogFieldSpec);
+
 function mountCrud(path, handlers, createSchema, updateSchema) {
   router.post(`/${path}`,    validate(createSchema), handlers.create);
   router.put(`/${path}/:id`, validate(updateSchema), handlers.update);
@@ -44,7 +47,19 @@ function mountCrud(path, handlers, createSchema, updateSchema) {
 }
 
 mountCrud("products",     ctrl.products,     schemas.product,     schemas.productUpdate);
-mountCrud("projects",     ctrl.projects,     schemas.project,     schemas.projectUpdate);
+router.post(
+  "/projects",
+  validate(schemas.project),
+  validateProjectInteriorCatalog,
+  ctrl.projects.create,
+);
+router.put(
+  "/projects/:id",
+  validate(schemas.projectUpdate),
+  validateProjectInteriorCatalog,
+  ctrl.projects.update,
+);
+router.delete("/projects/:id", ctrl.projects.remove);
 mountCrud("testimonials", ctrl.testimonials, schemas.testimonial, schemas.testimonialUpdate);
 mountCrud("catalogues",   ctrl.catalogues,   schemas.catalogue,   schemas.catalogueUpdate);
 mountCrud("partners",     ctrl.partners,     schemas.partner,     schemas.partnerUpdate);
