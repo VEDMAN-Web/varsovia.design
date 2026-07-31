@@ -25,6 +25,8 @@ router.get("/blogs/:id",    ctrl.getBlogById);
 router.get("/team",         ctrl.teamMembers.list);
 router.get("/faqs",         ctrl.faqs.list);
 
+router.get("/core-strengths", ctrl.coreStrengths.list);
+
 router.get("/search", searchLimiter, searchSite);
 
 // ─── Admin routes (x-admin-key required) ──────────────────────────────────────
@@ -51,5 +53,6 @@ mountCrud("showcases",   ctrl.showcases,    schemas.showcase,    schemas.showcas
 mountCrud("blogs",        ctrl.blogs,        schemas.blog,        schemas.blogUpdate);
 mountCrud("team-members", ctrl.teamMembers,  schemas.teamMember,  schemas.teamMemberUpdate);
 mountCrud("faqs",         ctrl.faqs,         schemas.faq,         schemas.faqUpdate);
+mountCrud("core-strengths", ctrl.coreStrengths, schemas.coreStrength, schemas.coreStrengthUpdate);
 
 module.exports = router;

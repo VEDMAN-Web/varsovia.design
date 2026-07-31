@@ -10,6 +10,7 @@ const SiteContent = require("../models/SiteContent");
 const Blog = require("../models/Blog");
 const TeamMember = require("../models/TeamMember");
 const FAQ = require("../models/FAQ");
+const CoreStrength = require("../models/CoreStrength");
 const {
   getRequestLocale,
   isAdminRequest,
@@ -20,7 +21,7 @@ const {
 
 async function getHomeData(req, res) {
   try {
-    const [products, projects, testimonials, catalogues, partners, showrooms, site] =
+    const [products, projects, testimonials, catalogues, partners, showrooms, coreStrengths, site] =
       await Promise.all([
         Product.find().sort({ order: 1 }),
         Project.find({ featured: true }).sort({ order: 1 }),
@@ -28,11 +29,21 @@ async function getHomeData(req, res) {
         Catalogue.find().sort({ order: 1 }),
         Partner.find().sort({ order: 1 }),
         Showroom.find().sort({ order: 1 }),
+        CoreStrength.find().sort({ order: 1 }),
         SiteContent.findOne({ key: "main" }),
       ]);
 
     if (isAdminRequest(req)) {
-      return res.json({ site, products, projects, testimonials, catalogues, partners, showrooms });
+      return res.json({
+        site,
+        products,
+        projects,
+        testimonials,
+        catalogues,
+        partners,
+        showrooms,
+        coreStrengths,
+      });
     }
 
     const locale = getRequestLocale(req);
@@ -44,6 +55,7 @@ async function getHomeData(req, res) {
       catalogues: localizeModelDocs("Catalogue", catalogues, locale),
       partners: localizeModelDocs("Partner", partners, locale),
       showrooms: localizeModelDocs("Showroom", showrooms, locale),
+      coreStrengths: localizeModelDocs("CoreStrength", coreStrengths, locale),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -260,4 +272,5 @@ module.exports = {
   blogs: crud(Blog, "Blog"),
   teamMembers: crud(TeamMember, "TeamMember"),
   faqs: crud(FAQ, "FAQ"),
+  coreStrengths: crud(CoreStrength, "CoreStrength"),
 };

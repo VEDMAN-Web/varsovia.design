@@ -101,7 +101,11 @@ const productSchema = z.object({
   title:       localizedRequired,
   slug:        z.string().min(1).max(200).trim().optional(),
   description: localizedString.optional(),
+  fullDescription: localizedString.optional(),
   image:       z.string().max(500).trim().optional(),
+  gallery:     z.array(z.string().max(500)).optional(),
+  features:    z.array(z.object({ text: localizedString.optional() })).optional(),
+  specs:       z.array(z.object({ label: localizedString.optional(), value: localizedString.optional() })).optional(),
   category:    z.string().max(100).trim().optional(),
   featured:    z.boolean().optional(),
   order:       z.number().int().min(0).optional(),
@@ -126,6 +130,10 @@ const projectSchema = z.object({
   price:           z.number().min(0).optional(),
   isNew:           z.boolean().optional(),
   order:           z.number().int().min(0).optional(),
+  detailTitle:     localizedString.optional(),
+  detailDescription: localizedString.optional(),
+  narrativeOne:    localizedString.optional(),
+  narrativeTwo:    localizedString.optional(),
 });
 
 const blogSchema = z.object({
@@ -189,6 +197,26 @@ const showroomSchema = z.object({
   order:    z.number().int().min(0).optional(),
 });
 
+const coreStrengthSchema = z.object({
+  title:       localizedRequired,
+  description: localizedString.optional(),
+  image:       z.string().max(500).trim().optional(),
+  iconKey:     z.enum(["eye", "ruler", "users", "box", "shield", "pen"]).optional(),
+  order:       z.number().int().min(0).optional(),
+});
+
+const footerOfficeSchema = z.object({
+  label:   localizedString.optional(),
+  address: z.string().max(500).trim().optional(),
+});
+
+const searchPageSchema = z.object({
+  title:       localizedString.optional(),
+  description: localizedString.optional(),
+  href:        z.string().max(500).trim().optional(),
+  order:       z.number().int().min(0).optional(),
+});
+
 const siteUpdateSchema = z.object({
   heroEyebrow:            localizedString.optional(),
   heroHeadline:           localizedString.optional(),
@@ -215,6 +243,19 @@ const siteUpdateSchema = z.object({
   phone:                  z.string().max(30).trim().optional(),
   email:                  z.string().email().max(200).trim().optional(),
   address:                localizedString.optional(),
+  mobileWhatsapp:         z.string().max(30).trim().optional(),
+  contactPhone:           z.string().max(30).trim().optional(),
+  facebookUrl:            z.string().max(500).trim().optional(),
+  whatsappUrl:            z.string().max(500).trim().optional(),
+  footerOffices:          z.array(footerOfficeSchema).optional(),
+  sectionCopy:            z.record(z.string(), z.object({
+    title: localizedString.optional(),
+    subtitle: localizedString.optional(),
+  })).optional(),
+  searchPages:            z.array(searchPageSchema).optional(),
+  navMenus:               z.array(z.record(z.string(), z.unknown())).optional(),
+  qualitySale:            z.record(z.string(), z.unknown()).optional(),
+  interiorCatalogMode:    z.enum(["hybrid", "api"]).optional(),
 });
 const showcaseSchema = z.object({
   title:      localizedRequired,
@@ -264,5 +305,7 @@ module.exports = {
     showroomUpdate:     showroomUpdateSchema,
     showcase:           showcaseSchema,
     showcaseUpdate:     showcaseUpdateSchema,
+    coreStrength:         coreStrengthSchema,
+    coreStrengthUpdate:   coreStrengthSchema.partial(),
   },
 };

@@ -96,6 +96,35 @@ function localizeSiteContent(doc, locale) {
     }));
   }
 
+  if (Array.isArray(out.footerOffices)) {
+    out.footerOffices = out.footerOffices.map((item) => ({
+      ...item,
+      label: resolveLocalized(item.label, locale),
+    }));
+  }
+
+  if (Array.isArray(out.searchPages)) {
+    out.searchPages = out.searchPages
+      .map((item) => ({
+        ...item,
+        title: resolveLocalized(item.title, locale),
+        description: resolveLocalized(item.description, locale),
+      }))
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }
+
+  if (out.sectionCopy && typeof out.sectionCopy === "object") {
+    const copy = {};
+    for (const [key, block] of Object.entries(out.sectionCopy)) {
+      if (!block || typeof block !== "object") continue;
+      copy[key] = {
+        title: resolveLocalized(block.title, locale),
+        subtitle: resolveLocalized(block.subtitle, locale),
+      };
+    }
+    out.sectionCopy = copy;
+  }
+
   return out;
 }
 
@@ -115,8 +144,8 @@ function localizeBlog(doc, locale) {
 }
 
 const MODEL_FIELDS = {
-  Product: ["title", "description"],
-  Project: ["title", "description", "location"],
+  Product: ["title", "description", "fullDescription"],
+  Project: ["title", "description", "location", "detailTitle", "detailDescription", "narrativeOne", "narrativeTwo"],
   Testimonial: ["name", "role", "quote"],
   Catalogue: ["title"],
   Showcase: ["title", "category", "location", "typeLabel", "typeValue", "supplyArea"],
@@ -124,11 +153,32 @@ const MODEL_FIELDS = {
   TeamMember: ["name", "role"],
   FAQ: ["question", "answer", "category"],
   Partner: ["name"],
+  CoreStrength: ["title", "description"],
 };
+
+function localizeProduct(doc, locale) {
+  if (!doc) return doc;
+  const out = localizeDoc(doc, locale, MODEL_FIELDS.Product);
+  if (Array.isArray(out.features)) {
+    out.features = out.features.map((f) => ({
+      ...f,
+      text: resolveLocalized(f.text, locale),
+    }));
+  }
+  if (Array.isArray(out.specs)) {
+    out.specs = out.specs.map((s) => ({
+      ...s,
+      label: resolveLocalized(s.label, locale),
+      value: resolveLocalized(s.value, locale),
+    }));
+  }
+  return out;
+}
 
 function localizeModelDoc(modelName, doc, locale) {
   if (modelName === "Blog") return localizeBlog(doc, locale);
   if (modelName === "SiteContent") return localizeSiteContent(doc, locale);
+  if (modelName === "Product") return localizeProduct(doc, locale);
   return localizeDoc(doc, locale, MODEL_FIELDS[modelName] || []);
 }
 

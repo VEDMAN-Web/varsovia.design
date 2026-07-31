@@ -30,6 +30,10 @@ const projectSchema = new mongoose.Schema(
     price: { type: Number, default: 0 },
     isNew: { type: Boolean, default: false },
     order: { type: Number, default: 0 },
+    detailTitle: localizedField(),
+    detailDescription: localizedField(),
+    narrativeOne: localizedField(),
+    narrativeTwo: localizedField(),
   },
   { timestamps: true, suppressReservedKeysWarning: true },
 );
