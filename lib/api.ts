@@ -104,6 +104,25 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
     vision: pickBlock(data.vision, fb.vision as SiteBlock, locale),
     mission: pickBlock(data.mission, fb.mission as SiteBlock, locale),
     values: pickBlock(data.values, fb.values as SiteBlock, locale),
+    footerBio: pickSiteCopy(data.footerBio, getLocaleOrDefault(locale), fb.footerBio ?? ""),
+    phone: pickString(data.phone, fb.phone) as string,
+    email: pickString(data.email, fb.email) as string,
+    mobileWhatsapp: pickString(data.mobileWhatsapp, fb.mobileWhatsapp) as string,
+    contactPhone: pickString(data.contactPhone, fb.contactPhone) as string,
+    facebookUrl: pickString(data.facebookUrl, fb.facebookUrl) as string,
+    whatsappUrl: pickString(data.whatsappUrl, fb.whatsappUrl) as string,
+    footerOffices:
+      Array.isArray(data.footerOffices) && data.footerOffices.length > 0
+        ? (data.footerOffices as SiteContent["footerOffices"])
+        : fb.footerOffices,
+    sectionCopy: (data.sectionCopy as SiteContent["sectionCopy"]) || fb.sectionCopy,
+    searchPages:
+      Array.isArray(data.searchPages) && data.searchPages.length > 0
+        ? (data.searchPages as SiteContent["searchPages"])
+        : fb.searchPages,
+    navMenus: (data.navMenus as SiteContent["navMenus"]) || fb.navMenus,
+    qualitySale: (data.qualitySale as SiteContent["qualitySale"]) || fb.qualitySale,
+    interiorCatalogMode: (data.interiorCatalogMode as SiteContent["interiorCatalogMode"]) || fb.interiorCatalogMode,
   };
 }
 
@@ -159,6 +178,47 @@ export async function fetchProducts(locale?: Locale) {
 
 export async function fetchProductBySlug(slug: string, locale?: Locale) {
   const { getProductBySlug } = await import("./productData");
+  try {
+    const res = await fetch(withLocale(`${API_URL}/products/${encodeURIComponent(slug)}`, locale), {
+      headers: localeHeaders(locale),
+      next: { revalidate: 30 },
+    });
+    if (res.ok) {
+      const apiProduct = (await res.json()) as Record<string, unknown>;
+      const galleryRaw = Array.isArray(apiProduct.gallery) ? apiProduct.gallery : [];
+      const gallery = galleryRaw.length
+        ? galleryRaw.map((u) => resolveMediaUrl(String(u)))
+        : [resolveMediaUrl(apiProduct.image as string | undefined, "/home/product/product-1.png")];
+      const features = Array.isArray(apiProduct.features)
+        ? apiProduct.features.map((f: { text?: string }) => String(f.text || "")).filter(Boolean)
+        : [];
+      const specs = Array.isArray(apiProduct.specs)
+        ? apiProduct.specs.map((s: { label?: string; value?: string }) => ({
+            label: String(s.label || ""),
+            value: String(s.value || ""),
+          }))
+        : [];
+      const local = getProductBySlug(slug);
+      return {
+        slug: String(apiProduct.slug || slug),
+        title: String(apiProduct.title || local?.title || slug),
+        category: String(apiProduct.category || local?.category || "Kitchen"),
+        shortDescription: String(apiProduct.description || local?.shortDescription || ""),
+        fullDescription: String(
+          apiProduct.fullDescription || apiProduct.description || local?.fullDescription || "",
+        ),
+        image: resolveMediaUrl(
+          apiProduct.image as string | undefined,
+          local?.image || "/home/product/product-1.png",
+        ),
+        gallery,
+        features: features.length ? features : local?.features || [],
+        specs: specs.length ? specs : local?.specs || [],
+      };
+    }
+  } catch {
+    /* fall through */
+  }
   try {
     const products = await fetchProducts(locale);
     const apiProduct = products.find(
@@ -328,20 +388,6 @@ export async function submitContact(payload: Record<string, string>) {
   return data;
 }
 
-export async function adminFetch(path: string, options: RequestInit = {}, adminKey: string) {
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      "x-admin-key": adminKey,
-      ...(options.headers || {}),
-    },
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "Request failed");
-  return data;
-}
-
 export async function fetchBlogs(locale?: Locale) {
   try {
     const res = await fetch(withLocale(`${API_URL}/blogs`, locale), {
@@ -366,7 +412,12 @@ export async function fetchBlogById(id: string, locale?: Locale) {
     });
     if (res.ok) {
       const data = await res.json();
-      if (data && typeof data === "object" && "title" in data) return data;
+      if (data && typeof data === "object" && "title" in data) {
+        return {
+          ...data,
+          image: resolveMediaUrl(data.image as string | undefined, "/home/blog/blog-1.jpg"),
+        };
+      }
     }
   } catch {
     /* try list fallback below */
@@ -447,19 +498,22 @@ export async function fetchProjectById(id: string, locale?: Locale) {
         ? apiProject.gallery.map((url: string) => resolveMediaUrl(url, cover))
         : [cover, cover, cover];
 
+    const apiRec = apiProject as Record<string, unknown>;
+    const title = pickLocalizedString(apiProject.title, locale, "Interior Project");
     return {
       _id: String(apiProject._id ?? id),
-      title: pickLocalizedString(apiProject.title, locale, "Interior Project"),
-      detailTitle: pickLocalizedString(apiProject.title, locale, "Interior Project"),
+      title,
+      detailTitle: pickLocalizedString(apiRec.detailTitle, locale, title),
       description:
+        pickLocalizedString(apiRec.detailDescription, locale, "") ||
         pickLocalizedString(apiProject.description, locale, "") ||
         "A beautifully crafted interior designed for everyday living.",
       coverImage: cover,
       gallery,
       category: apiProject.category,
       isNew: apiProject.isNew,
-      narrativeOne: INTERIOR_NARRATIVE_ONE,
-      narrativeTwo: INTERIOR_NARRATIVE_TWO,
+      narrativeOne: pickLocalizedString(apiRec.narrativeOne, locale, INTERIOR_NARRATIVE_ONE),
+      narrativeTwo: pickLocalizedString(apiRec.narrativeTwo, locale, INTERIOR_NARRATIVE_TWO),
     };
   } catch {
     return getInteriorProjectById(id);

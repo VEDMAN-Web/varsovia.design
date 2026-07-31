@@ -4,11 +4,9 @@ import { useLayoutEffect, useState } from "react";
 import { usePathname } from "@/lib/i18n/navigation";
 import Footer from "@/components/layout/Footer";
 
-type SiteFooter = {
-  footerBio?: string;
-};
+import type { SiteContent } from "@/lib/siteTypes";
 
-export default function FooterWrapper({ site }: { site?: SiteFooter | null }) {
+export default function FooterWrapper({ site }: { site?: SiteContent | null }) {
   const pathname = usePathname();
   const [introPending, setIntroPending] = useState(false);
 
@@ -25,6 +23,6 @@ export default function FooterWrapper({ site }: { site?: SiteFooter | null }) {
   if (pathname === "/" && introPending) return null;
 
   return (
-    <Footer bio={site?.footerBio} />
+    <Footer bio={site?.footerBio} site={site} />
   );
 }

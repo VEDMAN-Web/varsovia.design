@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/showcaseGridShared";
 
 import { MEDIA } from "@/lib/mediaAssets";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 
 
 
@@ -109,8 +110,8 @@ const FALLBACK_PRODUCTS: Product[] = [
 export default function Products({ products }: ProductsProps) {
 
   const t = useTranslations("home");
-
-
+  const site = useSiteSettings();
+  const section = site?.sectionCopy?.products;
 
   const displayProducts = products && products.length > 0 ? products : FALLBACK_PRODUCTS;
 
@@ -124,9 +125,9 @@ export default function Products({ products }: ProductsProps) {
 
         <SectionHeading
 
-          title={t("productsTitle")}
+          title={section?.title || t("productsTitle")}
 
-          subtitle={t("productsSubtitle")}
+          subtitle={section?.subtitle || t("productsSubtitle")}
 
           className={SECTION_HEADING_WIDE}
 

@@ -55,7 +55,7 @@ export default async function Home({ params }: Props) {
         </div>
         <FeaturedProjects projects={projects} />
         <Testimonials testimonials={data.testimonials || []} />
-        <CoreStrengths />
+        <CoreStrengths strengths={data.coreStrengths} />
         <div id="partners">
           <Partners partners={data.partners || []} />
         </div>

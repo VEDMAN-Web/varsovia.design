@@ -14,11 +14,22 @@ import {
   PenLine,
 } from "lucide-react";
 import { getRelativeOffset } from "@/lib/carousel";
-import { MEDIA } from "@/lib/mediaAssets";
+import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 import SectionHeading from "@/components/ui/SectionHeading";
 import SectionShell, { SECTION_HEADING_WIDE, SITE_SECTION_PADDING_Y } from "@/components/ui/SectionShell";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
+import type { ApiCoreStrength } from "@/lib/siteTypes";
 
-const STRENGTHS = [
+const ICON_MAP = {
+  eye: Eye,
+  ruler: Ruler,
+  users: Users,
+  box: Box,
+  shield: ShieldCheck,
+  pen: PenLine,
+} as const;
+
+const FALLBACK_STRENGTHS = [
   {
     id: "1",
     icon: Eye,
@@ -68,6 +79,20 @@ const STRENGTHS = [
     image: MEDIA.core[5],
   },
 ];
+
+function resolveStrengths(items?: ApiCoreStrength[]) {
+  if (!items?.length) return FALLBACK_STRENGTHS;
+  return items.map((item, index) => {
+    const iconKey = (item.iconKey || "eye") as keyof typeof ICON_MAP;
+    return {
+      id: item._id,
+      icon: ICON_MAP[iconKey] || Eye,
+      title: item.title,
+      description: item.description || "",
+      image: resolveMediaUrl(item.image, MEDIA.core[index % MEDIA.core.length]),
+    };
+  });
+}
 
 const MAX_VISIBLE_OFFSET = 2;
 const DRAG_THRESHOLD = 60;
@@ -129,8 +154,11 @@ function getGeometry(offset: number) {
   };
 }
 
-export default function CoreStrengths() {
+export default function CoreStrengths({ strengths }: { strengths?: ApiCoreStrength[] }) {
   const t = useTranslations("home");
+  const site = useSiteSettings();
+  const section = site?.sectionCopy?.coreStrengths;
+  const STRENGTHS = resolveStrengths(strengths);
   const length = STRENGTHS.length;
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -204,8 +232,8 @@ export default function CoreStrengths() {
       <SectionShell>
       <div className="text-center">
         <SectionHeading
-          title={t("strengthsTitle")}
-          subtitle={t("strengthsSubtitle")}
+          title={section?.title || t("strengthsTitle")}
+          subtitle={section?.subtitle || t("strengthsSubtitle")}
           className={SECTION_HEADING_WIDE}
         />
       </div>

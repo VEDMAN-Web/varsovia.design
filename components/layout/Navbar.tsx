@@ -21,6 +21,7 @@ import {
 import { getNavDropdownSubtitle } from "@/components/layout/navDropdownMeta";
 import NavSearchResults from "@/components/layout/NavSearchResults";
 import { useSiteSearch } from "@/hooks/useSiteSearch";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import { locales, type Locale } from "@/lib/i18n/routing";
 import type { SearchResultType } from "@/lib/searchTypes";
 import { useNavBackdropTone } from "@/hooks/useNavBackdropTone";
@@ -155,9 +156,20 @@ function useNavItems(): NavItem[] {
 
 function useSearchablePages(): SearchPage[] {
   const t = useTranslations("search");
+  const site = useSiteSettings();
 
-  return useMemo(
-    () => [
+  return useMemo(() => {
+    if (site?.searchPages && site.searchPages.length > 0) {
+      return site.searchPages
+        .slice()
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+        .map((p) => ({
+          title: p.title,
+          href: p.href,
+          description: p.description,
+        }));
+    }
+    return [
       { title: t("homeTitle"), href: "/", description: t("homeDesc") },
       { title: t("interiorTitle"), href: "/interior", description: t("interiorDesc") },
       { title: t("kitchenCabinetTitle"), href: "/product/kitchen-cabinet", description: t("kitchenCabinetDesc") },
@@ -171,9 +183,8 @@ function useSearchablePages(): SearchPage[] {
       { title: t("faqTitle"), href: "/faq", description: t("faqDesc") },
       { title: t("showcaseTitle"), href: "/showcase", description: t("showcaseDesc") },
       { title: t("qualityTitle"), href: "/quality-sale", description: t("qualityDesc") },
-    ],
-    [t],
-  );
+    ];
+  }, [site?.searchPages, t]);
 }
 
 export default function Navbar({ overlayHero = false }: { overlayHero?: boolean }) {

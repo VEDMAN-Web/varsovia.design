@@ -11,10 +11,12 @@ import {
   IconWhatsApp,
   LogoWingSvg,
 } from "@/components/layout/FooterIcons";
+import type { SiteContent } from "@/lib/siteTypes";
 import { FOOTER_CONTACT, telHref } from "@/lib/footerContact";
 
 type FooterProps = {
   bio?: string;
+  site?: SiteContent | null;
 };
 
 const SOCIAL_ICON = "size-8 sm:size-9 lg:size-10";
@@ -88,12 +90,25 @@ function LegalDot() {
   );
 }
 
-export default function Footer({ bio }: FooterProps) {
+export default function Footer({ bio, site }: FooterProps) {
   const t = useTranslations("footer");
   const tNav = useTranslations("nav");
   const tCat = useTranslations("categories");
   const year = new Date().getFullYear();
-  const { email, contactPhone, mobileWhatsapp } = FOOTER_CONTACT;
+
+  const email = site?.email?.trim() || FOOTER_CONTACT.email;
+  const contactPhone = site?.contactPhone?.trim() || FOOTER_CONTACT.contactPhone;
+  const mobileWhatsapp = site?.mobileWhatsapp?.trim() || FOOTER_CONTACT.mobileWhatsapp;
+  const whatsappUrl = site?.whatsappUrl?.trim() || FOOTER_CONTACT.whatsapp;
+  const facebookUrl = site?.facebookUrl?.trim() || FOOTER_CONTACT.facebook;
+
+  const offices =
+    site?.footerOffices && site.footerOffices.length > 0
+      ? site.footerOffices.map((o) => ({ label: o.label, address: o.address }))
+      : FOOTER_CONTACT.offices.map((o) => ({
+          label: t(o.labelKey),
+          address: o.address,
+        }));
 
   const homeLinks = [
     { label: t("blog"), href: "/blog" },
@@ -138,7 +153,7 @@ export default function Footer({ bio }: FooterProps) {
 
             <div className="flex items-center gap-3 sm:gap-4 lg:gap-5">
               <a
-                href={FOOTER_CONTACT.whatsapp}
+                href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={t("whatsapp")}
@@ -147,7 +162,7 @@ export default function Footer({ bio }: FooterProps) {
                 <IconWhatsApp className={SOCIAL_ICON} />
               </a>
               <a
-                href={FOOTER_CONTACT.facebook}
+                href={facebookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={t("facebook")}
@@ -181,9 +196,9 @@ export default function Footer({ bio }: FooterProps) {
                   <ContactLabel>{t("email")}</ContactLabel>
                   <ContactValue href={`mailto:${email}`}>{email}</ContactValue>
                 </ContactRow>
-                {FOOTER_CONTACT.offices.map((office) => (
-                  <ContactRow key={office.labelKey} icon="location">
-                    <ContactLabel>{t(office.labelKey)}</ContactLabel>
+                {offices.map((office, index) => (
+                  <ContactRow key={`${office.label}-${index}`} icon="location">
+                    <ContactLabel>{office.label}</ContactLabel>
                     <ContactValue>{office.address}</ContactValue>
                   </ContactRow>
                 ))}

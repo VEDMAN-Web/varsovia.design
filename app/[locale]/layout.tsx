@@ -4,6 +4,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import FooterWrapper from "@/components/layout/FooterWrapper";
+import { SiteSettingsProvider } from "@/components/providers/SiteSettingsProvider";
 import LocaleHtmlLang from "@/components/i18n/LocaleHtmlLang";
 import { fetchSite } from "@/lib/api";
 import { routing, type Locale } from "@/lib/i18n/routing";
@@ -51,8 +52,10 @@ export default async function LocaleLayout({ children, params }: Props) {
     <NextIntlClientProvider locale={locale} messages={messages}>
       <LocaleHtmlLang locale={locale} />
       <SmoothScroll>
-        {children}
-        <FooterWrapper site={site} />
+        <SiteSettingsProvider site={site}>
+          {children}
+          <FooterWrapper site={site} />
+        </SiteSettingsProvider>
       </SmoothScroll>
     </NextIntlClientProvider>
   );

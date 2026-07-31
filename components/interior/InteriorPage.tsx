@@ -26,6 +26,7 @@ import {
   type SortOption,
 } from "@/lib/interiorData";
 import { MEDIA } from "@/lib/mediaAssets";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import type { Locale } from "@/lib/i18n/routing";
 
 const INTERIOR_FALLBACK = MEDIA.interior[0];
@@ -114,6 +115,8 @@ function FilterIcon({ className = "" }: { className?: string }) {
 
 export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
   const locale = useLocale();
+  const site = useSiteSettings();
+  const catalogMode = site?.interiorCatalogMode || "hybrid";
   const tCommon = useTranslations("common");
   const tCat = useTranslations("categories");
   const tHero = useTranslations("categoryHero");
@@ -154,7 +157,9 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
       fetchProjects(locale as Locale)
         .then((data: ApiProject[]) => {
           if (!cancelled) {
-            setProjects(buildInteriorCatalog(data ?? [], locale as Locale) as ApiProject[]);
+            setProjects(
+              buildInteriorCatalog(data ?? [], locale as Locale, catalogMode) as ApiProject[],
+            );
           }
         })
         .catch(() => {
@@ -164,7 +169,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [locale]);
+  }, [locale, catalogMode]);
 
   useEffect(() => {
     if (!sortOpen) return;

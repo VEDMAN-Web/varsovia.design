@@ -797,8 +797,12 @@ function isInteriorCatalogItem(item: Record<string, unknown>) {
   );
 }
 
-/** Interior listing uses mock catalog; merges API rows only when they carry interior metadata. */
-export function buildInteriorCatalog(apiProjects: Record<string, unknown>[] = [], locale?: Locale) {
+/** Interior listing: mock catalog; merges API rows only when they carry interior metadata. */
+export function buildInteriorCatalog(
+  apiProjects: Record<string, unknown>[] = [],
+  locale?: Locale,
+  mode: "hybrid" | "api" = "hybrid",
+) {
   const mockNormalized = INTERIOR_ITEMS.map((item, index) =>
     normalizeInteriorProject({ ...item, _id: item.id }, index, locale),
   );
@@ -808,6 +812,8 @@ export function buildInteriorCatalog(apiProjects: Record<string, unknown>[] = []
     .map((item, index) => normalizeInteriorProject(item, index, locale));
 
   if (fromApi.length === 0) return mockNormalized;
+
+  if (mode === "api") return fromApi;
 
   const byId = new Map<string, ReturnType<typeof normalizeInteriorProject>>();
   for (const item of mockNormalized) {

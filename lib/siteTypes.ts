@@ -4,6 +4,27 @@ export type ProcessStep = { step: string; title: string; text: string };
 
 export type Stat = { value: string; label: string };
 
+export type SiteOffice = { label: string; address: string };
+
+export type SiteSearchPage = {
+  title: string;
+  description: string;
+  href: string;
+  order?: number;
+};
+
+export type SiteSectionCopy = {
+  title?: string;
+  subtitle?: string;
+};
+
+export type SiteNavItem = {
+  id: string;
+  label: string;
+  href?: string;
+  children?: Array<{ label: string; href: string; description?: string }>;
+};
+
 export type SiteContent = {
   heroEyebrow?: string;
   heroHeadline?: string;
@@ -30,6 +51,25 @@ export type SiteContent = {
   phone?: string;
   email?: string;
   address?: string;
+  mobileWhatsapp?: string;
+  contactPhone?: string;
+  facebookUrl?: string;
+  whatsappUrl?: string;
+  footerOffices?: SiteOffice[];
+  sectionCopy?: Record<string, SiteSectionCopy>;
+  searchPages?: SiteSearchPage[];
+  navMenus?: SiteNavItem[];
+  qualitySale?: Record<string, unknown>;
+  interiorCatalogMode?: "hybrid" | "api";
+};
+
+export type ApiCoreStrength = {
+  _id: string;
+  title: string;
+  description?: string;
+  image?: string;
+  iconKey?: string;
+  order?: number;
 };
 
 export type ApiProject = {
@@ -63,5 +103,6 @@ export type HomeData = {
     downloadUrl?: string;
   }>;
   testimonials?: ApiTestimonial[];
-  partners?: Array<{ _id: string; name: string; logo?: string }>;
+  partners?: Array<{ _id: string; name: string; logo?: string; website?: string }>;
+  coreStrengths?: ApiCoreStrength[];
 };

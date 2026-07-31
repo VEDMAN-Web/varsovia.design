@@ -33,6 +33,7 @@ import SectionHeading, {
   SECTION_SUBTITLE_CLASS,
   SECTION_TITLE_CLASS,
 } from "@/components/ui/SectionHeading";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import { qualityGalleryImages } from "@/lib/companyData";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 
@@ -130,23 +131,33 @@ function QualityFeatureColumn({
 
 export default function QualityAfterSalesPageClient() {
   const t = useTranslations("qualitySale");
+  const site = useSiteSettings();
+  const cms = (site?.qualitySale || {}) as Record<string, string>;
   const [openFaqIndex, setOpenFaqIndex] = useState(FAQ_DEFAULT_OPEN_INDEX);
 
   const features = useMemo(
     () =>
       FEATURE_KEYS.map((key, index) => ({
-        title: t(`${key}Title`),
-        image: qualityGalleryImages[index]?.src ?? MEDIA.featured[index],
+        title: cms[`${key}Title`] || t(`${key}Title`),
+        image: cms[`${key}Image`]
+          ? resolveMediaUrl(cms[`${key}Image`])
+          : (qualityGalleryImages[index]?.src ?? MEDIA.featured[index]),
         imageAlt: qualityGalleryImages[index]?.alt ?? "",
         Icon: FEATURE_ICONS[index] ?? Atom,
       })),
-    [t],
+    [t, cms],
   );
 
-  const faqItems = useMemo(
-    () => FAQ_KEYS.map((key) => ({ question: t(`${key}Q`), answer: t(`${key}A`) })),
-    [t],
-  );
+  const faqItems = useMemo(() => {
+    const fromCms = cms.faqItems;
+    if (Array.isArray(fromCms) && fromCms.length > 0) {
+      return fromCms.map((row: { question?: string; answer?: string }) => ({
+        question: String(row.question || ""),
+        answer: String(row.answer || ""),
+      }));
+    }
+    return FAQ_KEYS.map((key) => ({ question: t(`${key}Q`), answer: t(`${key}A`) }));
+  }, [t, cms.faqItems]);
 
   function toggleFAQ(index: number) {
     setOpenFaqIndex((prev) => (prev === index ? -1 : index));
@@ -160,8 +171,8 @@ export default function QualityAfterSalesPageClient() {
           <FadeInView>
             <div className={QAS_HERO_BAND}>
               <SectionHeading
-                title={t("heroTitle")}
-                subtitle={t("heroSubtitle")}
+                title={cms.heroTitle || t("heroTitle")}
+                subtitle={cms.heroSubtitle || t("heroSubtitle")}
                 titleAs="h1"
                 expanded
                 noGradient
@@ -170,7 +181,7 @@ export default function QualityAfterSalesPageClient() {
                 subtitleClassName={`${SECTION_SUBTITLE_CLASS} mt-[clamp(1rem,3vw,1.875rem)] max-w-[min(100%,52rem)]`}
                 className="!p-0"
               />
-              <p className={QAS_HERO_BODY}>{t("heroBody")}</p>
+              <p className={QAS_HERO_BODY}>{cms.heroBody || t("heroBody")}</p>
             </div>
           </FadeInView>
         </section>
