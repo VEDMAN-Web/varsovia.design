@@ -138,6 +138,8 @@ function siteContentDoc() {
       { title: "FAQ", description: "Common questions", href: "/faq", order: 12 },
       { title: "Showcase", description: "Project showcase", href: "/showcase", order: 13 },
       { title: "Quality & After-sales", description: "Quality and support", href: "/quality-sale", order: 14 },
+      { title: "Privacy Policy", description: "Privacy and data protection", href: "/privacy", order: 15 },
+      { title: "Terms of Use", description: "Website terms of use", href: "/terms", order: 16 },
     ],
     interiorCatalogMode: "api",
     qualitySale: {
@@ -566,11 +568,11 @@ function teamDocs() {
     { name: "Annette Black", role: "Senior Interior Designer", image: L.team, teamType: "Italian", order: 5 },
     { name: "Cameron Williamson", role: "Design Lead — Kitchens", image: L.team, teamType: "Italian", order: 6 },
     { name: "Robert Fox", role: "Materials Consultant", image: L.team, teamType: "Italian", order: 7 },
-    { name: "Rohan Kapoor", role: "Lead Architect", image: L.team, teamType: "Architect", order: 8 },
-    { name: "Lisa Müller", role: "Structural Engineer", image: L.team, teamType: "Engineer", order: 9 },
+    { name: "Rohan Kapoor", role: "Lead Architect", image: L.team, teamType: "Headquarter", order: 8 },
+    { name: "Lisa Müller", role: "Structural Engineer", image: L.team, teamType: "Headquarter", order: 9 },
     { name: "Michael Torres", role: "Site Supervisor", image: L.team, teamType: "Headquarter", order: 10 },
-    { name: "Priya Sharma", role: "Structural Engineer", image: L.team, teamType: "Engineer", order: 11 },
-    { name: "Emma Collins", role: "MEP Coordinator", image: L.team, teamType: "Engineer", order: 12 },
+    { name: "Priya Sharma", role: "Structural Engineer", image: L.team, teamType: "Headquarter", order: 11 },
+    { name: "Emma Collins", role: "MEP Coordinator", image: L.team, teamType: "Headquarter", order: 12 },
   ];
 }
 
