@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useIntroComplete } from "@/components/preloader/IntroProvider";
+import MagneticButton from "@/components/ui/MagneticButton";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 
 export type HeroContent = {
@@ -92,17 +93,14 @@ export default function Hero({
               className="mt-6 flex w-full flex-col gap-3 sm:mt-8 sm:w-auto sm:flex-row sm:flex-wrap sm:gap-4"
             >
               {resolvedPrimaryCta && primaryCtaHref ? (
-                <a href={primaryCtaHref} className="btn-primary w-full rounded-md text-center sm:w-auto">
+                <MagneticButton href={primaryCtaHref} variant="primary">
                   {resolvedPrimaryCta}
-                </a>
+                </MagneticButton>
               ) : null}
               {resolvedSecondaryCta && secondaryCtaHref ? (
-                <a
-                  href={secondaryCtaHref}
-                  className="inline-flex w-full items-center justify-center rounded-md border border-white/70 px-6 py-3 text-[0.75rem] tracking-[0.1em] uppercase text-white transition hover:bg-white hover:text-maroon sm:w-auto sm:px-7 sm:text-[0.8rem] sm:tracking-[0.12em]"
-                >
+                <MagneticButton href={secondaryCtaHref} variant="outline">
                   {resolvedSecondaryCta}
-                </a>
+                </MagneticButton>
               ) : null}
             </motion.div>
           )}

@@ -5,12 +5,11 @@ import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { Award, CheckCircle2, Users } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
+import CompanyHero from "@/components/company/CompanyHero";
 import FadeInView from "@/components/company/FadeInView";
-import SectionHeading, { SECTION_TITLE_CLASS } from "@/components/ui/SectionHeading";
 import {
   TEAM_BLOCK_INNER,
   TEAM_BLOCK_SPACING,
-  TEAM_HERO_SECTION,
   TEAM_HERO_SUBTITLE,
   TEAM_INTRO_CLASS,
   TEAM_MAIN,
@@ -44,6 +43,9 @@ import ListingPagination from "@/components/ui/ListingPagination";
 import { LISTING_PAGE_SIZE, paginateItems } from "@/lib/pagination";
 
 const TEAM_PORTRAIT_FALLBACK = MEDIA.about[0];
+
+const TEAM_HERO_TITLE =
+  "font-display px-2 text-balance break-words text-[clamp(1.625rem,5.5vw,3.125rem)] font-normal uppercase tracking-[0.06em] text-[#6a414d] sm:px-1 sm:tracking-[0.1em]";
 
 const STAT_WATERMARKS = [CheckCircle2, Award] as const;
 
@@ -228,21 +230,15 @@ export default function TeamPageClient() {
     <>
       <Navbar />
       <main className={`${TEAM_MAIN} ${TEAM_PAGE_BG}`}>
-        <section className={`${TEAM_SHELL} ${TEAM_HERO_SECTION}`}>
-          <FadeInView>
-            <SectionHeading
-              title={t("heroTitle")}
-              subtitle={t("heroSubtitle")}
-              titleAs="h1"
-              expanded
-              noGradient
-              subtitleSentenceCase={false}
-              titleClassName={`${SECTION_TITLE_CLASS} px-0.5`}
-              subtitleClassName={TEAM_HERO_SUBTITLE}
-              className="!px-[clamp(0.5rem,3vw,2rem)] !py-[clamp(1.5rem,5vw,4rem)]"
-            />
-          </FadeInView>
-        </section>
+        <CompanyHero
+          title={t("heroTitle")}
+          subtitle={t("heroSubtitle")}
+          compact
+          subtitleSentenceCase={false}
+          titleClassName={TEAM_HERO_TITLE}
+          subtitleClassName={TEAM_HERO_SUBTITLE}
+          sectionClassName="!pb-[clamp(1rem,3vw,1.5rem)]"
+        />
 
         <section className={`${TEAM_SHELL} mb-[clamp(2rem,6vw,5rem)]`}>
           <FadeInView delay={0.05}>

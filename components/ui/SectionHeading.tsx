@@ -10,6 +10,8 @@ type SectionHeadingProps = {
   compact?: boolean;
   expanded?: boolean;
   noGradient?: boolean;
+  /** Top-left slot inside the gradient band (e.g. back link on legal pages). */
+  leading?: React.ReactNode;
 };
 
 /** Shared homepage + inner-page section typography */
@@ -72,6 +74,7 @@ export default function SectionHeading({
   compact = false,
   expanded = false,
   noGradient = false,
+  leading,
 }: SectionHeadingProps) {
   const TitleTag = titleAs;
   const blockClass = expanded
@@ -86,9 +89,14 @@ export default function SectionHeading({
 
   return (
     <div
-      className={`${blockClass} ${className}`.trim()}
+      className={`${blockClass} ${leading ? "relative" : ""} ${className}`.trim()}
       style={noGradient ? undefined : { background: SECTION_BLOCK_GRADIENT }}
     >
+      {leading ? (
+        <div className="absolute left-4 top-4 z-10 sm:left-5 sm:top-5 md:left-8 md:top-6">
+          {leading}
+        </div>
+      ) : null}
       <TitleTag className={titleClassName ?? SECTION_TITLE_CLASS}>{title}</TitleTag>
       {subtitle && <p className={subtitleClass}>{subtitle}</p>}
       {children}

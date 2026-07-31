@@ -15,6 +15,7 @@ type CompanyHeroProps = {
   titleClassName?: string;
   sectionClassName?: string;
   fadeClassName?: string;
+  leading?: React.ReactNode;
 };
 
 export default function CompanyHero({
@@ -28,6 +29,7 @@ export default function CompanyHero({
   titleClassName,
   sectionClassName = "",
   fadeClassName = "",
+  leading,
 }: CompanyHeroProps) {
   return (
     <section className={`${COMPANY_SHELL} ${COMPANY_HERO_SECTION_PAD} ${sectionClassName}`.trim()}>
@@ -41,6 +43,7 @@ export default function CompanyHero({
           expanded={expanded || Boolean(children)}
           subtitleSentenceCase={subtitleSentenceCase}
           subtitleClassName={subtitleClassName}
+          leading={leading}
           className={`w-full rounded-[12px] sm:rounded-[16px] ${SECTION_HEADING_WIDE}`}
         >
           {children && (

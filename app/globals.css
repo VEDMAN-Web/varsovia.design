@@ -190,7 +190,6 @@ body {
 
 .btn-primary:hover {
   background: var(--maroon-deep);
-  transform: translateY(-1px);
 }
 
 .heading-section {

@@ -113,7 +113,10 @@ export default function Products({ products }: ProductsProps) {
   const site = useSiteSettings();
   const section = site?.sectionCopy?.products;
 
-  const displayProducts = products && products.length > 0 ? products : FALLBACK_PRODUCTS;
+  const displayProducts = (products && products.length > 0 ? products : FALLBACK_PRODUCTS).slice(
+    0,
+    3,
+  );
 
 
 
@@ -160,7 +163,7 @@ export default function Products({ products }: ProductsProps) {
 
 
 
-        <div className="mt-12 text-center">
+        <div className="mt-8 text-center md:mt-10">
 
           <Link
 

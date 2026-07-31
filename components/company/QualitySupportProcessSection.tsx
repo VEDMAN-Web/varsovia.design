@@ -19,6 +19,7 @@ import {
   QAS_SUPPORT_ILLUSTRATION,
   QAS_SUPPORT_ROW,
   QAS_SUPPORT_SPINE_CELL,
+  QAS_SUPPORT_SPINE_TRACK,
   QAS_SUPPORT_STEP_BODY,
   QAS_SUPPORT_STEP_DOT,
   QAS_SUPPORT_STEP_LABEL,
@@ -45,7 +46,17 @@ const SUPPORT_JPG = [
   "/quality-sale/support-4.jpg",
 ] as const;
 
-function SupportStepArt({ index, className }: { index: number; className?: string }) {
+type SpineLine = { top: number; height: number; left: number };
+
+function SupportStepArt({
+  index,
+  className,
+  onLayout,
+}: {
+  index: number;
+  className?: string;
+  onLayout?: () => void;
+}) {
   const png = SUPPORT_PNG[index] ?? SUPPORT_PNG[0];
   const jpg = SUPPORT_JPG[index] ?? SUPPORT_JPG[0];
   const [src, setSrc] = useState<string>(png);
@@ -59,6 +70,7 @@ function SupportStepArt({ index, className }: { index: number; className?: strin
       className={className}
       loading="lazy"
       decoding="async"
+      onLoad={onLayout}
       onError={() => {
         setSrc((current) => {
           if (current.endsWith(".jpg")) return current;
@@ -78,21 +90,32 @@ type StepItem = {
   artIndex: number;
 };
 
-type SpineLine = { top: number; height: number; left: number };
-
 function SupportStepSpine({ dotRef }: { dotRef: RefCallback<HTMLDivElement> }) {
   return (
     <div className={QAS_SUPPORT_SPINE_CELL}>
-      <motion.div
-        ref={dotRef}
-        className={QAS_SUPPORT_STEP_DOT}
-        initial={{ scale: 0, opacity: 0 }}
-        whileInView={{ scale: 1, opacity: 1 }}
-        viewport={{ once: true, margin: "-8%" }}
-        transition={{ ...companyTransition, delay: 0.04 }}
-        aria-hidden
-      />
+      <div ref={dotRef} className="relative flex h-full w-full items-center justify-center">
+        <motion.div
+          className={QAS_SUPPORT_STEP_DOT}
+          initial={{ scale: 0, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true, margin: "-8%" }}
+          transition={{ ...companyTransition, delay: 0.04 }}
+          aria-hidden
+        />
+      </div>
     </div>
+  );
+}
+
+function SupportContinuousSpine({ line }: { line: SpineLine | null }) {
+  if (!line || line.height <= 1) return null;
+
+  return (
+    <div
+      className={QAS_SUPPORT_SPINE_TRACK}
+      style={{ top: line.top, height: line.height, left: line.left }}
+      aria-hidden
+    />
   );
 }
 
@@ -100,10 +123,12 @@ function SupportProcessStep({
   item,
   stepLabel,
   dotRef,
+  onArtLayout,
 }: {
   item: StepItem;
   stepLabel: string;
   dotRef: RefCallback<HTMLDivElement>;
+  onArtLayout: () => void;
 }) {
   const slideArt = item.imageRight ? 24 : -24;
   const slideCopy = item.imageRight ? -20 : 20;
@@ -116,7 +141,7 @@ function SupportProcessStep({
       transition={{ duration: 0.55, ease: EASE, delay: 0.04 }}
       className={`${QAS_SUPPORT_ILLUSTRATION} mx-auto min-h-[120px] md:mx-0 ${item.imageRight ? "md:ml-auto" : "md:mr-auto"}`}
     >
-      <SupportStepArt index={item.artIndex} className="h-auto w-full object-contain" />
+      <SupportStepArt index={item.artIndex} className="h-auto w-full object-contain" onLayout={onArtLayout} />
     </motion.div>
   );
 
@@ -140,9 +165,9 @@ function SupportProcessStep({
   return (
     <div className={QAS_SUPPORT_ROW} style={QAS_SUPPORT_GRID_STYLE}>
       <div className={QAS_SUPPORT_GRID}>
-        <div className="hidden min-w-0 items-center justify-end pr-1 md:flex lg:pr-2">{left}</div>
+        <div className="hidden min-w-0 items-center justify-end self-center pr-1 md:flex lg:pr-2">{left}</div>
         <SupportStepSpine dotRef={dotRef} />
-        <div className="col-start-2 min-w-0 md:col-start-3">
+        <div className="col-start-2 min-w-0 self-center md:col-start-3">
           <div className="flex flex-col gap-4 md:hidden">
             {illustration}
             {copy}
@@ -150,27 +175,6 @@ function SupportProcessStep({
           <div className="hidden min-w-0 items-center justify-start pl-1 md:flex lg:pl-2">{right}</div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function SupportContinuousSpine({ line }: { line: SpineLine | null }) {
-  if (!line || line.height <= 0) return null;
-
-  return (
-    <div
-      className="pointer-events-none absolute z-0 w-[2px] -translate-x-1/2 overflow-hidden"
-      style={{ top: line.top, height: line.height, left: line.left }}
-      aria-hidden
-    >
-      <motion.div
-        className="h-full w-full bg-[#643c41]"
-        initial={{ scaleY: 0 }}
-        whileInView={{ scaleY: 1 }}
-        viewport={{ once: true, margin: "-10%" }}
-        transition={{ duration: 0.85, ease: EASE }}
-        style={{ transformOrigin: "top center" }}
-      />
     </div>
   );
 }
@@ -195,10 +199,11 @@ export default function QualitySupportProcessSection() {
 
   const measureSpine = useCallback(() => {
     const list = listRef.current;
-    const first = dotEls.current[0];
-    const last = dotEls.current[dotEls.current.length - 1];
-    if (!list || !first || !last) return;
+    const dots = dotEls.current.filter(Boolean) as HTMLDivElement[];
+    if (!list || dots.length < 2) return;
 
+    const first = dots[0];
+    const last = dots[dots.length - 1];
     const listRect = list.getBoundingClientRect();
     const firstRect = first.getBoundingClientRect();
     const lastRect = last.getBoundingClientRect();
@@ -218,6 +223,9 @@ export default function QualitySupportProcessSection() {
 
     const ro = new ResizeObserver(() => measureSpine());
     ro.observe(list);
+    dotEls.current.forEach((el) => {
+      if (el) ro.observe(el);
+    });
     window.addEventListener("resize", measureSpine);
 
     return () => {
@@ -254,6 +262,7 @@ export default function QualitySupportProcessSection() {
                 item={item}
                 stepLabel={t("stepLabel", { step: item.step })}
                 dotRef={setDotRef(i)}
+                onArtLayout={measureSpine}
               />
             </FadeInView>
           ))}

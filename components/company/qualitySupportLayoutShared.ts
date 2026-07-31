@@ -18,7 +18,11 @@ export const QAS_SUPPORT_STEP_LIST = "relative";
 export const QAS_SUPPORT_ROW = "relative z-[1] py-[clamp(1rem,2.8vw,1.75rem)]";
 
 export const QAS_SUPPORT_GRID =
-  "grid grid-cols-[var(--qas-spine)_minmax(0,1fr)] items-center gap-x-2 md:grid-cols-[minmax(0,1fr)_var(--qas-spine)_minmax(0,1fr)] md:items-center md:gap-x-[clamp(0.875rem,2.2vw,1.5rem)]";
+  "grid grid-cols-[var(--qas-spine)_minmax(0,1fr)] items-stretch gap-x-2 md:grid-cols-[minmax(0,1fr)_var(--qas-spine)_minmax(0,1fr)] md:gap-x-[clamp(0.875rem,2.2vw,1.5rem)]";
+
+/** Single continuous spine (position set via inline style from dot centers) */
+export const QAS_SUPPORT_SPINE_TRACK =
+  "pointer-events-none absolute z-[0] w-[2px] -translate-x-1/2 bg-[#643c41]";
 
 export const QAS_SUPPORT_GRID_STYLE = {
   ["--qas-spine"]: "28px",
@@ -34,7 +38,7 @@ export const QAS_SUPPORT_STEP_DOT =
   "relative z-10 h-7 w-7 shrink-0 rounded-full bg-[#643c41] md:h-7 md:w-7";
 
 export const QAS_SUPPORT_SPINE_CELL =
-  "relative z-10 col-start-1 row-start-1 flex items-center justify-center self-center md:col-start-2";
+  "relative z-10 col-start-1 row-start-1 flex min-h-0 self-stretch md:col-start-2";
 
 export const QAS_SUPPORT_STEP_LABEL =
   "font-outfit text-[11px] font-bold uppercase tracking-[0.2em] text-[#d65a7d] sm:text-xs";

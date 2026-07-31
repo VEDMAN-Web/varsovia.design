@@ -226,14 +226,14 @@ export default function Footer({ bio, site }: FooterProps) {
             </span>
             <LegalDot />
             <Link
-              href="#"
+              href="/privacy"
               className="inline-flex items-center font-outfit text-[11px] font-light leading-none text-white/60 transition-colors duration-200 hover:text-white sm:text-[12px]"
             >
               {t("privacy")}
             </Link>
             <LegalDot />
             <Link
-              href="#"
+              href="/terms"
               className="inline-flex items-center font-outfit text-[11px] font-light leading-none text-white/60 transition-colors duration-200 hover:text-white sm:text-[12px]"
             >
               {t("terms")}

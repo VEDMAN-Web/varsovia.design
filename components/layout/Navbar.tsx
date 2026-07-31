@@ -390,11 +390,11 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
       ref={navRef}
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-out ${
         mobileOpen
-          ? "border-b border-white/50 bg-white/85 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md"
+          ? "border-b border-white/50 bg-white/90 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-sm"
           : frostedBar
             ? strongFrost
-              ? "border-b border-white/40 bg-white/82 shadow-[0_4px_28px_rgba(0,0,0,0.12)] backdrop-blur-xl backdrop-saturate-150"
-              : "border-b border-white/45 bg-white/68 shadow-[0_4px_20px_rgba(0,0,0,0.08)] backdrop-blur-md backdrop-saturate-125"
+              ? "border-b border-white/40 bg-white/88 shadow-[0_4px_28px_rgba(0,0,0,0.12)] backdrop-blur-sm backdrop-saturate-110"
+              : "border-b border-white/45 bg-white/78 shadow-[0_4px_20px_rgba(0,0,0,0.08)] backdrop-blur-sm backdrop-saturate-105"
             : "border-b border-transparent bg-transparent shadow-none backdrop-blur-none"
       }`}
     >
@@ -610,7 +610,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
 
       {mobileOpen && (
         <div
-          className="max-h-[calc(100dvh-102px)] overflow-y-auto overscroll-contain border-t border-maroon/10 bg-white/95 px-4 py-5 backdrop-blur-md [-webkit-overflow-scrolling:touch] xl:hidden"
+          className="max-h-[calc(100dvh-102px)] overflow-y-auto overscroll-contain border-t border-maroon/10 bg-white/96 px-4 py-5 backdrop-blur-sm [-webkit-overflow-scrolling:touch] xl:hidden"
           data-lenis-prevent
         >
           <div className="mb-4 flex items-center rounded-full border border-[#e5e5e5] bg-[#f7f5f2] pl-4 pr-1.5 shadow-sm">
