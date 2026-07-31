@@ -170,6 +170,111 @@ export function getSubcategoryOptions(category: InteriorCategory): readonly stri
   return [];
 }
 
+export type InteriorCatalogFilterSource = {
+  category?: string;
+  subcategory?: string;
+  shape?: string;
+  style?: string;
+  color?: string;
+  material?: string;
+  finish?: string;
+};
+
+const FILTER_SECTION_FIELD: Record<
+  CategoryFilterSection,
+  keyof Pick<
+    InteriorCatalogFilterSource,
+    "shape" | "subcategory" | "style" | "color" | "material" | "finish"
+  >
+> = {
+  shapes: "shape",
+  subcategories: "subcategory",
+  styles: "style",
+  colors: "color",
+  materials: "material",
+  finishes: "finish",
+};
+
+/** Canonical Figma options (admin values should match these or appear in catalog). */
+export function getStaticFilterOptionsForSection(
+  section: CategoryFilterSection,
+  category: InteriorCategory,
+): readonly string[] {
+  switch (section) {
+    case "shapes":
+      return FILTER_OPTIONS.shapes;
+    case "subcategories":
+      return getSubcategoryOptions(category);
+    case "styles":
+      return FILTER_OPTIONS.styles;
+    case "colors":
+      return FILTER_OPTIONS.colors;
+    case "materials":
+      return FILTER_OPTIONS.materials;
+    case "finishes":
+      return FILTER_OPTIONS.finishes;
+    default:
+      return [];
+  }
+}
+
+function uniqueSorted(values: string[]) {
+  return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+}
+
+/** Merge design-system options with values present on live catalog rows (admin-added). */
+export function getFilterOptionsForSection(
+  section: CategoryFilterSection,
+  category: InteriorCategory,
+  catalog: InteriorCatalogFilterSource[] = [],
+): string[] {
+  const base = [...getStaticFilterOptionsForSection(section, category)];
+  const field = FILTER_SECTION_FIELD[section];
+  const scoped =
+    category === "All"
+      ? catalog
+      : catalog.filter((row) => (row.category || "Kitchen") === category);
+  const fromCatalog = scoped
+    .map((row) => row[field])
+    .filter((v): v is string => typeof v === "string" && v.trim().length > 0)
+    .map((v) => v.trim());
+  return uniqueSorted([...base, ...fromCatalog]);
+}
+
+function isMockInteriorId(id: string) {
+  return INTERIOR_ITEMS.some((item) => item.id === id);
+}
+
+export type NormalizeInteriorSource = "api" | "mock";
+
+function readFilterString(
+  item: Record<string, unknown>,
+  key: keyof InteriorCatalogFilterSource,
+  mockItem: InteriorItem | undefined,
+  source: NormalizeInteriorSource,
+) {
+  if (source === "api") {
+    const raw = item[key];
+    return typeof raw === "string" ? raw.trim() : "";
+  }
+  const fromItem = item[key];
+  if (typeof fromItem === "string" && fromItem.trim()) return fromItem.trim();
+  const fromMock = mockItem?.[key as keyof InteriorItem];
+  return typeof fromMock === "string" ? fromMock : "";
+}
+
+function readPrice(
+  item: Record<string, unknown>,
+  mockItem: InteriorItem | undefined,
+  source: NormalizeInteriorSource,
+) {
+  if (source === "api") {
+    return typeof item.price === "number" && Number.isFinite(item.price) ? item.price : 0;
+  }
+  if (typeof item.price === "number" && Number.isFinite(item.price)) return item.price;
+  return mockItem?.price ?? 0;
+}
+
 export const CATEGORY_SUBCATEGORIES: Partial<
   Record<Exclude<InteriorCategory, "All">, readonly string[]>
 > = {
@@ -732,24 +837,27 @@ export function normalizeInteriorProject(
   item: Record<string, unknown>,
   index = 0,
   locale?: Locale,
+  options?: { source?: NormalizeInteriorSource },
 ) {
   const loc = getLocaleOrDefault(locale);
   const id = String(item._id ?? item.id ?? index);
+  const source =
+    options?.source ?? (isMockInteriorId(id) ? ("mock" as const) : ("api" as const));
   const gallery = (item.gallery as string[] | undefined) ?? [];
   const image = item.image as string | undefined;
   const coverImage = item.coverImage as string | undefined;
   const category = (item.category as string | undefined) || "Kitchen";
-  const mockItem = INTERIOR_ITEMS.find((m) => m.id === id) ?? INTERIOR_ITEMS[index % INTERIOR_ITEMS.length];
+  const mockItem = INTERIOR_ITEMS.find((m) => m.id === id);
 
   const title =
     pickLocalized(item.title, loc) ||
     (typeof item.title === "string" ? item.title : "") ||
-    mockItem?.title ||
+    (source === "mock" ? mockItem?.title : "") ||
     "";
   const description =
     pickLocalized(item.description, loc) ||
     (typeof item.description === "string" ? item.description : "") ||
-    mockItem?.description ||
+    (source === "mock" ? mockItem?.description : "") ||
     "";
 
   return {
@@ -758,14 +866,20 @@ export function normalizeInteriorProject(
     title,
     description,
     category,
-    subcategory: (item.subcategory as string | undefined) ?? mockItem?.subcategory,
-    price: (item.price as number | undefined) ?? mockItem?.price ?? 0,
-    shape: (item.shape as string | undefined) ?? mockItem?.shape ?? "",
-    style: (item.style as string | undefined) ?? mockItem?.style ?? "Modern",
-    color: (item.color as string | undefined) ?? mockItem?.color ?? "White",
-    material: (item.material as string | undefined) ?? mockItem?.material ?? "Thermofoil",
-    finish: (item.finish as string | undefined) ?? mockItem?.finish ?? "Matte",
+    subcategory: readFilterString(item, "subcategory", mockItem, source),
+    price: readPrice(item, mockItem, source),
+    shape: readFilterString(item, "shape", mockItem, source),
+    style: readFilterString(item, "style", mockItem, source),
+    color: readFilterString(item, "color", mockItem, source),
+    material: readFilterString(item, "material", mockItem, source),
+    finish: readFilterString(item, "finish", mockItem, source),
+    isNew: source === "api" ? Boolean(item.isNew) : Boolean(item.isNew ?? mockItem?.isNew),
     coverImage: resolveInteriorImage(coverImage, gallery, image, index),
+    createdAt:
+      (typeof item.createdAt === "string" && item.createdAt) ||
+      (source === "mock" ? mockItem?.createdAt : "") ||
+      "",
+    order: typeof item.order === "number" ? item.order : mockItem?.order,
   };
 }
 
@@ -778,45 +892,43 @@ function isInteriorCatalogItem(item: Record<string, unknown>) {
   if (!category || !INTERIOR_CATEGORY_SET.has(category as Exclude<InteriorCategory, "All">)) {
     return false;
   }
-  // Accept if explicitly flagged OR has any display-worthy content
   if (item.interiorCatalog === false) return false;
   return Boolean(
     item.interiorCatalog === true ||
-    item.coverImage ||
-    item.subcategory ||
-    item.shape ||
-    item.price ||
-    item.color ||
-    item.material
+      item.coverImage ||
+      item.subcategory ||
+      item.shape ||
+      item.style ||
+      item.color ||
+      item.material ||
+      item.finish ||
+      item.price,
   );
 }
 
-/** Interior listing: mock catalog; merges API rows only when they carry interior metadata. */
+/** Interior listing: prefer API/admin projects; mock catalog only when API returns none. */
 export function buildInteriorCatalog(
   apiProjects: Record<string, unknown>[] = [],
   locale?: Locale,
   mode: "hybrid" | "api" = "hybrid",
 ) {
   const mockNormalized = INTERIOR_ITEMS.map((item, index) =>
-    normalizeInteriorProject({ ...item, _id: item.id }, index, locale),
+    normalizeInteriorProject({ ...item, _id: item.id }, index, locale, { source: "mock" }),
   );
 
   const fromApi = apiProjects
     .filter(isInteriorCatalogItem)
-    .map((item, index) => normalizeInteriorProject(item, index, locale));
+    .map((item, index) => normalizeInteriorProject(item, index, locale, { source: "api" }));
 
-  if (fromApi.length === 0) return mockNormalized;
-
-  if (mode === "api") return fromApi;
-
-  const byId = new Map<string, ReturnType<typeof normalizeInteriorProject>>();
-  for (const item of mockNormalized) {
-    byId.set(String(item._id), item);
+  if (fromApi.length > 0) {
+    return fromApi;
   }
-  for (const item of fromApi) {
-    byId.set(String(item._id), item);
+
+  if (mode === "api") {
+    return [];
   }
-  return Array.from(byId.values());
+
+  return mockNormalized;
 }
 
 const INTERIOR_GALLERY_FALLBACKS = [...MEDIA.featured.slice(0, 5)];

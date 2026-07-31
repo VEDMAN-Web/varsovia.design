@@ -32,9 +32,11 @@ function isVerticallyScrollable(el: HTMLElement) {
 export function useModalScrollLock(
   open: boolean,
   dialogRef: RefObject<HTMLElement | null>,
-  scrollRootRef?: RefObject<HTMLElement | null>
+  scrollRootRef?: RefObject<HTMLElement | null>,
+  options?: { overlay?: boolean },
 ) {
   const lenis = useLenis();
+  const overlay = options?.overlay ?? false;
 
   useEffect(() => {
     if (!open) return;
@@ -56,9 +58,11 @@ export function useModalScrollLock(
 
     bodyStyle.overflow = "hidden";
     htmlStyle.overflow = "hidden";
-    bodyStyle.position = "fixed";
-    bodyStyle.top = `-${scrollY}px`;
-    bodyStyle.width = "100%";
+    if (!overlay) {
+      bodyStyle.position = "fixed";
+      bodyStyle.top = `-${scrollY}px`;
+      bodyStyle.width = "100%";
+    }
     bodyStyle.touchAction = "none";
 
     const onWheel = (e: WheelEvent) => {
@@ -115,8 +119,10 @@ export function useModalScrollLock(
       bodyStyle.width = prev.bodyWidth;
       bodyStyle.touchAction = prev.bodyTouchAction;
 
-      window.scrollTo(0, scrollY);
+      if (!overlay) {
+        window.scrollTo(0, scrollY);
+      }
       lenis?.start();
     };
-  }, [open, lenis, dialogRef, scrollRootRef]);
+  }, [open, lenis, dialogRef, scrollRootRef, overlay]);
 }

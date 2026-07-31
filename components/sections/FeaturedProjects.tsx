@@ -2,10 +2,20 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@/lib/i18n/navigation";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import SectionHeading from "@/components/ui/SectionHeading";
+import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
 import SectionShell, { SECTION_HEADING_WIDE, SITE_SECTION_PADDING_Y } from "@/components/ui/SectionShell";
+import MagneticButton from "@/components/ui/MagneticButton";
+import {
+  reducedScaleFadeItem,
+  REVEAL_EASE,
+  scaleFadeItem,
+  staggerContainer,
+  VIEWPORT_ONCE,
+  fadeUpItem,
+  reducedFadeUpItem,
+} from "@/lib/motionPresets";
 import { fallbackHomeData } from "@/lib/fallbackData";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 
@@ -57,6 +67,7 @@ function buildDisplayProjects(projects?: Project[]) {
 
 export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
   const t = useTranslations("home");
+  const reduceMotion = useReducedMotion();
   const [active, setActive] = useState(0);
   const [hovered, setHovered] = useState<number | null>(null);
   const [brokenImages, setBrokenImages] = useState<Record<string, string>>({});
@@ -86,16 +97,26 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
     if (hovered !== null && hovered >= displayProjects.length) setHovered(null);
   }, [active, displayProjects.length, hovered]);
 
+  const stackItem = reduceMotion ? reducedScaleFadeItem : scaleFadeItem;
+  const ctaVariant = reduceMotion ? reducedFadeUpItem : fadeUpItem;
+
   return (
     <section id="projects" className={`bg-transparent ${SITE_SECTION_PADDING_Y}`}>
       <SectionShell>
-        <SectionHeading
+        <SectionHeadingReveal
           title={t("featuredTitle")}
           subtitle={t("featuredSubtitle")}
           className={SECTION_HEADING_WIDE}
         />
 
-        <div className="mt-6 w-full min-w-0 sm:mt-10 md:mt-12" onMouseLeave={() => setHovered(null)}>
+        <motion.div
+          className="mt-6 w-full min-w-0 sm:mt-10 md:mt-12"
+          initial="hidden"
+          whileInView="visible"
+          viewport={VIEWPORT_ONCE}
+          variants={staggerContainer(0.055, 0.12)}
+          onMouseLeave={() => setHovered(null)}
+        >
           <div className="flex h-[240px] w-full min-w-0 gap-1 overflow-hidden sm:h-[300px] sm:gap-1.5 md:h-[360px] md:gap-2 lg:h-[400px] lg:gap-2.5">
             {displayProjects.map((item, i) => {
               const isExpanded = expandedIndex === i;
@@ -105,6 +126,7 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
                 <motion.button
                   key={item._id}
                   type="button"
+                  variants={stackItem}
                   onMouseEnter={() => setHovered(i)}
                   onFocus={() => setHovered(i)}
                   onClick={() => {
@@ -114,13 +136,19 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
                   className="relative h-full min-w-0 overflow-hidden rounded-[8px] outline-none sm:rounded-[12px] md:rounded-[14px]"
                   initial={false}
                   animate={{ flexGrow: isExpanded ? 12 : 1, flexShrink: 1, flexBasis: 0 }}
-                  transition={{ type: "spring", stiffness: 280, damping: 32 }}
+                  transition={{
+                    flexGrow: { type: "spring", stiffness: 280, damping: 32 },
+                    flexShrink: { type: "spring", stiffness: 280, damping: 32 },
+                    flexBasis: { type: "spring", stiffness: 280, damping: 32 },
+                  }}
                 >
-                  <img
+                  <motion.img
                     src={imageSrc}
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover"
                     draggable={false}
+                    animate={{ scale: isExpanded ? 1.04 : 1 }}
+                    transition={{ duration: 0.55, ease: REVEAL_EASE }}
                     onError={() => {
                       const fallback = item.gallery?.find(Boolean) || DEFAULT_COVER;
                       if (brokenImages[item._id] !== fallback) {
@@ -138,7 +166,7 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
                     <motion.div
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.25 }}
+                      transition={{ duration: 0.28, ease: REVEAL_EASE }}
                       className="absolute bottom-3 left-3 right-3 text-left sm:bottom-4 sm:left-4 sm:right-4 md:bottom-5 md:left-5 md:right-5"
                     >
                       {(item.location || item.category) && (
@@ -161,16 +189,26 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
               );
             })}
           </div>
-        </div>
+        </motion.div>
 
-        <div className="mt-10 text-center sm:mt-12">
-          <Link
-            href="/interior"
-            className="inline-flex rounded-md bg-[#5c3d42] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#4a2f34] sm:px-8 sm:py-3"
-          >
-            Explore More
-          </Link>
-        </div>
+        <motion.div
+          className="mt-10 text-center sm:mt-12"
+          initial="hidden"
+          whileInView="visible"
+          viewport={VIEWPORT_ONCE}
+          variants={staggerContainer(0, 0.15)}
+        >
+          <motion.div variants={ctaVariant}>
+            <MagneticButton
+              href="/interior"
+              variant="ghost"
+              className="!rounded-md !border-transparent !bg-[#5c3d42] !px-6 !py-2.5 !text-sm !font-medium !normal-case !tracking-normal !text-white hover:!border-transparent hover:!bg-[#4a2f34] hover:!text-white sm:!px-8 sm:!py-3"
+              fullWidthMobile={false}
+            >
+              Explore More
+            </MagneticButton>
+          </motion.div>
+        </motion.div>
       </SectionShell>
     </section>
   );

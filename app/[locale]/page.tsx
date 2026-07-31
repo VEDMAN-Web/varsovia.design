@@ -10,6 +10,7 @@ import CoreStrengths from "@/components/sections/CoreStrengths";
 import Partners from "@/components/sections/Partners";
 import Contact from "@/components/sections/Contact";
 import HomePageShell from "@/components/preloader/HomePageShell";
+import HomeScrollToTop from "@/components/home/HomeScrollToTop";
 import { fetchHomeData, fetchProducts, fetchProjects } from "@/lib/api";
 import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/i18n/routing";
@@ -61,6 +62,7 @@ export default async function Home({ params }: Props) {
         </div>
         <Contact images={site.contactImages || []} />
       </main>
+      <HomeScrollToTop />
     </HomePageShell>
   );
 }

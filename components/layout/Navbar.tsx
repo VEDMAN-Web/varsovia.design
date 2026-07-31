@@ -638,7 +638,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
 
       {mobileOpen && (
         <div
-          className="max-h-[calc(100dvh-102px)] overflow-y-auto overscroll-contain border-t border-maroon/10 bg-white/96 px-4 py-5 backdrop-blur-sm [-webkit-overflow-scrolling:touch] xl:hidden"
+          className="scrollbar-brand max-h-[calc(100dvh-102px)] overflow-y-auto overscroll-contain border-t border-maroon/10 bg-white/96 px-4 py-5 pr-3 backdrop-blur-sm [-webkit-overflow-scrolling:touch] xl:hidden"
           data-lenis-prevent
         >
           <div className="mb-4 flex items-center rounded-full border border-[#e5e5e5] bg-[#f7f5f2] pl-4 pr-1.5 shadow-sm">

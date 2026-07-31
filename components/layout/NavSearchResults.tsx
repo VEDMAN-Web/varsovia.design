@@ -91,8 +91,8 @@ export default function NavSearchResults({
 }: NavSearchResultsProps) {
   const listClass =
     variant === "mobile"
-      ? "mb-4 max-h-64 overflow-y-auto overscroll-y-contain rounded-2xl border border-maroon/10 bg-white [-ms-overflow-style:auto] [scrollbar-width:thin]"
-      : "max-h-64 overflow-y-auto overscroll-y-contain [-ms-overflow-style:auto] [scrollbar-width:thin]";
+      ? "scrollbar-brand mb-4 max-h-64 overflow-y-auto overscroll-y-contain rounded-2xl border border-maroon/10 bg-white pr-1"
+      : "scrollbar-brand max-h-64 overflow-y-auto overscroll-y-contain pr-1";
 
   const wrap = (children: ReactNode) =>
     variant === "mobile" ? (

@@ -6,7 +6,7 @@ import { motion, useReducedMotion, type PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getRelativeOffset } from "@/lib/carousel";
 import DownloadCatalogueModal from "@/components/forms/DownloadCatalogueModal";
-import SectionHeading from "@/components/ui/SectionHeading";
+import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
 import { SECTION_HEADING_WIDE, SITE_SECTION_PADDING_Y } from "@/components/ui/SectionShell";
 import { CATALOGUE_CONTENT_WIDTH, CATALOGUE_SECTION_SHELL } from "@/components/catalogue/catalogueLayoutShared";
 import {
@@ -20,6 +20,7 @@ import {
   HOME_CAROUSEL_DEFAULT_ACTIVE,
 } from "@/components/catalogue/catalogueBrochureThemes";
 import { fallbackHomeData } from "@/lib/fallbackData";
+import { fadeUpItem, reducedFadeUpItem, VIEWPORT_ONCE } from "@/lib/motionPresets";
 import { MEDIA } from "@/lib/mediaAssets";
 
 const FALLBACK_CATALOGUES = [
@@ -242,13 +243,19 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
       <section id="catalogue" className={`overflow-x-clip bg-transparent ${SITE_SECTION_PADDING_Y}`}>
         <div className={CATALOGUE_SECTION_SHELL}>
           <div className={CATALOGUE_CONTENT_WIDTH}>
-            <SectionHeading
+            <SectionHeadingReveal
               title={t("catalogueTitle")}
               subtitle={t("catalogueSubtitle")}
               className={SECTION_HEADING_WIDE}
             />
 
-            <div className="mt-4 overflow-hidden md:mt-6">
+            <motion.div
+              className="mt-4 overflow-hidden md:mt-6"
+              initial="hidden"
+              whileInView="visible"
+              viewport={VIEWPORT_ONCE}
+              variants={prefersReducedMotion ? reducedFadeUpItem : fadeUpItem}
+            >
               <div
                 ref={trackRef}
                 role="region"
@@ -398,7 +405,7 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
                   <ChevronRight size={20} strokeWidth={2.2} />
                 </button>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>

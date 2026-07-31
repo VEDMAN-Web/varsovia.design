@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { ContactCollageMobileSlider } from "@/components/forms/ContactCollage";
 import ContactMosaicBand from "@/components/forms/ContactMosaicBand";
 import ContactInquiryForm from "@/components/forms/ContactInquiryForm";
@@ -8,6 +9,7 @@ import type { InquiryPurpose } from "@/components/forms/contactFormShared";
 import {
   CONTACT_FORM_BAND,
   CONTACT_FORM_PADDING,
+  CONTACT_MOSAIC_BAND,
   CONTACT_PANEL_BG,
   CONTACT_PANEL_RADIUS,
 } from "@/components/forms/contactLayoutShared";
@@ -18,6 +20,7 @@ import {
   MODAL_MOSAIC_SHELL,
   MODAL_MOBILE_SLIDER,
 } from "@/components/forms/contactModalLayoutShared";
+import { REVEAL_EASE } from "@/lib/motionPresets";
 
 type ContactFormPanelProps = {
   images?: string[];
@@ -29,6 +32,8 @@ type ContactFormPanelProps = {
   onSubmitted?: () => void;
   /** Scroll container for modal form on small screens (wheel / touch lock) */
   formScrollRef?: RefObject<HTMLElement | null>;
+  /** Stagger collage + form on homepage contact section */
+  entranceMotion?: boolean;
 };
 
 export default function ContactFormPanel({
@@ -40,32 +45,36 @@ export default function ContactFormPanel({
   variant = "section",
   onSubmitted,
   formScrollRef,
+  entranceMotion = false,
 }: ContactFormPanelProps) {
   const isModal = variant === "modal";
+  const reduceMotion = useReducedMotion();
   const panelBg = isModal ? "bg-[#fff3f2]" : CONTACT_PANEL_BG;
-  const modalRowRef = useRef<HTMLDivElement>(null);
-  const [modalBodyHeight, setModalBodyHeight] = useState(0);
+  const panelRowRef = useRef<HTMLDivElement>(null);
+  const formColumnRef = useRef<HTMLDivElement>(null);
+  const [mosaicTargetHeight, setMosaicTargetHeight] = useState(0);
 
-  const measureModalRow = useCallback(() => {
-    const row = modalRowRef.current;
-    if (!row) return;
-    setModalBodyHeight(row.clientHeight);
+  const measureMosaicHeight = useCallback(() => {
+    const formCol = formColumnRef.current;
+    const row = panelRowRef.current;
+    const formH = formCol?.offsetHeight ?? 0;
+    const rowH = row?.clientHeight ?? 0;
+    setMosaicTargetHeight(Math.max(formH, rowH));
   }, []);
 
   useEffect(() => {
-    if (!isModal) return;
-    measureModalRow();
-    const row = modalRowRef.current;
-    if (!row) return;
-    const ro = new ResizeObserver(measureModalRow);
-    ro.observe(row);
+    measureMosaicHeight();
+    const targets = [panelRowRef.current, formColumnRef.current].filter(Boolean);
+    if (targets.length === 0) return;
+    const ro = new ResizeObserver(measureMosaicHeight);
+    targets.forEach((t) => ro.observe(t!));
     return () => ro.disconnect();
-  }, [isModal, measureModalRow]);
+  }, [measureMosaicHeight]);
 
   if (isModal) {
     return (
       <div
-        ref={modalRowRef}
+        ref={panelRowRef}
         className={`flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden lg:flex-row lg:items-stretch ${panelBg} ${panelClassName}`.trim()}
       >
         <ContactCollageMobileSlider
@@ -75,7 +84,7 @@ export default function ContactFormPanel({
         />
 
         <div className={MODAL_MOSAIC_SHELL}>
-          <ContactMosaicBand images={images} fillParent maxHeight={modalBodyHeight} />
+          <ContactMosaicBand images={images} maxHeight={mosaicTargetHeight} />
         </div>
 
         <div
@@ -94,17 +103,40 @@ export default function ContactFormPanel({
     );
   }
 
+  const formMotion = entranceMotion && !reduceMotion;
+
   return (
     <div
       className={`relative w-full min-w-0 ${CONTACT_PANEL_RADIUS} ${panelBg} ${panelClassName}`.trim()}
     >
-      <div className="relative flex min-w-0 flex-col md:flex-row md:items-stretch">
+      <div
+        ref={panelRowRef}
+        className="relative flex min-w-0 flex-col md:flex-row md:items-stretch"
+      >
         <ContactCollageMobileSlider images={images} className="shrink-0 md:hidden" />
 
-        <ContactMosaicBand images={images} className="hidden md:block md:self-stretch" />
+        <motion.div
+          className={`${CONTACT_MOSAIC_BAND} hidden min-h-0 overflow-hidden md:flex md:self-stretch`}
+          style={mosaicTargetHeight > 0 ? { minHeight: mosaicTargetHeight } : undefined}
+          initial={formMotion ? { opacity: 0, x: -24 } : false}
+          whileInView={formMotion ? { opacity: 1, x: 0 } : undefined}
+          viewport={{ once: true, margin: "-5%" }}
+          transition={{ duration: 0.65, ease: REVEAL_EASE, delay: 0.06 }}
+        >
+          <ContactMosaicBand
+            images={images}
+            maxHeight={mosaicTargetHeight}
+            className="h-full min-h-0 w-full"
+          />
+        </motion.div>
 
-        <div
+        <motion.div
+          ref={formColumnRef}
           className={`${CONTACT_FORM_BAND} ${CONTACT_FORM_PADDING} md:flex md:flex-col md:justify-start ${className}`.trim()}
+          initial={formMotion ? { opacity: 0, x: 20 } : false}
+          whileInView={formMotion ? { opacity: 1, x: 0 } : undefined}
+          viewport={{ once: true, margin: "-5%" }}
+          transition={{ duration: 0.65, ease: REVEAL_EASE, delay: 0.12 }}
         >
           <ContactInquiryForm
             purpose={purpose}
@@ -112,7 +144,7 @@ export default function ContactFormPanel({
             density="section"
             onSubmitted={onSubmitted}
           />
-        </div>
+        </motion.div>
       </div>
     </div>
   );

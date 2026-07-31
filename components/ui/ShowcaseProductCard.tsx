@@ -16,7 +16,7 @@ export type ShowcaseProductCardProps = {
   index?: number;
   isNew?: boolean;
   ctaLabel?: string;
-  motionVariant?: "inView" | "mount";
+  motionVariant?: "inView" | "mount" | "none";
   /** Home: hover reveals copy. Interior / showcase: Figma listing overlay. */
   variant?: "home" | "interior" | "showcase";
   className?: string;
@@ -184,6 +184,14 @@ export default function ShowcaseProductCard({
     onBlur: () => setOpen(false),
     tabIndex: 0 as const,
   };
+
+  if (motionVariant === "none") {
+    return (
+      <article className={`${shell} ${className}`.trim()} {...interaction}>
+        {body}
+      </article>
+    );
+  }
 
   if (motionVariant === "mount") {
     return (

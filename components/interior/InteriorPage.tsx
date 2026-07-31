@@ -35,6 +35,7 @@ import { MEDIA } from "@/lib/mediaAssets";
 import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import type { Locale } from "@/lib/i18n/routing";
 import ListingPagination from "@/components/ui/ListingPagination";
+import { SkeletonProductGrid } from "@/components/ui/skeleton";
 import { LISTING_PAGE_SIZE, paginateItems } from "@/lib/pagination";
 
 const INTERIOR_FALLBACK = MEDIA.interior[0];
@@ -141,9 +142,8 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [projects, setProjects] = useState<ApiProject[]>(
-    () => buildInteriorCatalog() as ApiProject[]
-  );
+  const [projects, setProjects] = useState<ApiProject[]>([]);
+  const [catalogLoaded, setCatalogLoaded] = useState(false);
   const [, startTransition] = useTransition();
   const sortRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -163,6 +163,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
 
   useEffect(() => {
     let cancelled = false;
+    setCatalogLoaded(false);
     import("@/lib/api").then(({ fetchProjects }) => {
       fetchProjects(locale as Locale)
         .then((data: ApiProject[]) => {
@@ -173,7 +174,12 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
           }
         })
         .catch(() => {
-          /* keep sync catalog */
+          if (!cancelled) {
+            setProjects(buildInteriorCatalog([], locale as Locale, catalogMode) as ApiProject[]);
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setCatalogLoaded(true);
         });
     });
     return () => {
@@ -457,6 +463,9 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
       <section ref={gridRef} className={`${INTERIOR_LISTING_GRID_MT} pb-8 md:pb-10`}>
         <PageShell>
           <div className="min-h-[300px] sm:min-h-[420px] lg:min-h-[500px]">
+            {!catalogLoaded ? (
+              <SkeletonProductGrid />
+            ) : (
             <AnimatePresence mode="wait">
               {filteredItems.length === 0 ? (
                 <motion.p
@@ -488,6 +497,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
                 </motion.div>
               )}
             </AnimatePresence>
+            )}
           </div>
           <ListingPagination
             currentPage={currentPage}
@@ -502,6 +512,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
         open={filterOpen}
         category={category}
         value={filters}
+        catalog={projects}
         onClose={() => setFilterOpen(false)}
         onApply={(next) => {
           startTransition(() => setFilters(next));

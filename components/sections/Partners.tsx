@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import SectionHeading from "@/components/ui/SectionHeading";
+import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
 import SectionShell, { SECTION_HEADING_WIDE, SITE_SECTION_PADDING_Y } from "@/components/ui/SectionShell";
+import { fadeUpItem, reducedFadeUpItem, VIEWPORT_ONCE } from "@/lib/motionPresets";
 import { resolveMediaUrl } from "@/lib/mediaAssets";
 import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 
@@ -71,6 +73,7 @@ export default function Partners({ partners = [] }: { partners?: Partner[] }) {
   const t = useTranslations("home");
   const site = useSiteSettings();
   const section = site?.sectionCopy?.partners;
+  const reduceMotion = useReducedMotion();
 
   const logos = useMemo((): PartnerLogo[] => {
     const fromApi = buildLogosFromApi(partners);
@@ -82,7 +85,7 @@ export default function Partners({ partners = [] }: { partners?: Partner[] }) {
   return (
     <section id="partners" className={`bg-blush ${SITE_SECTION_PADDING_Y}`}>
       <SectionShell className="text-center">
-        <SectionHeading
+        <SectionHeadingReveal
           title={section?.title || t("partnersTitle")}
           subtitle={section?.subtitle || t("partnersSubtitle")}
           className={SECTION_HEADING_WIDE}
@@ -90,12 +93,18 @@ export default function Partners({ partners = [] }: { partners?: Partner[] }) {
       </SectionShell>
 
       <SectionShell className="mt-10 overflow-hidden lg:mt-12" aria-label={t("partnersAria")}>
-        <div className="partners-marquee">
+        <motion.div
+          className="partners-marquee partners-marquee-fade"
+          initial="hidden"
+          whileInView="visible"
+          viewport={VIEWPORT_ONCE}
+          variants={reduceMotion ? reducedFadeUpItem : fadeUpItem}
+        >
           <div className="partners-marquee-track">
             <PartnerLogoStrip logos={logos} />
             <PartnerLogoStrip logos={logos} duplicate />
           </div>
-        </div>
+        </motion.div>
       </SectionShell>
     </section>
   );
