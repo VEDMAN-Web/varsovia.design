@@ -10,11 +10,11 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node scripts/verify-build.js",
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
     "seed": "node src/seed/seed.js",
+    "seed:sync": "node scripts/run-seed-sync.js",
     "seed:site": "node scripts/sync-site-from-seed.js"
   },
   "dependencies": {

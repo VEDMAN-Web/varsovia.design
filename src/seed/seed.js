@@ -7,12 +7,14 @@ const Testimonial = require("../models/Testimonial");
 const Catalogue = require("../models/Catalogue");
 const Partner = require("../models/Partner");
 const Showroom = require("../models/Showroom");
+const Showcase = require("../models/Showcase");
 const SiteContent = require("../models/SiteContent");
 const Contact = require("../models/Contact");
 const Blog = require("../models/Blog");
 const TeamMember = require("../models/TeamMember");
 const FAQ = require("../models/FAQ");
-const seedIfEmpty = require("./seedIfEmpty");
+const CoreStrength = require("../models/CoreStrength");
+const syncCanonicalSeed = require("./syncCanonicalSeed");
 
 async function resetAndSeed() {
   await connectDB();
@@ -23,15 +25,17 @@ async function resetAndSeed() {
     Catalogue.deleteMany({}),
     Partner.deleteMany({}),
     Showroom.deleteMany({}),
+    Showcase.deleteMany({}),
     SiteContent.deleteMany({}),
-    Contact.deleteMany({}),
     Blog.deleteMany({}),
     TeamMember.deleteMany({}),
     FAQ.deleteMany({}),
+    CoreStrength.deleteMany({}),
+    Contact.deleteMany({}),
   ]);
-  await seedIfEmpty();
+  await syncCanonicalSeed();
   await mongoose.disconnect();
-  console.log("Reset + seed finished");
+  console.log("Reset + full canonical seed finished");
 }
 
 resetAndSeed().catch((err) => {
