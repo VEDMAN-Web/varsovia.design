@@ -205,6 +205,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   const [langOpen, setLangOpen] = useState(false);
   const [searchHover, setSearchHover] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [mobileSearchFocused, setMobileSearchFocused] = useState(false);
   const [query, setQuery] = useState("");
   const { grouped, loading, fetchError, apiEligible, showEmpty } = useSiteSearch(
     query,
@@ -295,6 +296,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   useEffect(() => {
     if (!mobileOpen) {
       setMobileExpanded(null);
+      setMobileSearchFocused(false);
       return;
     }
 
@@ -324,6 +326,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   function closeMobileMenu() {
     setMobileOpen(false);
     setMobileExpanded(null);
+    setMobileSearchFocused(false);
   }
 
   function toggleMobileSection(id: string) {
@@ -646,6 +649,10 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => setMobileSearchFocused(true)}
+              onBlur={() => {
+                window.setTimeout(() => setMobileSearchFocused(false), 180);
+              }}
               placeholder={t("searchPlaceholder")}
               className="min-w-0 flex-1 bg-transparent py-2.5 text-sm outline-none placeholder:text-[#b0b0b0]"
             />
@@ -654,7 +661,9 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
             </span>
           </div>
 
-          <NavSearchResults {...searchResultsProps} variant="mobile" />
+          {(mobileSearchFocused || query.length > 0) && (
+            <NavSearchResults {...searchResultsProps} variant="mobile" />
+          )}
 
           <ul className="flex flex-col gap-1">
             {navItems.map((item) => {
