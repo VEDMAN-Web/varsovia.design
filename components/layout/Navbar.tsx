@@ -182,6 +182,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   const navRef = useRef<HTMLElement>(null);
   const overDarkBackdrop = useNavBackdropTone(navRef);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchWrapRef = useRef<HTMLDivElement>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentLanguage = LANGUAGE_META[locale];
@@ -214,16 +215,29 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
 
   const showResults = searchFocused || searchHover || query.length > 0;
 
+  function collapseDesktopSearch() {
+    searchInputRef.current?.blur();
+    setSearchFocused(false);
+    setSearchHover(false);
+  }
+
   useEffect(() => {
-    function onClickOutside(e: MouseEvent) {
-      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+    function onPointerDown(e: PointerEvent) {
+      const target = e.target as Node;
+      const inSearch = searchWrapRef.current?.contains(target) ?? false;
+      const inNav = navRef.current?.contains(target) ?? false;
+
+      if (!inSearch) {
+        collapseDesktopSearch();
+      }
+
+      if (!inNav) {
         setOpenMenu(null);
         setLangOpen(false);
-        setSearchFocused(false);
       }
     }
-    document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
   }, []);
 
   useEffect(() => {
@@ -418,6 +432,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
 
         <div className="flex shrink-0 items-center gap-5">
           <div
+            ref={searchWrapRef}
             className="relative hidden sm:block"
             onMouseEnter={() => setSearchHover(true)}
             onMouseLeave={() => {
@@ -441,10 +456,15 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
                   setLangOpen(false);
                   setOpenMenu(null);
                 }}
-                onBlur={() => {
-                  setTimeout(() => {
-                    if (!query) setSearchFocused(false);
-                  }, 150);
+                onBlur={(e) => {
+                  const next = e.relatedTarget as Node | null;
+                  if (next && searchWrapRef.current?.contains(next)) return;
+                  requestAnimationFrame(() => {
+                    const active = document.activeElement;
+                    if (active && searchWrapRef.current?.contains(active)) return;
+                    setSearchFocused(false);
+                    if (!query.trim()) setSearchHover(false);
+                  });
                 }}
                 placeholder={t("searchPlaceholder")}
                 tabIndex={searchExpanded ? 0 : -1}
