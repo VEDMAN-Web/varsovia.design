@@ -90,6 +90,16 @@ const BASE = {
 const RING1_W = BASE.ring1ApparentW / Math.cos((RING1_ANGLE * Math.PI) / 180);
 const RING2_W = BASE.ring2ApparentW / Math.cos((RING2_ANGLE * Math.PI) / 180);
 
+/** Figma tilt-card spine (same ink as catalogue brochure edge) */
+const CARD_SPINE_COLOR = "#251B1E";
+const CARD_SPINE_PX = 4.6;
+
+function cardSpineSide(offset: number): "left" | "right" | null {
+  if (offset === 0) return null;
+  /** Outer vertical edge (away from carousel center) */
+  return offset < 0 ? "left" : "right";
+}
+
 function getGeometry(offset: number) {
   const abs = Math.abs(offset);
   const sign = offset === 0 ? 0 : offset < 0 ? -1 : 1;
@@ -235,6 +245,8 @@ export default function CoreStrengths() {
               const h = g.height * scale;
               const hideFar = Math.abs(offset) === 2;
               const Icon = item.icon;
+              const spineSide = cardSpineSide(offset);
+              const spineW = CARD_SPINE_PX * scale;
 
               return (
                 <motion.button
@@ -252,6 +264,7 @@ export default function CoreStrengths() {
                   ].join(" ")}
                   style={{
                     transformOrigin: "center center",
+                    transformStyle: "preserve-3d",
                     transformPerspective: perspectivePx,
                     pointerEvents: "auto",
                   }}
@@ -271,6 +284,8 @@ export default function CoreStrengths() {
                   <motion.div
                     className="relative h-full w-full overflow-hidden rounded-[10px]"
                     style={{
+                      transformStyle: "preserve-3d",
+                      backfaceVisibility: "hidden",
                       boxShadow: isCenter
                         ? "0 22px 48px rgba(70,40,50,0.3)"
                         : "0 12px 26px rgba(70,40,50,0.16)",
@@ -279,6 +294,18 @@ export default function CoreStrengths() {
                     animate={{ filter: `grayscale(${g.grayscale})` }}
                     transition={springTransition}
                   >
+                    {spineSide ? (
+                      <span
+                        className="pointer-events-none absolute inset-y-0 z-30"
+                        style={{
+                          width: spineW,
+                          backgroundColor: CARD_SPINE_COLOR,
+                          left: spineSide === "left" ? 0 : undefined,
+                          right: spineSide === "right" ? 0 : undefined,
+                        }}
+                        aria-hidden
+                      />
+                    ) : null}
                     <img
                       src={item.image}
                       alt=""

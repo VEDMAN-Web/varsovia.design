@@ -9,6 +9,10 @@ import DownloadCatalogueModal from "@/components/forms/DownloadCatalogueModal";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { SECTION_HEADING_WIDE, SITE_SECTION_PADDING_Y } from "@/components/ui/SectionShell";
 import { CATALOGUE_CONTENT_WIDTH, CATALOGUE_SECTION_SHELL } from "@/components/catalogue/catalogueLayoutShared";
+import {
+  catalogueCarouselDiskLayout,
+  HOME_CATALOGUE_CAROUSEL_FIGMA,
+} from "@/components/catalogue/catalogueCarouselLayout";
 import { catalogueCoverPhoto } from "@/components/catalogue/catalogueMedia";
 import CatalogueBrochureFace from "@/components/catalogue/CatalogueBrochureFace";
 import {
@@ -40,25 +44,17 @@ type CatalogueProps = {
   contactImages?: string[];
 };
 
-const CARD_WIDTH_DESKTOP = 221;
-const CARD_HEIGHT_DESKTOP = 324;
-const TRACK_HEIGHT_DESKTOP = 430;
-const MAX_VISIBLE_OFFSET = 2;
+const {
+  cardWidth: CARD_WIDTH_DESKTOP,
+  cardHeight: CARD_HEIGHT_DESKTOP,
+  gapDesktop: GAP_DESKTOP,
+  trackHeightDesktop: TRACK_HEIGHT_DESKTOP,
+  maxVisibleOffset: MAX_VISIBLE_OFFSET,
+} = HOME_CATALOGUE_CAROUSEL_FIGMA;
+
 const DRAG_THRESHOLD = 60;
 const AUTOPLAY_MS = 5500;
-
-/** Uniform resting appearance for every visible slide */
-function getCoverflowStyle() {
-  return {
-    rotateY: 0,
-    rotateZ: 0,
-    scale: 1,
-    z: 0,
-    y: 0,
-    opacity: 1,
-    blur: 0,
-  };
-}
+const CARD_TRACK_INSET_TOP = 8;
 
 const CARD_HOVER_SHADOW = "0 22px 48px rgba(70,40,50,0.24)";
 const CARD_REST_SHADOW = "0 12px 32px rgba(70,40,50,0.14)";
@@ -87,10 +83,10 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
     length > HOME_CAROUSEL_DEFAULT_ACTIVE ? HOME_CAROUSEL_DEFAULT_ACTIVE : 0,
   );
   const [paused, setPaused] = useState(false);
-  const [cardWidth, setCardWidth] = useState(CARD_WIDTH_DESKTOP);
-  const [cardHeight, setCardHeight] = useState(CARD_HEIGHT_DESKTOP);
-  const [trackHeight, setTrackHeight] = useState(TRACK_HEIGHT_DESKTOP);
-  const [step, setStep] = useState(CARD_WIDTH_DESKTOP + 56);
+  const [cardWidth, setCardWidth] = useState<number>(CARD_WIDTH_DESKTOP);
+  const [cardHeight, setCardHeight] = useState<number>(CARD_HEIGHT_DESKTOP);
+  const [trackHeight, setTrackHeight] = useState<number>(TRACK_HEIGHT_DESKTOP);
+  const [step, setStep] = useState<number>(CARD_WIDTH_DESKTOP + GAP_DESKTOP);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedDownloadUrl, setSelectedDownloadUrl] = useState("");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -104,13 +100,10 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
     if (!track) return null;
 
     const rect = track.getBoundingClientRect();
-    const cardTop = rect.top + 16;
-    const cardBottom = cardTop + cardHeight;
-    if (clientY < cardTop || clientY > cardBottom) return null;
-
+    const baseTop = rect.top + CARD_TRACK_INSET_TOP;
     const centerX = rect.left + rect.width / 2;
     const relX = clientX - centerX;
-    const half = cardWidth / 2;
+    const reduced = !!prefersReducedMotion;
 
     let bestIndex: number | null = null;
     let bestDist = Infinity;
@@ -119,8 +112,14 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
       const offset = getRelativeOffset(index, active, length);
       if (Math.abs(offset) > MAX_VISIBLE_OFFSET) continue;
 
-      const cardCenterX = offset * step;
-      const dist = Math.abs(relX - cardCenterX);
+      const layout = catalogueCarouselDiskLayout(offset, step, reduced);
+      const half = (cardWidth * layout.scale) / 2;
+      const cardTop = baseTop + layout.y;
+      const cardBottom = cardTop + cardHeight * layout.scale;
+
+      if (clientY < cardTop || clientY > cardBottom) continue;
+
+      const dist = Math.abs(relX - layout.x);
       if (dist <= half && dist < bestDist) {
         bestDist = dist;
         bestIndex = index;
@@ -158,26 +157,26 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
-      let width = CARD_WIDTH_DESKTOP;
-      let height = CARD_HEIGHT_DESKTOP;
-      let track = TRACK_HEIGHT_DESKTOP;
-      let gap = 68;
+      let width: number = CARD_WIDTH_DESKTOP;
+      let height: number = CARD_HEIGHT_DESKTOP;
+      let track: number = TRACK_HEIGHT_DESKTOP;
+      let gap: number = GAP_DESKTOP;
 
       if (w < 380) {
         width = Math.min(156, w - 56);
-        height = 228;
-        track = 300;
-        gap = 28;
+        height = Math.round(width * (CARD_HEIGHT_DESKTOP / CARD_WIDTH_DESKTOP));
+        track = 268;
+        gap = 24;
       } else if (w < 640) {
         width = 176;
-        height = 258;
-        track = 340;
-        gap = 36;
+        height = Math.round(width * (CARD_HEIGHT_DESKTOP / CARD_WIDTH_DESKTOP));
+        track = 300;
+        gap = 32;
       } else if (w < 1024) {
         width = 198;
-        height = 290;
-        track = 390;
-        gap = 52;
+        height = Math.round(width * (CARD_HEIGHT_DESKTOP / CARD_WIDTH_DESKTOP));
+        track = 328;
+        gap = 44;
       }
 
       setCardWidth(width);
@@ -236,11 +235,11 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
 
   const springTransition = prefersReducedMotion
     ? { duration: 0.2 }
-    : { type: "spring" as const, stiffness: 210, damping: 28, mass: 0.85 };
+    : { type: "spring" as const, stiffness: 220, damping: 30, mass: 0.82 };
 
   return (
     <>
-      <section id="catalogue" className={`bg-transparent ${SITE_SECTION_PADDING_Y}`}>
+      <section id="catalogue" className={`overflow-x-clip bg-transparent ${SITE_SECTION_PADDING_Y}`}>
         <div className={CATALOGUE_SECTION_SHELL}>
           <div className={CATALOGUE_CONTENT_WIDTH}>
             <SectionHeading
@@ -248,158 +247,158 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
               subtitle={t("catalogueSubtitle")}
               className={SECTION_HEADING_WIDE}
             />
-          </div>
 
-          <div
-            ref={trackRef}
-            role="region"
-            aria-roledescription="carousel"
-            aria-label={t("catalogueAria")}
-            tabIndex={0}
-            className="relative mt-4 w-full min-w-0 cursor-grab overflow-x-hidden overflow-y-visible bg-transparent outline-none focus-visible:outline-none active:cursor-grabbing md:mt-8 [@media(hover:hover)]:cursor-grab"
-            style={{ height: trackHeight, perspective: Math.min(1400, trackHeight * 3.2) }}
-            onMouseEnter={() => setPaused(true)}
-            onMouseLeave={() => {
-              setPaused(false);
-              hoverLockedRef.current = true;
-              setHoveredIndex(null);
-            }}
-            onPointerDown={(e) => {
-              if (e.pointerType === "mouse") {
-                pointerDownRef.current = { x: e.clientX, y: e.clientY };
-              }
-            }}
-            onPointerMove={(e) => {
-              if (e.pointerType !== "mouse") return;
-              hoverLockedRef.current = false;
-              updateHoverFromPointer(e.clientX, e.clientY);
-            }}
-            onPointerLeave={(e) => {
-              if (e.pointerType === "mouse") {
-                setHoveredIndex(null);
-                pointerDownRef.current = null;
-              }
-            }}
-            onPointerUp={(e) => {
-              if (e.button !== 0) return;
-              const start = pointerDownRef.current;
-              pointerDownRef.current = null;
-              if (start) {
-                const moved = Math.hypot(e.clientX - start.x, e.clientY - start.y);
-                if (moved > 8) return;
-              }
-              const hit = hitTestCatalogueIndex(e.clientX, e.clientY);
-              if (hit === null) return;
-              const offset = getRelativeOffset(hit, active, length);
-              if (offset !== 0) goTo(hit);
-            }}
-            onKeyDown={handleKeyDown}
-          >
-            <motion.div
-              className="relative mx-auto h-full w-full touch-pan-y overflow-visible"
-              style={{ transformStyle: "preserve-3d" }}
-              drag="x"
-              dragElastic={0.1}
-              dragConstraints={{ left: 0, right: 0 }}
-              dragMomentum={false}
-              onDragStart={() => setPaused(true)}
-              onDragEnd={handleDragEnd}
-            >
-              {CATALOGUES.map((item, index) => {
-                const offset = getRelativeOffset(index, active, length);
-                if (Math.abs(offset) > MAX_VISIBLE_OFFSET) return null;
+            <div className="mt-4 overflow-hidden md:mt-6">
+              <div
+                ref={trackRef}
+                role="region"
+                aria-roledescription="carousel"
+                aria-label={t("catalogueAria")}
+                tabIndex={0}
+                className="relative mx-auto w-full min-w-0 max-w-[min(100%,1584px)] cursor-grab overflow-hidden bg-transparent outline-none focus-visible:outline-none active:cursor-grabbing [@media(hover:hover)]:cursor-grab"
+                style={{ height: trackHeight }}
+                onMouseEnter={() => setPaused(true)}
+                onMouseLeave={() => {
+                  setPaused(false);
+                  hoverLockedRef.current = true;
+                  setHoveredIndex(null);
+                }}
+                onPointerDown={(e) => {
+                  if (e.pointerType === "mouse") {
+                    pointerDownRef.current = { x: e.clientX, y: e.clientY };
+                  }
+                }}
+                onPointerMove={(e) => {
+                  if (e.pointerType !== "mouse") return;
+                  hoverLockedRef.current = false;
+                  updateHoverFromPointer(e.clientX, e.clientY);
+                }}
+                onPointerLeave={(e) => {
+                  if (e.pointerType === "mouse") {
+                    setHoveredIndex(null);
+                    pointerDownRef.current = null;
+                  }
+                }}
+                onPointerUp={(e) => {
+                  if (e.button !== 0) return;
+                  const start = pointerDownRef.current;
+                  pointerDownRef.current = null;
+                  if (start) {
+                    const moved = Math.hypot(e.clientX - start.x, e.clientY - start.y);
+                    if (moved > 8) return;
+                  }
+                  const hit = hitTestCatalogueIndex(e.clientX, e.clientY);
+                  if (hit === null) return;
+                  const offset = getRelativeOffset(hit, active, length);
+                  if (offset !== 0) goTo(hit);
+                }}
+                onKeyDown={handleKeyDown}
+              >
+                <motion.div
+                  className="relative mx-auto h-full w-full touch-pan-y overflow-hidden"
+                  drag="x"
+                  dragElastic={0.08}
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragMomentum={false}
+                  onDragStart={() => setPaused(true)}
+                  onDragEnd={handleDragEnd}
+                >
+                  {CATALOGUES.map((item, index) => {
+                    const offset = getRelativeOffset(index, active, length);
+                    if (Math.abs(offset) > MAX_VISIBLE_OFFSET) return null;
 
-                const isCenter = offset === 0;
-                const style = getCoverflowStyle();
-                const isHovered = hoveredIndex === index;
-                const displayScale = isHovered && !prefersReducedMotion ? 1.05 : 1;
+                    const isCenter = offset === 0;
+                    const layout = catalogueCarouselDiskLayout(offset, step, !!prefersReducedMotion);
+                    const isHovered = hoveredIndex === index;
+                    const hoverBoost = isHovered && !prefersReducedMotion ? 1.04 : 1;
+                    const displayScale = layout.scale * hoverBoost;
 
-                return (
-                  <motion.div
-                    key={item.id}
-                    data-catalogue-card
-                    tabIndex={-1}
-                    role={isCenter ? undefined : "presentation"}
-                    onKeyDown={(e) => {
-                      if (isCenter) return;
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        goTo(index);
-                      }
-                    }}
-                    aria-label={`Show catalogue ${item.title}${isCenter ? " (current)" : ""}`}
-                    aria-current={isCenter}
-                    className="absolute left-1/2 top-4 cursor-default bg-transparent p-0 outline-none pointer-events-none"
-                    style={{
-                      width: cardWidth,
-                      height: cardHeight,
-                      marginLeft: -cardWidth / 2,
-                      borderRadius: "6px 24px 24px 6px",
-                      overflow: "hidden",
-                      borderLeft: "4.6px solid #251B1E",
-                      boxShadow: isHovered ? CARD_HOVER_SHADOW : CARD_REST_SHADOW,
-                      transformOrigin: "center center",
-                      transformStyle: "preserve-3d",
-                      backfaceVisibility: "hidden",
-                      willChange: "transform, filter, opacity",
-                    }}
-                    initial={false}
-                    animate={{
-                      x: offset * step,
-                      y: style.y,
-                      z: style.z,
-                      rotateY: 0,
-                      rotateZ: 0,
-                      scale: displayScale,
-                      zIndex: 10 + (isHovered ? 5 : 0) - Math.abs(offset),
-                      filter: "none",
-                      opacity: style.opacity,
-                    }}
-                    transition={springTransition}
-                  >
-                    <img
-                      src={item.image}
-                      alt=""
-                      className="pointer-events-none absolute inset-0 h-full w-full scale-[1.04] object-cover object-center"
-                      draggable={false}
-                    />
+                    return (
+                      <motion.div
+                        key={item.id}
+                        data-catalogue-card
+                        tabIndex={-1}
+                        role={isCenter ? undefined : "presentation"}
+                        onKeyDown={(e) => {
+                          if (isCenter) return;
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            goTo(index);
+                          }
+                        }}
+                        aria-label={`Show catalogue ${item.title}${isCenter ? " (current)" : ""}`}
+                        aria-current={isCenter}
+                        className="absolute left-1/2 cursor-default bg-transparent p-0 outline-none pointer-events-none"
+                        style={{
+                          top: CARD_TRACK_INSET_TOP,
+                          width: cardWidth,
+                          height: cardHeight,
+                          marginLeft: -cardWidth / 2,
+                          borderRadius: "6px 24px 24px 6px",
+                          overflow: "hidden",
+                          borderLeft: "4.6px solid #251B1E",
+                          boxShadow: isHovered ? CARD_HOVER_SHADOW : CARD_REST_SHADOW,
+                          transformOrigin: "center center",
+                          willChange: "transform, filter, opacity",
+                        }}
+                        initial={false}
+                        animate={{
+                          x: layout.x,
+                          y: layout.y,
+                          rotateY: 0,
+                          rotateZ: 0,
+                          scale: displayScale,
+                          zIndex: 40 - Math.abs(offset) * 8 + (isHovered ? 4 : 0),
+                          filter: layout.blur > 0 ? `blur(${layout.blur}px)` : "none",
+                          opacity: layout.opacity,
+                        }}
+                        transition={springTransition}
+                      >
+                        <img
+                          src={item.image}
+                          alt=""
+                          className="pointer-events-none absolute inset-0 h-full w-full scale-[1.04] object-cover object-center"
+                          draggable={false}
+                        />
 
-                    <CatalogueBrochureFace
-                      year="2026"
-                      room={item.room}
-                      variant="carousel"
-                      metrics={{ width: cardWidth, height: cardHeight }}
-                      downloadInteractive
-                      className="pointer-events-none [&_button]:pointer-events-auto"
-                      onDownload={(e) => {
-                        e.stopPropagation();
-                        openDownload(item);
-                      }}
-                    />
-                  </motion.div>
-                );
-              })}
-            </motion.div>
-          </div>
+                        <CatalogueBrochureFace
+                          year="2026"
+                          room={item.room}
+                          variant="carousel"
+                          metrics={{ width: cardWidth, height: cardHeight }}
+                          downloadInteractive
+                          className="pointer-events-none [&_button]:pointer-events-auto"
+                          onDownload={(e) => {
+                            e.stopPropagation();
+                            openDownload(item);
+                          }}
+                        />
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              </div>
 
-          <div className="mt-4 flex items-center justify-center gap-4 pb-2">
-            <button
-              type="button"
-              aria-label={t("cataloguePrev")}
-              onClick={prev}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#c9a4ab] text-[#6b3d48] transition hover:scale-105 hover:bg-[#b88f97] active:scale-95"
-            >
-              <ChevronLeft size={20} strokeWidth={2.2} />
-            </button>
+              <div className="mt-3 flex items-center justify-center gap-3 pb-1">
+                <button
+                  type="button"
+                  aria-label={t("cataloguePrev")}
+                  onClick={prev}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#c9a4ab] text-[#6b3d48] transition hover:scale-105 hover:bg-[#b88f97] active:scale-95"
+                >
+                  <ChevronLeft size={20} strokeWidth={2.2} />
+                </button>
 
-            <button
-              type="button"
-              aria-label={t("catalogueNext")}
-              onClick={next}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#c9a4ab] text-[#6b3d48] transition hover:scale-105 hover:bg-[#b88f97] active:scale-95"
-            >
-              <ChevronRight size={20} strokeWidth={2.2} />
-            </button>
+                <button
+                  type="button"
+                  aria-label={t("catalogueNext")}
+                  onClick={next}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#c9a4ab] text-[#6b3d48] transition hover:scale-105 hover:bg-[#b88f97] active:scale-95"
+                >
+                  <ChevronRight size={20} strokeWidth={2.2} />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
