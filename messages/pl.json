@@ -59,7 +59,18 @@
     "showcaseTitle": "Realizacje",
     "showcaseDesc": "Przeglądaj realizacje domów i projektów komercyjnych",
     "qualityTitle": "Obsługa posprzedażowa",
-    "qualityDesc": "Obsługa posprzedażowa i specyfikacja gwarancji"
+    "qualityDesc": "Obsługa posprzedażowa i specyfikacja gwarancji",
+    "searchContent": "Z serwisu",
+    "searchLoading": "Wyszukiwanie…",
+    "searchPartialError": "Nie udało się załadować wszystkich wyników. Linki do stron nadal działają.",
+    "typePage": "Strona",
+    "typeBlog": "Blog",
+    "typeShowcase": "Realizacja",
+    "typeInterior": "Wnętrze",
+    "typeProduct": "Produkt",
+    "typeCatalogue": "Katalog",
+    "typeTeam": "Zespół",
+    "typeFaq": "FAQ"
   },
   "footer": {
     "defaultBio": "Przekształcamy domy dzięki przemyślanym wnętrzom dopasowanym do Twojego stylu życia i wizji.",

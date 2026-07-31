@@ -3,6 +3,7 @@ import { getLocaleOrDefault } from "./i18n/messageCatalog";
 import { hasLocalizedMap, pickLocalized, pickSiteCopy } from "./i18n/pickLocalized";
 import type { Locale } from "./i18n/routing";
 import type { ApiProject, HomeData, SiteBlock, SiteContent } from "./siteTypes";
+import type { SearchApiResponse } from "./searchTypes";
 
 export type { ApiProject, SiteContent, HomeData };
 
@@ -505,4 +506,21 @@ export async function fetchShowcases(locale?: Locale) {
   } catch {
     return null; // null = use hardcoded fallback
   }
+}
+
+export async function fetchSearch(
+  query: string,
+  locale?: Locale,
+  signal?: AbortSignal,
+): Promise<SearchApiResponse> {
+  const q = encodeURIComponent(query.trim());
+  const res = await fetch(withLocale(`${API_URL}/search?q=${q}&limit=12`, locale), {
+    headers: localeHeaders(locale),
+    signal,
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    throw new Error("Search failed");
+  }
+  return res.json() as Promise<SearchApiResponse>;
 }

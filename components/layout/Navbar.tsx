@@ -19,7 +19,10 @@ import {
   NavLanguageOption,
 } from "@/components/layout/NavDropdown";
 import { getNavDropdownSubtitle } from "@/components/layout/navDropdownMeta";
+import NavSearchResults from "@/components/layout/NavSearchResults";
+import { useSiteSearch } from "@/hooks/useSiteSearch";
 import { locales, type Locale } from "@/lib/i18n/routing";
+import type { SearchResultType } from "@/lib/searchTypes";
 import { useNavBackdropTone } from "@/hooks/useNavBackdropTone";
 
 type NavItem = {
@@ -34,6 +37,17 @@ type SearchPage = {
   title: string;
   href: string;
   description: string;
+};
+
+const SEARCH_TYPE_KEYS: Record<SearchResultType, "typePage" | "typeBlog" | "typeShowcase" | "typeInterior" | "typeProduct" | "typeCatalogue" | "typeTeam" | "typeFaq"> = {
+  page: "typePage",
+  blog: "typeBlog",
+  showcase: "typeShowcase",
+  interior: "typeInterior",
+  product: "typeProduct",
+  catalogue: "typeCatalogue",
+  team: "typeTeam",
+  faq: "typeFaq",
 };
 
 const LANGUAGE_META: Record<Locale, { flag: string }> = {
@@ -164,6 +178,7 @@ function useSearchablePages(): SearchPage[] {
 
 export default function Navbar({ overlayHero = false }: { overlayHero?: boolean }) {
   const t = useTranslations("nav");
+  const tSearch = useTranslations("search");
   const tDrop = useTranslations("navDropdown");
   const locale = useLocale() as Locale;
   const pathname = usePathname();
@@ -179,6 +194,11 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   const [searchHover, setSearchHover] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [query, setQuery] = useState("");
+  const { grouped, loading, fetchError, apiEligible, showEmpty } = useSiteSearch(
+    query,
+    searchablePages,
+    locale,
+  );
   const navRef = useRef<HTMLElement>(null);
   const overDarkBackdrop = useNavBackdropTone(navRef);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -203,15 +223,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   const navMenuSection = (itemId: keyof typeof NAV_MENU_CONFIG) =>
     t(NAV_MENU_CONFIG[itemId].sectionKey);
 
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return searchablePages.slice(0, 5);
-    return searchablePages.filter(
-      (page) =>
-        page.title.toLowerCase().includes(q) ||
-        page.description.toLowerCase().includes(q),
-    );
-  }, [query, searchablePages]);
+  const searchTypeLabel = (type: SearchResultType) => tSearch(SEARCH_TYPE_KEYS[type]);
 
   const showResults = searchFocused || searchHover || query.length > 0;
 
@@ -263,10 +275,10 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
 
   useEffect(() => {
     if (!showResults) return;
-    results.forEach((page) => {
-      router.prefetch(page.href);
+    [...grouped.pages, ...grouped.content].forEach((hit) => {
+      router.prefetch(hit.href);
     });
-  }, [showResults, results, router]);
+  }, [showResults, grouped.pages, grouped.content, router]);
 
   useEffect(() => {
     if (!mobileOpen) {
@@ -313,6 +325,23 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
     setMobileOpen(false);
     setOpenMenu(null);
   }
+
+  const searchResultsProps = {
+    pages: grouped.pages,
+    content: grouped.content,
+    loading,
+    fetchError,
+    apiEligible,
+    showEmpty,
+    query: query.trim(),
+    pagesSectionLabel: t("searchPages"),
+    contentSectionLabel: tSearch("searchContent"),
+    loadingLabel: tSearch("searchLoading"),
+    partialErrorLabel: tSearch("searchPartialError"),
+    emptyLabel: t("noSearchResults", { query: query.trim() }),
+    typeLabel: searchTypeLabel,
+    onNavigate: closeSearch,
+  };
 
   function openDropdown(id: string) {
     if (closeTimerRef.current) {
@@ -493,38 +522,9 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
             </div>
 
             {showResults && (searchFocused || query) && (
-              <NavDropdownPanel align="right" className="w-[300px]">
-                <NavDropdownSectionLabel>{t("searchPages")}</NavDropdownSectionLabel>
-                <NavDropdownBody className="py-1">
-                  {results.length > 0 ? (
-                    <ul
-                      className="max-h-64 overflow-y-auto overscroll-y-contain [-ms-overflow-style:auto] [scrollbar-width:thin]"
-                      data-lenis-prevent
-                    >
-                      {results.map((page) => (
-                        <li key={page.href + page.title}>
-                          <Link
-                            href={page.href}
-                            prefetch
-                            onClick={closeSearch}
-                            className="group relative block px-5 py-2.5 transition-all duration-300 hover:bg-[#f7f1f2]/90 hover:pl-[22px]"
-                          >
-                            <span className="absolute left-0 top-1/2 h-0 w-[3px] -translate-y-1/2 rounded-r-full bg-maroon transition-all duration-300 group-hover:h-[55%]" />
-                            <span className="block font-outfit text-[14px] font-medium text-ink transition-colors group-hover:text-maroon">
-                              {page.title}
-                            </span>
-                            <span className="mt-0.5 block font-outfit text-[12px] text-muted">
-                              {page.description}
-                            </span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="px-5 py-6 text-center font-outfit text-sm text-muted">
-                      {t("noSearchResults", { query })}
-                    </p>
-                  )}
+              <NavDropdownPanel align="right" className="w-[min(100vw-2rem,320px)]">
+                <NavDropdownBody>
+                  <NavSearchResults {...searchResultsProps} variant="dropdown" />
                 </NavDropdownBody>
               </NavDropdownPanel>
             )}
@@ -615,31 +615,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
             </span>
           </div>
 
-          {query && (
-            <ul
-              className="mb-4 max-h-64 overflow-y-auto overscroll-y-contain rounded-2xl border border-maroon/10 bg-white [-ms-overflow-style:auto] [scrollbar-width:thin]"
-              data-lenis-prevent
-            >
-              {results.map((page) => (
-                <li key={page.href + page.title}>
-                  <Link
-                    href={page.href}
-                    prefetch
-                    onClick={closeSearch}
-                    className="flex w-full flex-col items-start border-b border-maroon/5 px-4 py-2.5 text-left last:border-0"
-                  >
-                    <span className="text-sm font-medium">{page.title}</span>
-                    <span className="text-xs text-muted">{page.description}</span>
-                  </Link>
-                </li>
-              ))}
-              {!results.length && (
-                <li className="px-4 py-4 text-center text-sm text-muted">
-                  {t("noSearchResults", { query })}
-                </li>
-              )}
-            </ul>
-          )}
+          <NavSearchResults {...searchResultsProps} variant="mobile" />
 
           <ul className="flex flex-col gap-1">
             {navItems.map((item) => {

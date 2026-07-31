@@ -62,7 +62,18 @@
     "showcaseTitle": "Showcase",
     "showcaseDesc": "Browse home case and commercial projects showcase",
     "qualityTitle": "Quality After Sales",
-    "qualityDesc": "After sales service and warranty specifications"
+    "qualityDesc": "After sales service and warranty specifications",
+    "searchContent": "From the site",
+    "searchLoading": "Searching…",
+    "searchPartialError": "Couldn’t load all results. Page links still work.",
+    "typePage": "Page",
+    "typeBlog": "Blog",
+    "typeShowcase": "Showcase",
+    "typeInterior": "Interior",
+    "typeProduct": "Product",
+    "typeCatalogue": "Catalogue",
+    "typeTeam": "Team",
+    "typeFaq": "FAQ"
   },
   "footer": {
     "defaultBio": "Transforming homes with thoughtfully designed interiors tailored to your lifestyle and vision.",
