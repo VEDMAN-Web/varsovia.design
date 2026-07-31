@@ -1,12 +1,5 @@
-import Navbar from "@/components/layout/Navbar";
-import InteriorPageFallback from "@/components/interior/InteriorPageFallback";
+import { InteriorListingRouteSkeleton } from "@/components/ui/skeleton/routeSkeletons";
+
 export default function InteriorLoading() {
-  return (
-    <>
-      <Navbar />
-      <main className="min-h-screen bg-[#f7f3f2]">
-        <InteriorPageFallback />
-      </main>
-    </>
-  );
+  return <InteriorListingRouteSkeleton />;
 }

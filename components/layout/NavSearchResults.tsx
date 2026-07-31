@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { Link } from "@/lib/i18n/navigation";
 import type { SearchHit, SearchResultType } from "@/lib/searchTypes";
+import { SkeletonSearchResults } from "@/components/ui/skeleton";
 
 type NavSearchResultsProps = {
   pages: SearchHit[];
@@ -163,7 +164,7 @@ export default function NavSearchResults({
             </p>
           )}
           {loading && !hasContent ? (
-            <p className="px-5 py-4 font-outfit text-sm text-muted">{loadingLabel}</p>
+            <SkeletonSearchResults rows={4} />
           ) : (
             wrap(
               content.map((hit) =>

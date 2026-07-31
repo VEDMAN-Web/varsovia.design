@@ -10,6 +10,11 @@ import SectionHeading, { SECTION_SUBTITLE_CLASS } from "@/components/ui/SectionH
 import ShowcaseProductCard from "@/components/ui/ShowcaseProductCard";
 import ListingPagination from "@/components/ui/ListingPagination";
 import {
+  SkeletonListingToolbar,
+  SkeletonPagination,
+  SkeletonProductGrid,
+} from "@/components/ui/skeleton";
+import {
   SHOWCASE_LISTING_GRID,
   SHOWCASE_LISTING_GRID_WRAP,
 } from "@/components/ui/showcaseGridShared";
@@ -62,8 +67,8 @@ export default function ProductsListingPageClient() {
   const locale = useLocale();
   const t = useTranslations("productsListing");
   const tCommon = useTranslations("common");
-  const [products, setProducts] = useState<ProductRow[]>(FALLBACK);
-  const [loading, setLoading] = useState(false);
+  const [products, setProducts] = useState<ProductRow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<ProductSort>("all");
   const [sortOpen, setSortOpen] = useState(false);
@@ -86,8 +91,11 @@ export default function ProductsListingPageClient() {
               order: p.order,
             })),
           );
+        } else {
+          setProducts(FALLBACK);
         }
       })
+      .catch(() => setProducts(FALLBACK))
       .finally(() => setLoading(false));
   }, [locale]);
 
@@ -143,66 +151,66 @@ export default function ProductsListingPageClient() {
           subtitleClassName={HERO_SUBTITLE}
         />
 
-        <section className={`${COMPANY_SHELL} mb-6 md:mb-8`}>
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
-            <p className="shrink-0 font-outfit text-[1.0625rem] font-semibold leading-none tabular-nums text-[#1f1f1f] sm:text-[1.125rem] md:text-[1.25rem] lg:text-[1.375rem]">
-              {t("allProducts")}
-              <span className={TOOLBAR_COUNT_CLASS}>({totalItems})</span>
-            </p>
+        {loading ? (
+          <SkeletonListingToolbar />
+        ) : (
+          <section className={`${COMPANY_SHELL} mb-6 md:mb-8`}>
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+              <p className="shrink-0 font-outfit text-[1.0625rem] font-semibold leading-none tabular-nums text-[#1f1f1f] sm:text-[1.125rem] md:text-[1.25rem] lg:text-[1.375rem]">
+                {t("allProducts")}
+                <span className={TOOLBAR_COUNT_CLASS}>({totalItems})</span>
+              </p>
 
-            <div ref={sortRef} className="relative flex w-full items-center gap-2 sm:gap-2.5 lg:w-auto lg:shrink-0">
-              <span className="shrink-0 whitespace-nowrap font-outfit text-[13px] font-medium text-[#1f1f1f] sm:text-[14px] md:text-[15px]">
-                {tCommon("sortBy")}
-              </span>
-              <button
-                type="button"
-                onClick={() => setSortOpen((o) => !o)}
-                className={`${TOOLBAR_PILL} min-w-0 flex-1 justify-between sm:min-w-[112px] sm:flex-none lg:min-w-[128px]`}
-                aria-expanded={sortOpen}
-                aria-haspopup="listbox"
-              >
-                <span className="truncate">{sortLabel}</span>
-                <ChevronDown
-                  size={14}
-                  strokeWidth={2}
-                  className={`shrink-0 text-[#1f1f1f]/70 transition sm:h-[15px] sm:w-[15px] ${sortOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-              {sortOpen && (
-                <div
-                  role="listbox"
-                  className="absolute left-0 top-[calc(100%+6px)] z-20 w-full min-w-[200px] overflow-hidden rounded-[8px] border border-[#d4d4d4] bg-white py-1 shadow-lg sm:left-auto sm:right-0 sm:w-[220px]"
+              <div ref={sortRef} className="relative flex w-full items-center gap-2 sm:gap-2.5 lg:w-auto lg:shrink-0">
+                <span className="shrink-0 whitespace-nowrap font-outfit text-[13px] font-medium text-[#1f1f1f] sm:text-[14px] md:text-[15px]">
+                  {tCommon("sortBy")}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSortOpen((o) => !o)}
+                  className={`${TOOLBAR_PILL} min-w-0 flex-1 justify-between sm:min-w-[112px] sm:flex-none lg:min-w-[128px]`}
+                  aria-expanded={sortOpen}
+                  aria-haspopup="listbox"
                 >
-                  {sortOptions.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      role="option"
-                      aria-selected={sortBy === opt.value}
-                      onClick={() => {
-                        setSortBy(opt.value);
-                        setSortOpen(false);
-                      }}
-                      className={`flex w-full px-3 py-2 text-left font-outfit text-[14px] transition hover:bg-[#f7f1f2] sm:px-4 sm:py-2.5 sm:text-[15px] ${
-                        sortBy === opt.value ? "font-medium text-[#1f1f1f]" : "font-normal text-[#1f1f1f]/80"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+                  <span className="truncate">{sortLabel}</span>
+                  <ChevronDown
+                    size={14}
+                    strokeWidth={2}
+                    className={`shrink-0 text-[#1f1f1f]/70 transition sm:h-[15px] sm:w-[15px] ${sortOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+                {sortOpen && (
+                  <div
+                    role="listbox"
+                    className="absolute left-0 top-[calc(100%+6px)] z-20 w-full min-w-[200px] overflow-hidden rounded-[8px] border border-[#d4d4d4] bg-white py-1 shadow-lg sm:left-auto sm:right-0 sm:w-[220px]"
+                  >
+                    {sortOptions.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        role="option"
+                        aria-selected={sortBy === opt.value}
+                        onClick={() => {
+                          setSortBy(opt.value);
+                          setSortOpen(false);
+                        }}
+                        className={`flex w-full px-3 py-2 text-left font-outfit text-[14px] transition hover:bg-[#f7f1f2] sm:px-4 sm:py-2.5 sm:text-[15px] ${
+                          sortBy === opt.value ? "font-medium text-[#1f1f1f]" : "font-normal text-[#1f1f1f]/80"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         <section ref={gridRef} className={`${COMPANY_SHELL} mb-4 md:mb-6`}>
           {loading ? (
-            <div className={SHOWCASE_LISTING_GRID}>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="aspect-[3/4] animate-pulse rounded-[16px] bg-[#e8e2e0]/80" />
-              ))}
-            </div>
+            <SkeletonProductGrid />
           ) : (
             <div className={SHOWCASE_LISTING_GRID_WRAP}>
               <div className={SHOWCASE_LISTING_GRID}>
@@ -228,7 +236,11 @@ export default function ProductsListingPageClient() {
           )}
         </section>
 
-        {!loading && (
+        {loading ? (
+          <SkeletonPagination
+            className={`${COMPANY_SHELL} flex select-none items-center justify-center gap-1.5 pb-8 pt-2 sm:gap-2 md:pb-12`}
+          />
+        ) : (
           <ListingPagination
             currentPage={currentPage}
             totalPages={totalPages}

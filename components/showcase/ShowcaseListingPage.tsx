@@ -24,6 +24,7 @@ import {
 import { pickLocalized } from "@/lib/i18n/pickLocalized";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 import type { Locale } from "@/lib/i18n/routing";
+import { ShowcaseListingRouteSkeleton } from "@/components/ui/skeleton/routeSkeletons";
 import ListingPagination from "@/components/ui/ListingPagination";
 import { LISTING_PAGE_SIZE, paginateItems } from "@/lib/pagination";
 
@@ -164,7 +165,7 @@ function ShowcaseListingInner() {
 
 export default function ShowcaseListingPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#f7f3f2] pt-[72px]" />}>
+    <Suspense fallback={<ShowcaseListingRouteSkeleton />}>
       <ShowcaseListingInner />
     </Suspense>
   );

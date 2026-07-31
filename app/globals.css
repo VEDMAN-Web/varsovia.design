@@ -163,6 +163,28 @@ body {
   font-family: var(--font-oswald), Georgia, serif;
 }
 
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #e8e0de 0%, #f4eeec 42%, #e8e0de 84%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none;
+    background: #ece4e2;
+  }
+}
+
 .section-pad {
   padding-inline: clamp(1.25rem, 4vw, 2rem);
 }

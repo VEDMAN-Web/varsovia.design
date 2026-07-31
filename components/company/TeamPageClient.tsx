@@ -40,6 +40,7 @@ import type { Locale } from "@/lib/i18n/routing";
 import { resolveTeamMembers, designTools, type TeamMember } from "@/lib/companyData";
 import { resolveMediaUrl, MEDIA } from "@/lib/mediaAssets";
 import ListingPagination from "@/components/ui/ListingPagination";
+import { SkeletonPagination, SkeletonTeamMemberGrid } from "@/components/ui/skeleton";
 import { LISTING_PAGE_SIZE, paginateItems } from "@/lib/pagination";
 
 const TEAM_PORTRAIT_FALLBACK = MEDIA.about[0];
@@ -263,37 +264,46 @@ export default function TeamPageClient() {
         <div className={TEAM_SHELL}>
           <TeamBlock title={t("designTitle")} eyebrow={t("designEyebrow")} body={t("designBody")}>
             <div className={TEAM_MEMBER_GRID}>
-              {loading
-                ? Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className={TEAM_MEMBER_CARD}>
-                      <div className="aspect-[3/4] animate-pulse bg-[#e8e2e0]/80" />
-                      <div className="-mt-10 mx-5 h-[4.5rem] animate-pulse rounded-[8px] bg-[#f0e4e4]/70" />
-                    </div>
-                  ))
-                : designPageItems.map((member, i) => (
-                    <TeamMemberPortraitCard key={member._id} member={member} index={i} />
-                  ))}
+              {loading ? (
+                <SkeletonTeamMemberGrid count={3} />
+              ) : (
+                designPageItems.map((member, i) => (
+                  <TeamMemberPortraitCard key={member._id} member={member} index={i} />
+                ))
+              )}
             </div>
-            <ListingPagination
-              currentPage={designPage}
-              totalPages={designTotalPages}
-              onPageChange={setDesignPage}
-              className="flex select-none items-center justify-center gap-1.5 pb-2 pt-8 sm:gap-2"
-            />
+            {loading ? (
+              <SkeletonPagination className="flex select-none items-center justify-center gap-1.5 pb-2 pt-8 sm:gap-2" />
+            ) : (
+              <ListingPagination
+                currentPage={designPage}
+                totalPages={designTotalPages}
+                onPageChange={setDesignPage}
+                className="flex select-none items-center justify-center gap-1.5 pb-2 pt-8 sm:gap-2"
+              />
+            )}
           </TeamBlock>
 
           <TeamBlock title={t("architectTitle")} eyebrow={t("architectEyebrow")} body={t("architectBody")}>
             <div className={TEAM_MEMBER_GRID}>
-              {architectPageItems.map((member, i) => (
-                <TeamMemberPortraitCard key={member._id} member={member} index={i} />
-              ))}
+              {loading ? (
+                <SkeletonTeamMemberGrid count={3} />
+              ) : (
+                architectPageItems.map((member, i) => (
+                  <TeamMemberPortraitCard key={member._id} member={member} index={i} />
+                ))
+              )}
             </div>
-            <ListingPagination
-              currentPage={architectPage}
-              totalPages={architectTotalPages}
-              onPageChange={setArchitectPage}
-              className="flex select-none items-center justify-center gap-1.5 pb-2 pt-8 sm:gap-2"
-            />
+            {loading ? (
+              <SkeletonPagination className="flex select-none items-center justify-center gap-1.5 pb-2 pt-8 sm:gap-2" />
+            ) : (
+              <ListingPagination
+                currentPage={architectPage}
+                totalPages={architectTotalPages}
+                onPageChange={setArchitectPage}
+                className="flex select-none items-center justify-center gap-1.5 pb-2 pt-8 sm:gap-2"
+              />
+            )}
           </TeamBlock>
 
           <section className="pb-[clamp(0.5rem,2vw,1rem)]">

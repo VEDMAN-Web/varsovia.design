@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { AnimatePresence } from "framer-motion";
 import { useLenis } from "lenis/react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChevronDown, Menu, Search, X } from "lucide-react";
@@ -365,7 +366,21 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   }
 
   function scheduleCloseDropdown() {
-    closeTimerRef.current = setTimeout(() => setOpenMenu(null), 150);
+    closeTimerRef.current = setTimeout(() => setOpenMenu(null), 220);
+  }
+
+  function scheduleLangClose() {
+    closeTimerRef.current = setTimeout(() => setLangOpen(false), 220);
+  }
+
+  function openLangDropdown() {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    setLangOpen(true);
+    setOpenMenu(null);
+    setSearchFocused(false);
   }
 
   function switchLocale(nextLocale: Locale) {
@@ -432,7 +447,9 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
                     >
                       {item.label}
                     </span>
-                    <NavChevron className={`transition-transform ${openMenu === item.id ? "rotate-180" : ""}`} />
+                    <NavChevron
+                      className={`transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${openMenu === item.id ? "rotate-180" : ""}`}
+                    />
                   </button>
                 ) : (
                   <Link href={item.href} className={navLinkClass(active)}>
@@ -446,23 +463,26 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
                   </Link>
                 )}
 
-                {item.hasArrow && openMenu === item.id && item.id === "showcase" && (
-                  <ShowcaseNavDropdown onNavigate={() => setOpenMenu(null)} />
-                )}
-
-                {item.hasArrow &&
-                  openMenu === item.id &&
-                  item.children &&
-                  item.children.length > 0 &&
-                  item.id !== "showcase" && (
-                    <NavMenuDropdown
-                      featured={navMenuFeatured(item.id as keyof typeof NAV_MENU_CONFIG)}
-                      sectionLabel={navMenuSection(item.id as keyof typeof NAV_MENU_CONFIG)}
-                      children={item.children}
-                      onNavigate={() => setOpenMenu(null)}
-                      getSubtitle={navDropSubtitle}
-                    />
+                <AnimatePresence>
+                  {item.hasArrow && openMenu === item.id && item.id === "showcase" && (
+                    <ShowcaseNavDropdown key={`menu-${item.id}`} onNavigate={() => setOpenMenu(null)} />
                   )}
+
+                  {item.hasArrow &&
+                    openMenu === item.id &&
+                    item.children &&
+                    item.children.length > 0 &&
+                    item.id !== "showcase" && (
+                      <NavMenuDropdown
+                        key={`menu-${item.id}`}
+                        featured={navMenuFeatured(item.id as keyof typeof NAV_MENU_CONFIG)}
+                        sectionLabel={navMenuSection(item.id as keyof typeof NAV_MENU_CONFIG)}
+                        children={item.children}
+                        onNavigate={() => setOpenMenu(null)}
+                        getSubtitle={navDropSubtitle}
+                      />
+                    )}
+                </AnimatePresence>
               </li>
             );
           })}
@@ -532,16 +552,22 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
               </button>
             </div>
 
-            {showResults && (searchFocused || query) && (
-              <NavDropdownPanel align="right" className="w-[min(100vw-2rem,320px)]">
-                <NavDropdownBody>
-                  <NavSearchResults {...searchResultsProps} variant="dropdown" />
-                </NavDropdownBody>
-              </NavDropdownPanel>
-            )}
+            <AnimatePresence>
+              {showResults && (searchFocused || query) && (
+                <NavDropdownPanel key="nav-search" align="right" className="w-[min(100vw-2rem,320px)]">
+                  <NavDropdownBody>
+                    <NavSearchResults {...searchResultsProps} variant="dropdown" />
+                  </NavDropdownBody>
+                </NavDropdownPanel>
+              )}
+            </AnimatePresence>
           </div>
 
-          <div className="relative hidden sm:block">
+          <div
+            className="relative hidden sm:block"
+            onMouseEnter={openLangDropdown}
+            onMouseLeave={scheduleLangClose}
+          >
             <button
               type="button"
               className={`${headerBtnBase} w-[110px] gap-[6px] px-[17px] ${
@@ -565,29 +591,31 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
               <span className="whitespace-nowrap">{languageLabel(locale)}</span>
               <NavChevron
                 size={12}
-                className={`text-[#444] transition-transform ${langOpen ? "rotate-180" : ""}`}
+                className={`text-[#444] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${langOpen ? "rotate-180" : ""}`}
               />
             </button>
 
-            {langOpen && (
-              <NavDropdownPanel align="right" className="min-w-[210px]">
-                <NavDropdownSectionLabel>{LANGUAGE_DROPDOWN_LABEL}</NavDropdownSectionLabel>
-                <NavDropdownBody className="py-1">
-                  {locales.map((code) => {
-                    const meta = LANGUAGE_META[code];
-                    return (
-                      <NavLanguageOption
-                        key={code}
-                        flag={meta.flag}
-                        label={languageLabel(code)}
-                        active={locale === code}
-                        onClick={() => switchLocale(code)}
-                      />
-                    );
-                  })}
-                </NavDropdownBody>
-              </NavDropdownPanel>
-            )}
+            <AnimatePresence>
+              {langOpen && (
+                <NavDropdownPanel key="nav-lang" align="right" className="min-w-[210px]">
+                  <NavDropdownSectionLabel>{LANGUAGE_DROPDOWN_LABEL}</NavDropdownSectionLabel>
+                  <NavDropdownBody className="py-1">
+                    {locales.map((code) => {
+                      const meta = LANGUAGE_META[code];
+                      return (
+                        <NavLanguageOption
+                          key={code}
+                          flag={meta.flag}
+                          label={languageLabel(code)}
+                          active={locale === code}
+                          onClick={() => switchLocale(code)}
+                        />
+                      );
+                    })}
+                  </NavDropdownBody>
+                </NavDropdownPanel>
+              )}
+            </AnimatePresence>
           </div>
 
           <Link
