@@ -43,4 +43,16 @@ const contactLimiter = rateLimit({
   message: { message: "Too many contact form submissions. Please try again later." },
 });
 
-module.exports = { globalLimiter, adminLimiter, contactLimiter };
+/**
+ * Site search — GET /api/search
+ * Default: 120 requests per 15 minutes per IP.
+ */
+const searchLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: envInt("RATE_LIMIT_SEARCH_MAX", 120),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many search requests. Please try again shortly." },
+});
+
+module.exports = { globalLimiter, adminLimiter, contactLimiter, searchLimiter };

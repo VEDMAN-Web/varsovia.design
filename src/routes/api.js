@@ -1,7 +1,8 @@
 const express = require("express");
 const adminAuth = require("../middleware/adminAuth");
-const { contactLimiter, adminLimiter } = require("../middleware/rateLimiter");const { validate, schemas } = require("../middleware/validate");
+const { contactLimiter, adminLimiter, searchLimiter } = require("../middleware/rateLimiter");const { validate, schemas } = require("../middleware/validate");
 const ctrl = require("../controllers/apiController");
+const { searchSite } = require("../controllers/searchController");
 
 const router = express.Router();
 
@@ -23,6 +24,8 @@ router.get("/blogs",        ctrl.blogs.list);
 router.get("/blogs/:id",    ctrl.getBlogById);
 router.get("/team",         ctrl.teamMembers.list);
 router.get("/faqs",         ctrl.faqs.list);
+
+router.get("/search", searchLimiter, searchSite);
 
 // ─── Admin routes (x-admin-key required) ──────────────────────────────────────
 router.use(adminAuth);
