@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import SectionHeading from "@/components/ui/SectionHeading";
-import SectionShell, { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
+import SectionShell, { SECTION_HEADING_WIDE, SITE_SECTION_PADDING_Y } from "@/components/ui/SectionShell";
 
 /** Figma logos — transparent PNGs (no tile background). */
 const PARTNER_LOGOS = [
@@ -51,7 +51,7 @@ type Partner = {
 export default function Partners({ partners: _partners }: { partners: Partner[] }) {
   const t = useTranslations("home");
   return (
-    <section id="partners" className="bg-blush py-12 sm:py-16 md:py-20">
+    <section id="partners" className={`bg-blush ${SITE_SECTION_PADDING_Y}`}>
       <SectionShell className="text-center">
         <SectionHeading
           title={t("partnersTitle")}

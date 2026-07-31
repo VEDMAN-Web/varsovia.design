@@ -17,10 +17,10 @@ export const SECTION_TITLE_CLASS =
   "font-display px-1 text-balance break-words text-[clamp(1.35rem,3.4vw,3.125rem)] font-normal uppercase tracking-[0.06em] text-[#6a414d] sm:tracking-[0.1em]";
 
 export const SECTION_SUBTITLE_CLASS =
-  "font-outfit mx-auto mt-4 max-w-[68rem] break-words px-2 text-[clamp(0.8125rem,2.4vw,1.375rem)] font-normal uppercase tracking-[0.14em] text-[#cf5374] sm:mt-[30px] sm:tracking-[0.3em]";
+  "font-outfit mx-auto mt-4 max-w-[68rem] break-words px-2 text-[clamp(0.75rem,2vw,1.25rem)] font-normal uppercase tracking-[0.14em] text-[#cf5374] sm:mt-[30px] sm:tracking-[0.28em]";
 
 export const SECTION_SUBTITLE_SENTENCE_CLASS =
-  "font-outfit mx-auto mt-[30px] max-w-[68rem] px-2 text-[clamp(0.875rem,1.6vw,1.375rem)] font-normal normal-case tracking-normal text-[#cf5374]";
+  "font-outfit mx-auto mt-[30px] max-w-[68rem] px-2 text-[clamp(0.8125rem,1.6vw,1.25rem)] font-normal normal-case tracking-normal text-[#cf5374]";
 
 export const SECTION_LABEL_CLASS =
   "font-outfit text-[10px] font-semibold uppercase tracking-[0.18em] text-[#cf5374]";
@@ -43,13 +43,13 @@ export const PAGE_ARTICLE_TITLE_CLASS =
   "font-outfit text-[clamp(1.375rem,2.6vw,2.125rem)] font-semibold leading-[1.35] tracking-[-0.01em] text-[#6a414d]";
 
 export const SECTION_BLOCK_CLASS =
-  "mx-auto flex min-h-[84px] w-full flex-col items-center justify-center px-2 py-7 sm:min-h-[100px] sm:px-4 sm:py-6 md:min-h-[130px] md:h-[177px] md:px-6 md:py-0";
+  "mx-auto flex w-full min-h-[84px] flex-col items-center justify-center px-2 pt-10 pb-8 sm:min-h-[100px] sm:px-4 sm:pt-12 sm:pb-9 md:min-h-[200px] md:px-6 md:pt-14 md:pb-9";
 
 export const SECTION_BLOCK_COMPACT_CLASS =
-  "mx-auto flex min-h-[72px] w-full flex-col items-center justify-center px-3 py-6 sm:min-h-[88px] sm:px-6 sm:py-8 md:min-h-[100px] md:py-10";
+  "mx-auto flex w-full min-h-[72px] flex-col items-center justify-center px-3 pt-10 pb-8 sm:min-h-[88px] sm:px-6 sm:pt-12 sm:pb-9 md:min-h-[200px] md:pt-14 md:pb-9";
 
 export const SECTION_BLOCK_EXPANDED_CLASS =
-  "mx-auto flex w-full flex-col items-center px-6 py-12 text-center sm:px-8 md:px-10 md:py-16 lg:px-14";
+  "mx-auto flex w-full flex-col items-center px-6 pt-14 pb-8 text-center sm:px-8 md:px-10 md:pt-[4.5rem] md:pb-10 lg:px-14";
 
 export const SECTION_BLOCK_GRADIENT =
   "linear-gradient(180deg, rgba(130,94,105,0.22) 0%, rgba(244,235,236,0) 100%)";

@@ -42,6 +42,14 @@ const LANGUAGE_META: Record<Locale, { flag: string }> = {
   pl: { flag: "/icon/flag-polish.svg" },
 };
 
+/** Language switcher labels stay English regardless of active locale */
+const LANGUAGE_DROPDOWN_LABEL = "Language";
+const LANGUAGE_NAME_EN: Record<Locale, string> = {
+  en: "English",
+  th: "Thai",
+  pl: "Polish",
+};
+
 function NavChevron({ className = "", size = 16 }: { className?: string; size?: number }) {
   return (
     <ChevronDown
@@ -180,11 +188,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
 
   const navDropSubtitle = (href: string) => getNavDropdownSubtitle(href, tDrop);
 
-  const languageLabel = (code: Locale) => {
-    if (code === "th") return t("thai");
-    if (code === "pl") return t("polish");
-    return t("english");
-  };
+  const languageLabel = (code: Locale) => LANGUAGE_NAME_EN[code];
 
   const navMenuFeatured = (itemId: keyof typeof NAV_MENU_CONFIG) => {
     const cfg = NAV_MENU_CONFIG[itemId];
@@ -536,7 +540,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
 
             {langOpen && (
               <NavDropdownPanel align="right" className="min-w-[210px]">
-                <NavDropdownSectionLabel>{t("language")}</NavDropdownSectionLabel>
+                <NavDropdownSectionLabel>{LANGUAGE_DROPDOWN_LABEL}</NavDropdownSectionLabel>
                 <NavDropdownBody className="py-1">
                   {locales.map((code) => {
                     const meta = LANGUAGE_META[code];

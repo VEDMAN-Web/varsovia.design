@@ -109,8 +109,7 @@ export default function ContactInquiryForm({
     const errors = validateContactForm(values, phoneConfig);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      setStatus("error");
-      setMessage(t("fixErrors"));
+      setMessage("");
       return;
     }
 

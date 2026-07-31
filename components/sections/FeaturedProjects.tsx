@@ -5,7 +5,7 @@ import { Link } from "@/lib/i18n/navigation";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import SectionHeading from "@/components/ui/SectionHeading";
-import SectionShell, { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
+import SectionShell, { SECTION_HEADING_WIDE, SITE_SECTION_PADDING_Y } from "@/components/ui/SectionShell";
 import { fallbackHomeData } from "@/lib/fallbackData";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 
@@ -87,7 +87,7 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
   }, [active, displayProjects.length, hovered]);
 
   return (
-    <section id="projects" className="bg-transparent py-14 sm:py-20 md:py-28">
+    <section id="projects" className={`bg-transparent ${SITE_SECTION_PADDING_Y}`}>
       <SectionShell>
         <SectionHeading
           title={t("featuredTitle")}

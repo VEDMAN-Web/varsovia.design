@@ -1,6 +1,6 @@
 import { resolveMediaUrl, resolveMediaUrls, MEDIA } from "./mediaAssets";
 import { getLocaleOrDefault } from "./i18n/messageCatalog";
-import { pickLocalized } from "./i18n/pickLocalized";
+import { hasLocalizedMap, pickLocalized, pickSiteCopy } from "./i18n/pickLocalized";
 import type { Locale } from "./i18n/routing";
 import type { ApiProject, HomeData, SiteBlock, SiteContent } from "./siteTypes";
 
@@ -25,17 +25,46 @@ function pickBlock(value: unknown, fallback: SiteBlock, locale?: Locale): SiteBl
   const loc = getLocaleOrDefault(locale);
   if (value && typeof value === "object") {
     const block = value as Record<string, unknown>;
-    const title = pickLocalized(block.title, loc) || String(pickString(block.title, fallback.title));
-    const text = pickLocalized(block.text, loc) || String(pickString(block.text, fallback.text));
-    return { title, text };
+    return {
+      title: pickSiteCopy(block.title, loc, String(fallback.title ?? "")),
+      text: pickSiteCopy(block.text, loc, String(fallback.text ?? "")),
+    };
   }
   return fallback;
 }
 
 function pickLocalizedString(value: unknown, locale: Locale | undefined, fallback: string | undefined): string {
   const loc = getLocaleOrDefault(locale);
-  const fb = fallback && fallback.trim() ? fallback : "";
-  return pickLocalized(value, loc) || (typeof value === "string" && value.trim() ? value : fb);
+  return pickSiteCopy(value, loc, fallback && fallback.trim() ? fallback : "");
+}
+
+type ProcessStep = { step: string; title: string; text: string };
+
+function mergeProcessSteps(
+  raw: unknown,
+  locale: Locale | undefined,
+  fb: ProcessStep[],
+): ProcessStep[] {
+  if (!Array.isArray(raw) || raw.length === 0) return fb;
+  const loc = getLocaleOrDefault(locale);
+
+  if (loc !== "en") {
+    const apiHasLocaleFields = raw.some((row) => {
+      const item = row as Record<string, unknown>;
+      return hasLocalizedMap(item.title, loc) || hasLocalizedMap(item.text, loc);
+    });
+    if (!apiHasLocaleFields) return fb;
+  }
+
+  return raw.map((row, i) => {
+    const item = row as Record<string, unknown>;
+    const fallback = fb[i] ?? fb[0];
+    return {
+      step: String(item.step ?? fallback?.step ?? "01"),
+      title: pickSiteCopy(item.title, loc, fallback?.title ?? ""),
+      text: pickSiteCopy(item.text, loc, fallback?.text ?? ""),
+    };
+  });
 }
 
 async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale): Promise<SiteContent> {
@@ -62,9 +91,15 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
       (data.contactImages as string[])?.length ? (data.contactImages as string[]) : undefined,
       MEDIA.contact,
     ),
-    processSteps: (data.processSteps as SiteContent["processSteps"])?.length
-      ? (data.processSteps as SiteContent["processSteps"])
-      : fb.processSteps,
+    aboutIntro: pickSiteCopy(data.aboutIntro, getLocaleOrDefault(locale), fb.aboutIntro ?? ""),
+    aboutStory: pickSiteCopy(data.aboutStory, getLocaleOrDefault(locale), fb.aboutStory ?? ""),
+    aboutText: pickSiteCopy(data.aboutText, getLocaleOrDefault(locale), fb.aboutText ?? ""),
+    aboutHeroSubtitle: pickSiteCopy(
+      data.aboutHeroSubtitle,
+      getLocaleOrDefault(locale),
+      fb.aboutHeroSubtitle ?? "",
+    ),
+    processSteps: mergeProcessSteps(data.processSteps, locale, fb.processSteps ?? []),
     vision: pickBlock(data.vision, fb.vision as SiteBlock, locale),
     mission: pickBlock(data.mission, fb.mission as SiteBlock, locale),
     values: pickBlock(data.values, fb.values as SiteBlock, locale),

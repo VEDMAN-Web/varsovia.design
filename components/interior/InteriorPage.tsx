@@ -7,6 +7,7 @@ import { ChevronDown } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import FilterPanel from "@/components/interior/FilterPanel";
 import SectionHeading from "@/components/ui/SectionHeading";
+import { SECTION_HEADING_WIDE, SITE_PAGE_HERO_SECTION_PAD } from "@/components/ui/SectionShell";
 import PageShell from "@/components/ui/PageShell";
 import ShowcaseProductCard from "@/components/ui/ShowcaseProductCard";
 import {
@@ -283,8 +284,8 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
 
   return (
     <div className="bg-[#f7f3f2]">
-      <section className="pt-[calc(72px+20px)] sm:pt-[calc(102px+24px)] md:pt-[calc(102px+32px)]">
-        <PageShell>
+      <section className="pt-[72px] sm:pt-[102px]">
+        <PageShell className={SITE_PAGE_HERO_SECTION_PAD}>
           <AnimatePresence mode="wait">
             <motion.div
               key={category}
@@ -298,7 +299,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
                 subtitle={hero.subtitle}
                 titleAs="h1"
                 subtitleSentenceCase
-                className="!max-w-none w-full"
+                className={SECTION_HEADING_WIDE}
               />
             </motion.div>
           </AnimatePresence>

@@ -16,7 +16,7 @@ import {
 import { getRelativeOffset } from "@/lib/carousel";
 import { MEDIA } from "@/lib/mediaAssets";
 import SectionHeading from "@/components/ui/SectionHeading";
-import SectionShell, { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
+import SectionShell, { SECTION_HEADING_WIDE, SITE_SECTION_PADDING_Y } from "@/components/ui/SectionShell";
 
 const STRENGTHS = [
   {
@@ -190,7 +190,7 @@ export default function CoreStrengths() {
   const perspectivePx = 2200 * scale;
 
   return (
-    <section className="bg-transparent py-14 sm:py-16 md:py-20">
+    <section className={`bg-transparent ${SITE_SECTION_PADDING_Y}`}>
       <SectionShell>
       <div className="text-center">
         <SectionHeading

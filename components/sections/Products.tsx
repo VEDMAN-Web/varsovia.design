@@ -8,7 +8,7 @@ import { Link } from "@/lib/i18n/navigation";
 
 import SectionHeading from "@/components/ui/SectionHeading";
 
-import SectionShell, { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
+import SectionShell, { SECTION_HEADING_WIDE, SITE_SECTION_PADDING_Y } from "@/components/ui/SectionShell";
 
 import ShowcaseProductCard from "@/components/ui/ShowcaseProductCard";
 import {
@@ -118,7 +118,7 @@ export default function Products({ products }: ProductsProps) {
 
   return (
 
-    <section id="products" className="bg-[#fdf2f0] py-14 sm:py-20 md:py-28">
+    <section id="products" className={`bg-[#fdf2f0] ${SITE_SECTION_PADDING_Y}`}>
 
       <SectionShell>
 

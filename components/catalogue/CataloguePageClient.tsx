@@ -7,7 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import CatalogueNotebookCard from "@/components/catalogue/CatalogueNotebookCard";
 import DownloadCatalogueModal from "@/components/forms/DownloadCatalogueModal";
 import SectionHeading from "@/components/ui/SectionHeading";
-import { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
+import { SECTION_HEADING_WIDE, SITE_PAGE_HERO_SECTION_PAD } from "@/components/ui/SectionShell";
 import {
   CATALOGUE_CARD_SLOT,
   CATALOGUE_CONTENT_WIDTH,
@@ -90,7 +90,7 @@ export default function CataloguePageClient() {
       <Navbar />
       {/* overflow-x-clip: the hover lift scales cards past the edge column */}
       <main className="bg-cream min-h-screen overflow-x-clip pt-[72px] pb-12 sm:pt-[102px] sm:pb-16 md:pb-24">
-        <div className={`${CATALOGUE_SECTION_SHELL} pt-8 sm:pt-10 md:pt-14`}>
+        <div className={`${CATALOGUE_SECTION_SHELL} ${SITE_PAGE_HERO_SECTION_PAD}`}>
           <div className={CATALOGUE_CONTENT_WIDTH}>
             <SectionHeading
               titleAs="h1"

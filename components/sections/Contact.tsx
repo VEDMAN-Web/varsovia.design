@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import ContactFormPanel from "@/components/forms/ContactFormPanel";
 import SectionHeading from "@/components/ui/SectionHeading";
-import SectionShell, { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
+import SectionShell, { SECTION_HEADING_WIDE, SITE_SECTION_PADDING_Y } from "@/components/ui/SectionShell";
 
 type ContactProps = {
   images: string[];
@@ -13,7 +13,7 @@ type ContactProps = {
 export default function Contact({ images }: ContactProps) {
   const t = useTranslations("home");
   return (
-    <section id="contact" className="bg-cream py-14 sm:py-16 md:pb-28 md:pt-20">
+    <section id="contact" className={`bg-cream ${SITE_SECTION_PADDING_Y}`}>
       <SectionShell>
         <SectionHeading
           title={t("contactTitle")}

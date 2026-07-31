@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getRelativeOffset } from "@/lib/carousel";
 import DownloadCatalogueModal from "@/components/forms/DownloadCatalogueModal";
 import SectionHeading from "@/components/ui/SectionHeading";
-import { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
+import { SECTION_HEADING_WIDE, SITE_SECTION_PADDING_Y } from "@/components/ui/SectionShell";
 import { CATALOGUE_CONTENT_WIDTH, CATALOGUE_SECTION_SHELL } from "@/components/catalogue/catalogueLayoutShared";
 import { catalogueCoverPhoto } from "@/components/catalogue/catalogueMedia";
 import CatalogueBrochureFace from "@/components/catalogue/CatalogueBrochureFace";
@@ -240,7 +240,7 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
 
   return (
     <>
-      <section id="catalogue" className="bg-transparent py-14 sm:py-16 md:py-20">
+      <section id="catalogue" className={`bg-transparent ${SITE_SECTION_PADDING_Y}`}>
         <div className={CATALOGUE_SECTION_SHELL}>
           <div className={CATALOGUE_CONTENT_WIDTH}>
             <SectionHeading

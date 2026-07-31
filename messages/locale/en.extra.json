@@ -56,7 +56,13 @@
     "processTitle": "Our Process",
     "visionTitle": "Our Vision",
     "missionTitle": "Our Mission",
-    "valuesBlockTitle": "Our Values"
+    "valuesBlockTitle": "Our Values",
+    "valuesHeading": "Vision. Mission. Value.",
+    "valuesSubtitle": "The foundation of everything we create.",
+    "processSubtitle": "A seamless journey from vision to reality.",
+    "heroFeaturedAlt": "About Us featured interior",
+    "storyHighlightAria": "Our story highlight {index}",
+    "stepBadge": "STEP {step}"
   },
   "cataloguePage": {
     "heroTitle": "Free Catalogue",

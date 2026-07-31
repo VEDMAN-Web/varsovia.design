@@ -2,6 +2,7 @@ import { COMPANY_EASE } from "@/lib/companyData";
 import {
   SITE_SECTION_HEADING_WIDE,
   SITE_SECTION_SHELL,
+  SITE_PAGE_HERO_SECTION_PAD,
 } from "@/components/ui/layoutShared";
 import {
   PAGE_BODY_LEAD_CLASS,
@@ -35,6 +36,7 @@ export {
   SECTION_BLOCK_GRADIENT,
   SITE_SECTION_SHELL as SECTION_SHELL,
   SITE_SECTION_HEADING_WIDE as SECTION_HEADING_WIDE,
+  SITE_PAGE_HERO_SECTION_PAD as COMPANY_HERO_SECTION_PAD,
 };
 
 /** Same width as Interior pages */

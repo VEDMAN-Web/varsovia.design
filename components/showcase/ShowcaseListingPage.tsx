@@ -13,7 +13,7 @@ import {
   SHOWCASE_SECTION_SHELL,
 } from "@/components/showcase/showcaseLayoutShared";
 import SectionHeading from "@/components/ui/SectionHeading";
-import { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
+import { SECTION_HEADING_WIDE, SITE_PAGE_HERO_SECTION_PAD } from "@/components/ui/SectionShell";
 import { showcaseTabMessageKey } from "@/lib/showcaseTabI18n";
 import {
   SHOWCASE_TABS,
@@ -105,8 +105,8 @@ function ShowcaseListingInner() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-[#f7f3f2] pt-[calc(72px+20px)] pb-16 sm:pt-[calc(102px+24px)] md:pb-24 md:pt-[calc(102px+32px)]">
-        <div className={`${SHOWCASE_SECTION_SHELL} pb-4 md:pb-8`}>
+      <main className="min-h-screen bg-[#f7f3f2] pt-[72px] pb-16 sm:pt-[102px] md:pb-24">
+        <div className={`${SHOWCASE_SECTION_SHELL} ${SITE_PAGE_HERO_SECTION_PAD} pb-4 md:pb-8`}>
           <div className={SHOWCASE_CONTENT_WIDTH}>
             <SectionHeading
               titleAs="h1"

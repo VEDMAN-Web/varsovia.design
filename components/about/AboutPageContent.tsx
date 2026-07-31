@@ -1,18 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { Eye, Flag, Gem, MessagesSquare, PenTool, Hammer, Wrench } from "lucide-react";
+import AboutProcessDesktopTimeline from "@/components/about/AboutProcessDesktopTimeline";
 import { aboutHeroGalleryImages, aboutStoryCollageImages } from "@/lib/companyData";
 import CompanySectionHeading from "@/components/company/CompanySectionHeading";
 import FadeInView from "@/components/company/FadeInView";
 import SectionHeading from "@/components/ui/SectionHeading";
+import FixedBackgroundImage from "@/components/ui/FixedBackgroundImage";
 import {
   COMPANY_BODY,
-  COMPANY_IMAGE_FRAME,
+  COMPANY_HERO_SECTION_PAD,
   COMPANY_SHELL,
   PAGE_BODY_LEAD_CLASS,
   SECTION_BODY_CLASS,
+  SECTION_HEADING_WIDE,
   SUBSECTION_TITLE_CLASS,
 } from "@/components/company/companyLayoutShared";
 
@@ -31,12 +34,38 @@ export type AboutSite = {
   processSteps?: ProcessStep[];
 };
 
-const ICONS = [Eye, Flag, Gem] as const;
-const PROCESS_ICONS = [MessagesSquare, PenTool, Hammer, Wrench] as const;
+/** Same frame as COMPANY_IMAGE_FRAME, on this page's tighter 6px radius */
+const STORY_IMAGE_FRAME =
+  "overflow-hidden rounded-[6px] shadow-[0_8px_24px_rgba(107,44,58,0.02)] border border-[#e5dcd3]/30";
+
+// Connector — mobile timeline
+function TimelineConnectorMobile({ isHovered }: { isHovered: boolean }) {
+  return (
+    <div className="relative z-10 flex items-center justify-center w-[10%] shrink-0">
+      {/* Bold horizontal connector line on mobile */}
+      <div className="relative w-full h-[4px] bg-[#dfc2c6]">
+        {/* Animated colored progress line on hover */}
+        <div
+          className={`absolute top-0 left-0 bg-[#C94A5B] transition-all duration-[350ms] ease-out origin-left h-[4px]
+            ${isHovered ? "w-full" : "w-0"}`}
+        />
+        {/* Circle dot in theme red positioned at the end of the line */}
+        <div
+          className={`absolute w-3 h-3 rounded-full bg-[#C94A5B] transition-transform duration-[350ms] ease-out
+            right-0 top-1/2 -translate-y-1/2 translate-x-1/2
+            ${isHovered ? "scale-[1.25]" : "scale-100"}`}
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function AboutPageContent({ site }: { site?: AboutSite | null }) {
   const t = useTranslations("aboutPage");
   const tSite = useTranslations("siteFallback");
+  const [hoveredProcessIndex, setHoveredProcessIndex] = useState<number | null>(null);
+  const [hoveredStoryIndex, setHoveredStoryIndex] = useState<number | null>(null);
+
   const intro = site?.aboutIntro || site?.aboutText || tSite("aboutIntro");
   const storyText = site?.aboutStory || site?.aboutText || tSite("aboutStory");
   const heroSubtitle = site?.aboutHeroSubtitle || tSite("aboutHeroSubtitle");
@@ -55,80 +84,78 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
     {
       title: site?.vision?.title || t("visionTitle"),
       text: site?.vision?.text || tSite("visionText"),
-      icon: ICONS[0],
+      iconPath: "/vision/visionIcon.png",
     },
     {
       title: site?.mission?.title || t("missionTitle"),
       text: site?.mission?.text || tSite("missionText"),
-      icon: ICONS[1],
+      iconPath: "/vision/missionIcon.png",
     },
     {
       title: site?.values?.title || t("valuesBlockTitle"),
       text: site?.values?.text || tSite("valuesText"),
-      icon: ICONS[2],
+      iconPath: "/vision/valuesIcon.png",
     },
   ];
 
-  const processSteps =
+  const defaultProcessSteps: ProcessStep[] = [
+    { step: "01", title: tSite("process1Title"), text: tSite("process1Text") },
+    { step: "02", title: tSite("process2Title"), text: tSite("process2Text") },
+    { step: "03", title: tSite("process3Title"), text: tSite("process3Text") },
+    { step: "04", title: tSite("process4Title"), text: tSite("process4Text") },
+  ];
+
+  const processStepSource =
     site?.processSteps && site.processSteps.length > 0
-      ? site.processSteps
-      : [
-          { step: "01", title: tSite("process1Title"), text: tSite("process1Text") },
-          { step: "02", title: tSite("process2Title"), text: tSite("process2Text") },
-          { step: "03", title: tSite("process3Title"), text: tSite("process3Text") },
-          { step: "04", title: tSite("process4Title"), text: tSite("process4Text") },
-        ];
+      ? defaultProcessSteps.map((fallback, i) => {
+          const fromSite = site.processSteps![i];
+          return fromSite
+            ? { step: fromSite.step || fallback.step, title: fromSite.title, text: fromSite.text }
+            : fallback;
+        })
+      : defaultProcessSteps;
+
+  const processSteps = processStepSource.map((item, i) => ({
+    ...item,
+    icon: `/ourprocess/ourprocessStep${i + 1}.png`,
+  }));
 
   return (
     <div className="bg-[#f7f3f2] pt-[72px] pb-20 font-outfit md:pb-28">
-      {/* Hero — title, subtitle, intro inside one band (Figma) */}
-      <section className={`${COMPANY_SHELL} pb-8 pt-10 md:pb-10 md:pt-16`}>
-        <FadeInView className="mb-8 md:mb-12">
+      <section className={`${COMPANY_SHELL} ${COMPANY_HERO_SECTION_PAD}`}>
+        <FadeInView className="mb-6 md:mb-8">
           <SectionHeading
             title={t("heroTitle")}
             subtitle={heroSubtitle || undefined}
             titleAs="h1"
             expanded
-            className="w-full rounded-[16px]"
+            className={`w-full rounded-[6px] ${SECTION_HEADING_WIDE}`}
           >
-            <p className={`mx-auto mt-8 max-w-4xl px-2 md:px-4 ${PAGE_BODY_LEAD_CLASS}`}>{intro}</p>
+            <p className={`mx-auto mt-8 max-w-4xl px-2 md:px-4 ${PAGE_BODY_LEAD_CLASS} !text-black`}>{intro}</p>
           </SectionHeading>
+        </FadeInView>
+
+        {/* y=0 keeps this wrapper transform-free so the fixed background keeps working */}
+        <FadeInView delay={0.1} y={0}>
+          <FixedBackgroundImage
+            src={heroGallery[1] || heroGallery[0]}
+            alt={t("heroFeaturedAlt")}
+            className="mx-auto h-[min(42vw,340px)] min-h-[220px] w-full rounded-[6px] border border-[#e5dcd3]/30 bg-white shadow-[0_10px_30px_rgba(107,44,58,0.04)] sm:h-[340px] md:h-[400px] lg:h-[440px]"
+          />
         </FadeInView>
       </section>
 
-      {/* Three-image gallery */}
-      <section className={`${COMPANY_SHELL} mb-20 md:mb-28`}>
-        <div className="grid gap-4 md:grid-cols-12 md:gap-5">
-          {[
-            { src: heroGallery[0], alt: "Interior detail", className: "md:col-span-3", imgClass: "aspect-[3/4] md:min-h-[360px] md:aspect-auto md:h-full" },
-            { src: heroGallery[1], alt: "Varsovia Design interior", className: "md:col-span-6", imgClass: "aspect-[16/10] md:aspect-[2/1] md:min-h-[360px]" },
-            { src: heroGallery[2], alt: "Interior craftsmanship", className: "md:col-span-3", imgClass: "aspect-[3/4] md:min-h-[360px] md:aspect-auto md:h-full" },
-          ].map((item, i) => (
-            <motion.div
-              key={item.src}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.55, delay: i * 0.08 }}
-              className={`${item.className} ${COMPANY_IMAGE_FRAME}`}
-            >
-              <img src={item.src} alt={item.alt} className={`w-full object-cover transition duration-500 hover:scale-[1.02] ${item.imgClass}`} />
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Vision / Mission / Value */}
       <section className={`${COMPANY_SHELL} mb-20 md:mb-28`}>
         <CompanySectionHeading
-          title="Vision. Mission. Value."
-          subtitle="The foundation of everything we create"
+          title={t("valuesHeading")}
+          subtitle={t("valuesSubtitle")}
+          subtitleSentenceCase={false}
           className="mb-10 md:mb-14"
+          radiusClassName="rounded-[6px]"
         />
 
-        <div className="grid gap-6 md:grid-cols-3 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
           {valueBlocks.map((item, i) => {
-            const Icon = item.icon;
             return (
               <motion.article
                 key={item.title}
@@ -136,83 +163,199 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.55, delay: i * 0.1 }}
-                className="rounded-[16px] border border-[#e5dcd3]/20 bg-[#F6EAEA] px-7 py-10 text-center shadow-[0_8px_30px_rgba(107,44,58,0.02)]"
+                className="group rounded-[6px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 md:p-10 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-300 ease-out hover:-translate-y-[6px] hover:shadow-[0_12px_36px_rgba(107,44,58,0.06)]"
               >
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-[#6a414d] shadow-[0_4px_14px_rgba(107,44,58,0.04)]">
-                  <Icon size={26} strokeWidth={1.5} />
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#E5D2D5]/70 shadow-[0_4px_14px_rgba(107,44,58,0.04)]">
+                  <img src={item.iconPath} alt={item.title} className="w-11 h-11 object-contain" />
                 </div>
-                <h3 className={`mt-6 ${SUBSECTION_TITLE_CLASS}`}>{item.title}</h3>
-                <p className={`mt-4 ${SECTION_BODY_CLASS} leading-7`}>{item.text}</p>
+                <h3 className={`mt-6 ${SUBSECTION_TITLE_CLASS} !text-black`}>{item.title}</h3>
+                <div className="mt-3.5 h-[2px] w-[30px] bg-[#C94A5B] transition-all duration-[350ms] ease-out group-hover:w-[80px]" />
+                <p className={`mt-5 ${SECTION_BODY_CLASS} leading-7 !text-black`}>{item.text}</p>
               </motion.article>
             );
           })}
         </div>
       </section>
 
-      {/* Our Story */}
       <section className={`${COMPANY_SHELL} mb-20 md:mb-28`}>
-        <CompanySectionHeading title={t("storyTitle")} subtitle={heroSubtitle || undefined} className="mb-10" />
+        <CompanySectionHeading
+          title={t("storyTitle")}
+          subtitle={heroSubtitle || undefined}
+          subtitleSentenceCase={false}
+          className="mb-10"
+          radiusClassName="rounded-[6px]"
+        />
 
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className={`mx-auto mb-12 max-w-4xl px-4 text-center md:mb-16 md:px-6 ${COMPANY_BODY}`}
+          className={`mx-auto mb-12 max-w-4xl px-4 text-center md:mb-16 md:px-6 ${COMPANY_BODY} !text-black`}
         >
           {storyText}
         </motion.p>
 
-        <div className="grid gap-4 lg:gap-5">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={COMPANY_IMAGE_FRAME}>
-            <img src={storyImages[0]} alt="Our story highlight" className="aspect-[21/9] w-full object-cover transition duration-500 hover:scale-[1.02]" />
-          </motion.div>
-          <div className="grid gap-4 md:grid-cols-2 lg:gap-5">
-            {[storyImages[1], storyImages[2]].map((src, i) => (
-              <motion.div key={src} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.08 + i * 0.06 }} className={COMPANY_IMAGE_FRAME}>
-                <img src={src} alt={`Story detail ${i + 1}`} className="aspect-[4/3] w-full object-cover transition duration-500 hover:scale-[1.02]" />
-              </motion.div>
-            ))}
-          </div>
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className={COMPANY_IMAGE_FRAME}>
-            <img src={storyImages[3]} alt="Our story showcase" className="aspect-[21/9] w-full object-cover transition duration-500 hover:scale-[1.02]" />
-          </motion.div>
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8 items-start"
+          onMouseLeave={() => setHoveredStoryIndex(null)}
+        >
+          {storyImages.map((src, i) => {
+            // Untouched grid keeps the alternating stagger; hovering raises that
+            // image to the top row and drops every other one to the lowered row
+            const isLowered =
+              hoveredStoryIndex === null ? i % 2 === 0 : i !== hoveredStoryIndex;
+            return (
+              <motion.button
+                key={src}
+                type="button"
+                aria-label={t("storyHighlightAria", { index: i + 1 })}
+                onMouseEnter={() => setHoveredStoryIndex(i)}
+                onFocus={() => setHoveredStoryIndex(i)}
+                onBlur={() => setHoveredStoryIndex(null)}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.05 * i }}
+                className={`${STORY_IMAGE_FRAME} block w-full text-left outline-none transition-[margin-top] duration-[450ms] ease-out ${isLowered ? "mt-0 sm:mt-8 md:mt-12 lg:mt-16" : "mt-0"}`}
+              >
+                <img
+                  src={src}
+                  alt={t("storyHighlightAria", { index: i + 1 })}
+                  className="aspect-[3/4] w-full object-cover transition duration-500 hover:scale-[1.02]"
+                />
+              </motion.button>
+            );
+          })}
         </div>
       </section>
 
-      {/* Our Process — 4 steps */}
-      <section className={COMPANY_SHELL}>
-        <CompanySectionHeading
-          title={t("processTitle")}
-          subtitle="A seamless journey from vision to reality"
-          className="mb-12 md:mb-16"
-        />
+      <AboutProcessDesktopTimeline
+        title={t("processTitle")}
+        subtitle={t("processSubtitle")}
+        stepBadge={(step) => t("stepBadge", { step })}
+        steps={processSteps}
+      />
 
-        <div className="relative">
-          <div aria-hidden className="absolute top-[48px] right-[8%] left-[8%] z-0 hidden h-[2px] bg-[#dfc2c6] md:block" />
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4 md:gap-6 lg:gap-8">
-            {processSteps.map((item, i) => {
-              const Icon = PROCESS_ICONS[i] || Wrench;
-              return (
-                <motion.article
-                  key={item.step}
-                  initial={{ opacity: 0, y: 22 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.55, delay: i * 0.1 }}
-                  className="relative z-10 rounded-[16px] border border-[#e5dcd3]/20 bg-[#F6EAEA] px-5 py-9 text-center shadow-[0_8px_30px_rgba(107,44,58,0.02)]"
-                >
-                  <div className="mx-auto mb-6 flex h-6 w-6 items-center justify-center rounded-full bg-[#6a414d] font-display text-[10px] font-bold text-white shadow-md">
-                    {item.step}
-                  </div>
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#6a414d] shadow-[0_4px_14px_rgba(107,44,58,0.04)]">
-                    <Icon size={22} strokeWidth={1.5} />
-                  </div>
-                  <h3 className={`mt-5 ${SUBSECTION_TITLE_CLASS} text-base lg:text-lg`}>{item.title}</h3>
-                  <p className={`mt-3 ${SECTION_BODY_CLASS} leading-7`}>{item.text}</p>
-                </motion.article>
-              );
-            })}
+      {/* Our Process — Mobile Native Swipe Timeline */}
+      <section className="block md:hidden pb-20 pt-6">
+        <div className={`${COMPANY_SHELL} mb-8`}>
+          <CompanySectionHeading
+            title={t("processTitle")}
+            subtitle={t("processSubtitle")}
+            subtitleSentenceCase={false}
+            radiusClassName="rounded-[6px]"
+          />
+        </div>
+
+        <div className={`${COMPANY_SHELL} overflow-hidden`}>
+          <div className="flex flex-row items-center overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full px-0 gap-0">
+            {/* Start Spacer */}
+            <div className="w-[12%] shrink-0" />
+
+            {/* Step 1 */}
+            <article
+              className="group relative w-[76%] h-[280px] rounded-[6px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0 snap-center"
+              onMouseEnter={() => setHoveredProcessIndex(0)}
+              onMouseLeave={() => setHoveredProcessIndex(null)}
+            >
+              <div className="absolute top-8 right-8 text-[#783b4a] opacity-[0.3] scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-[0.45] group-hover:scale-105">
+                <img src={processSteps[0].icon} alt={processSteps[0].title} className="w-[60px] h-[60px] object-contain partner-logo-img" />
+              </div>
+              <div className="flex items-start gap-2.5">
+                <div className="w-[2px] bg-[#C94A5B] h-[32px] transition-all duration-[350ms] ease-out group-hover:h-[48px]" />
+                <span className="font-outfit text-sm font-semibold uppercase tracking-[0.15em] text-[#6a414d] pt-1">
+                  {t("stepBadge", { step: processSteps[0].step })}
+                </span>
+              </div>
+              <h3 className="font-outfit text-[20px] font-semibold !text-black mt-7">
+                {processSteps[0].title}
+              </h3>
+              <p className={`mt-4 ${SECTION_BODY_CLASS} leading-7 !text-black`}>
+                {processSteps[0].text}
+              </p>
+            </article>
+
+            {/* Connector 1 */}
+            <TimelineConnectorMobile isHovered={hoveredProcessIndex === 0} />
+
+            {/* Step 2 */}
+            <article
+              className="group relative w-[76%] h-[280px] rounded-[6px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0 snap-center"
+              onMouseEnter={() => setHoveredProcessIndex(1)}
+              onMouseLeave={() => setHoveredProcessIndex(null)}
+            >
+              <div className="absolute top-8 right-8 text-[#783b4a] opacity-[0.3] scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-[0.45] group-hover:scale-105">
+                <img src={processSteps[1].icon} alt={processSteps[1].title} className="w-[60px] h-[60px] object-contain partner-logo-img" />
+              </div>
+              <div className="flex items-start gap-2.5">
+                <div className="w-[2px] bg-[#C94A5B] h-[32px] transition-all duration-[350ms] ease-out group-hover:h-[48px]" />
+                <span className="font-outfit text-sm font-semibold uppercase tracking-[0.15em] text-[#6a414d] pt-1">
+                  {t("stepBadge", { step: processSteps[1].step })}
+                </span>
+              </div>
+              <h3 className="font-outfit text-[20px] font-semibold !text-black mt-7">
+                {processSteps[1].title}
+              </h3>
+              <p className={`mt-4 ${SECTION_BODY_CLASS} leading-7 !text-black`}>
+                {processSteps[1].text}
+              </p>
+            </article>
+
+            {/* Connector 2 */}
+            <TimelineConnectorMobile isHovered={hoveredProcessIndex === 1} />
+
+            {/* Step 3 */}
+            <article
+              className="group relative w-[76%] h-[280px] rounded-[6px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0 snap-center"
+              onMouseEnter={() => setHoveredProcessIndex(2)}
+              onMouseLeave={() => setHoveredProcessIndex(null)}
+            >
+              <div className="absolute top-8 right-8 text-[#783b4a] opacity-[0.3] scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-[0.45] group-hover:scale-105">
+                <img src={processSteps[2].icon} alt={processSteps[2].title} className="w-[60px] h-[60px] object-contain partner-logo-img" />
+              </div>
+              <div className="flex items-start gap-2.5">
+                <div className="w-[2px] bg-[#C94A5B] h-[32px] transition-all duration-[350ms] ease-out group-hover:h-[48px]" />
+                <span className="font-outfit text-sm font-semibold uppercase tracking-[0.15em] text-[#6a414d] pt-1">
+                  {t("stepBadge", { step: processSteps[2].step })}
+                </span>
+              </div>
+              <h3 className="font-outfit text-[20px] font-semibold !text-black mt-7">
+                {processSteps[2].title}
+              </h3>
+              <p className={`mt-4 ${SECTION_BODY_CLASS} leading-7 !text-black`}>
+                {processSteps[2].text}
+              </p>
+            </article>
+
+            {/* Connector 3 */}
+            <TimelineConnectorMobile isHovered={hoveredProcessIndex === 2} />
+
+            {/* Step 4 */}
+            <article
+              className="group relative w-[76%] h-[280px] rounded-[6px] border border-[#e5dcd3]/20 bg-gradient-to-br from-[#FFF9F9] to-[#EBD5D7] p-8 text-left shadow-[0_8px_30px_rgba(107,44,58,0.02)] transition-all duration-[350ms] ease-out hover:-translate-y-[6px] hover:shadow-[0_16px_36px_rgba(107,44,58,0.05)] shrink-0 snap-center"
+              onMouseEnter={() => setHoveredProcessIndex(3)}
+              onMouseLeave={() => setHoveredProcessIndex(null)}
+            >
+              <div className="absolute top-8 right-8 text-[#783b4a] opacity-[0.3] scale-100 transition-all duration-[350ms] ease-out group-hover:opacity-[0.45] group-hover:scale-105">
+                <img src={processSteps[3].icon} alt={processSteps[3].title} className="w-[60px] h-[60px] object-contain partner-logo-img" />
+              </div>
+              <div className="flex items-start gap-2.5">
+                <div className="w-[2px] bg-[#C94A5B] h-[32px] transition-all duration-[350ms] ease-out group-hover:h-[48px]" />
+                <span className="font-outfit text-sm font-semibold uppercase tracking-[0.15em] text-[#6a414d] pt-1">
+                  {t("stepBadge", { step: processSteps[3].step })}
+                </span>
+              </div>
+              <h3 className="font-outfit text-[20px] font-semibold !text-black mt-7">
+                {processSteps[3].title}
+              </h3>
+              <p className={`mt-4 ${SECTION_BODY_CLASS} leading-7 !text-black`}>
+                {processSteps[3].text}
+              </p>
+            </article>
+
+            {/* End Spacer */}
+            <div className="w-[12%] shrink-0" />
           </div>
         </div>
       </section>

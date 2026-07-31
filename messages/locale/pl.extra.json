@@ -56,7 +56,13 @@
     "processTitle": "Nasz proces",
     "visionTitle": "Nasza wizja",
     "missionTitle": "Nasza misja",
-    "valuesBlockTitle": "Nasze wartości"
+    "valuesBlockTitle": "Nasze wartości",
+    "valuesHeading": "Wizja. Misja. Wartości.",
+    "valuesSubtitle": "Fundament tego, co tworzymy.",
+    "processSubtitle": "Płynna droga od wizji do realizacji.",
+    "heroFeaturedAlt": "Wyróżnione wnętrze — o nas",
+    "storyHighlightAria": "Historii — zdjęcie {index}",
+    "stepBadge": "KROK {step}"
   },
   "cataloguePage": {
     "heroTitle": "Darmowy katalog",

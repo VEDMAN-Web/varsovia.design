@@ -1,7 +1,7 @@
 "use client";
 
 import FadeInView from "@/components/company/FadeInView";
-import { COMPANY_SHELL, PAGE_BODY_LEAD_CLASS } from "@/components/company/companyLayoutShared";
+import { COMPANY_SHELL, COMPANY_HERO_SECTION_PAD, PAGE_BODY_LEAD_CLASS, SECTION_HEADING_WIDE } from "@/components/company/companyLayoutShared";
 import SectionHeading from "@/components/ui/SectionHeading";
 
 type CompanyHeroProps = {
@@ -30,7 +30,7 @@ export default function CompanyHero({
   fadeClassName = "",
 }: CompanyHeroProps) {
   return (
-    <section className={`${COMPANY_SHELL} pb-8 pt-10 md:pb-10 md:pt-16 ${sectionClassName}`.trim()}>
+    <section className={`${COMPANY_SHELL} ${COMPANY_HERO_SECTION_PAD} ${sectionClassName}`.trim()}>
       <FadeInView className={`mb-8 md:mb-12 ${fadeClassName}`.trim()}>
         <SectionHeading
           title={title}
@@ -41,7 +41,7 @@ export default function CompanyHero({
           expanded={expanded || Boolean(children)}
           subtitleSentenceCase={subtitleSentenceCase}
           subtitleClassName={subtitleClassName}
-          className="w-full rounded-[12px] sm:rounded-[16px]"
+          className={`w-full rounded-[12px] sm:rounded-[16px] ${SECTION_HEADING_WIDE}`}
         >
           {children && (
             <div className={`mx-auto mt-8 max-w-4xl px-2 md:px-4 ${PAGE_BODY_LEAD_CLASS}`}>{children}</div>

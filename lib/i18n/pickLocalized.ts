@@ -20,3 +20,18 @@ export function hasLocalizedMap(value: unknown, locale: Locale): boolean {
   const v = (value as Record<string, unknown>)[locale];
   return typeof v === "string" && v.trim().length > 0;
 }
+
+/**
+ * Prefer locale message fallbacks for th/pl when CMS sends a plain (English) string
+ * without { en, th, pl } maps.
+ */
+export function pickSiteCopy(value: unknown, locale: Locale, localizedFallback: string): string {
+  if (hasLocalizedMap(value, locale)) {
+    return pickLocalized(value, locale);
+  }
+  if (locale !== "en" && typeof value === "string" && value.trim()) {
+    return localizedFallback;
+  }
+  const picked = pickLocalized(value, locale);
+  return picked || localizedFallback;
+}

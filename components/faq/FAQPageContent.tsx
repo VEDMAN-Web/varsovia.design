@@ -32,12 +32,13 @@ import {
 const FAQ_COLUMN_TITLE =
   "font-outfit text-[clamp(1.0625rem,1.8vw,1.5rem)] font-semibold leading-[1.3] text-[#6a414d] md:leading-[32px]";
 
+import { SECTION_SUBTITLE_CLASS } from "@/components/ui/SectionHeading";
+
 /** Figma FAQ hero */
 const FAQ_HERO_TITLE =
   "font-display px-2 text-balance break-words text-[clamp(1.625rem,5.5vw,3.125rem)] font-normal uppercase tracking-[0.06em] text-[#6a414d] sm:px-1 sm:tracking-[0.1em]";
 
-const FAQ_HERO_SUBTITLE =
-  "font-outfit mx-auto mt-2.5 max-w-[34rem] break-words px-4 text-[clamp(0.5625rem,2.6vw,0.8125rem)] font-normal uppercase leading-[1.45] text-[#cf5374] sm:mt-3 sm:max-w-[42rem] sm:leading-[1.55] sm:tracking-[0.16em] md:max-w-[48rem] md:tracking-[0.22em] lg:tracking-[0.28em] xl:tracking-[0.32em]";
+const FAQ_HERO_SUBTITLE = `${SECTION_SUBTITLE_CLASS} !mt-2.5 max-w-[34rem] sm:!mt-3 sm:max-w-[42rem] md:max-w-[48rem]`;
 
 /** Figma topic row — flat list, no box borders */
 const FAQ_TOPIC_ROW =
@@ -289,8 +290,6 @@ export default function FAQPageContent() {
         subtitleSentenceCase={false}
         titleClassName={FAQ_HERO_TITLE}
         subtitleClassName={FAQ_HERO_SUBTITLE}
-        sectionClassName="pb-4 pt-6 sm:pb-6 sm:pt-8 md:pb-8 md:pt-12"
-        fadeClassName="mb-4 sm:mb-6 md:mb-8"
         compact
       />
 

@@ -1,5 +1,7 @@
 /** Our Team page — Figma surfaces, spacing, responsive grids */
 
+import { SECTION_SUBTITLE_CLASS } from "@/components/ui/SectionHeading";
+
 export const TEAM_PAGE_BG = "bg-[#fdf7f7]";
 
 export const TEAM_MAIN =
@@ -10,8 +12,7 @@ export const TEAM_SHELL =
 
 export const TEAM_HERO_SECTION = "pb-[clamp(1.25rem,4vw,2.5rem)] pt-[clamp(1.5rem,4vw,3rem)] text-center";
 
-export const TEAM_HERO_SUBTITLE =
-  "font-outfit mx-auto mt-[clamp(1rem,3vw,1.875rem)] max-w-[min(100%,40rem)] break-words px-1 text-[clamp(0.6875rem,2.5vw,1.125rem)] font-normal uppercase leading-[1.45] tracking-[0.14em] text-[#cf5374] min-[480px]:tracking-[0.22em] md:text-[clamp(0.875rem,1.8vw,1.25rem)] md:tracking-[0.28em] lg:tracking-[0.3em]";
+export const TEAM_HERO_SUBTITLE = `${SECTION_SUBTITLE_CLASS} !mt-[clamp(1rem,3vw,1.875rem)] max-w-[min(100%,40rem)] leading-[1.45] px-1`;
 
 export const TEAM_INTRO_CLASS =
   "mx-auto max-w-[min(100%,820px)] text-pretty px-0.5 text-center font-outfit text-[clamp(0.875rem,2.2vw,1rem)] font-normal leading-[1.8] text-[#6a414d]/90 min-[480px]:leading-[1.85] md:text-[16px] md:leading-[1.9]";

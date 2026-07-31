@@ -7,6 +7,13 @@ export const SITE_SECTION_SHELL =
 
 export const SITE_SECTION_HEADING_WIDE = "!max-w-none w-full";
 
+/** Outer vertical padding for homepage sections that lead with a gradient heading band */
+export const SITE_SECTION_PADDING_Y =
+  "pt-20 pb-14 sm:pt-24 sm:pb-20 md:pt-32 md:pb-28";
+
+/** Space above/below the first hero heading on inner company pages (below fixed nav) */
+export const SITE_PAGE_HERO_SECTION_PAD = "pb-8 pt-14 md:pb-10 md:pt-20";
+
 /** @deprecated use SITE_SECTION_SHELL */
 export const PAGE_SHELL = SITE_SECTION_SHELL;
 

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import SectionHeading from "@/components/ui/SectionHeading";
-import SectionShell, { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
+import SectionShell, { SECTION_HEADING_WIDE, SITE_SECTION_PADDING_Y } from "@/components/ui/SectionShell";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 
 /** Figma Frame 2147205349 — layout positions within 686×500 collage */
@@ -38,7 +38,7 @@ export default function About({ title, text, images }: AboutProps) {
   }));
 
   return (
-    <section id="about" className="bg-[#fdf2f0] py-14 sm:py-20 md:py-28">
+    <section id="about" className={`bg-[#fdf2f0] ${SITE_SECTION_PADDING_Y}`}>
       {/* One synced shell — heading band + collage/text share the same width */}
       <SectionShell>
         <motion.div

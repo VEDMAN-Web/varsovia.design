@@ -33,7 +33,7 @@ export default function ContactPageContent() {
         subtitleSentenceCase={false}
       />
 
-      <section className={`${COMPANY_SHELL} mt-20 pb-16 md:pb-24`}>
+      <section className={`${COMPANY_SHELL} mt-6 pb-16 sm:mt-8 md:mt-10 md:pb-24`}>
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}

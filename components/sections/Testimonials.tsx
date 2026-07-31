@@ -6,7 +6,7 @@ import { motion, useReducedMotion, type PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { getRelativeOffset } from "@/lib/carousel";
 import SectionHeading from "@/components/ui/SectionHeading";
-import SectionShell, { SECTION_HEADING_WIDE } from "@/components/ui/SectionShell";
+import SectionShell, { SECTION_HEADING_WIDE, SITE_SECTION_PADDING_Y } from "@/components/ui/SectionShell";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 import type { ApiTestimonial } from "@/lib/siteTypes";
 
@@ -258,7 +258,7 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
   }
 
   return (
-    <section id="stories" className="bg-transparent py-14 sm:py-16 md:py-20">
+    <section id="stories" className={`bg-transparent ${SITE_SECTION_PADDING_Y}`}>
       <SectionShell>
       {/* Heading */}
       <div className="text-center">
