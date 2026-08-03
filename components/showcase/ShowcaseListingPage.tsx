@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import ShowcaseFilterTabs from "@/components/showcase/ShowcaseFilterTabs";
 import ShowcaseProjectCard from "@/components/showcase/ShowcaseProjectCard";
 import {
@@ -14,7 +15,10 @@ import {
 } from "@/components/showcase/showcaseLayoutShared";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { SECTION_HEADING_WIDE, SITE_PAGE_HERO_SECTION_PAD } from "@/components/ui/SectionShell";
-import { showcaseTabMessageKey } from "@/lib/showcaseTabI18n";
+import {
+  buildShowcasePageNav,
+  showcaseTabsForUi,
+} from "@/lib/showcasePageNav";
 import {
   SHOWCASE_TABS,
   getShowcaseProjects,
@@ -60,23 +64,31 @@ function toShowcaseProject(s: ApiShowcase, locale: Locale): ShowcaseProject {
   };
 }
 
+function resolveActiveShowcaseTab(tabParam: string | null): ShowcaseTab {
+  if (tabParam && SHOWCASE_TABS.includes(tabParam as ShowcaseTab)) {
+    return tabParam as ShowcaseTab;
+  }
+  return "Home case";
+}
+
 function ShowcaseListingInner() {
   const locale = useLocale();
   const tShowcase = useTranslations("showcase");
+  const site = useSiteSettings();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<ShowcaseTab>("Home case");
+  const activeTab = useMemo(
+    () => resolveActiveShowcaseTab(searchParams.get("tab")),
+    [searchParams],
+  );
   const [apiProjects, setApiProjects] = useState<ShowcaseProject[] | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const gridRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const tabParam = searchParams.get("tab");
-    if (tabParam && SHOWCASE_TABS.includes(tabParam as ShowcaseTab)) {
-      setActiveTab(tabParam as ShowcaseTab);
-    } else {
-      setActiveTab("Home case");
-    }
-  }, [searchParams]);
+  const pageNav = useMemo(() => buildShowcasePageNav(site, tShowcase), [site, tShowcase]);
+  const filterTabs = useMemo(
+    () => showcaseTabsForUi(pageNav, activeTab),
+    [pageNav, activeTab],
+  );
 
   useEffect(() => {
     import("@/lib/api").then(({ fetchShowcases }) => {
@@ -96,11 +108,7 @@ function ShowcaseListingInner() {
     setCurrentPage(1);
   }, [activeTab]);
 
-  const tabKey = showcaseTabMessageKey(activeTab);
-  const meta = {
-    title: tShowcase(`categoryMeta.${tabKey}.title`),
-    subtitle: tShowcase(`categoryMeta.${tabKey}.subtitle`),
-  };
+  const meta = pageNav.metaForTab(activeTab);
 
   const projects: ShowcaseProject[] = (() => {
     const source = apiProjects ?? null;
@@ -134,7 +142,12 @@ function ShowcaseListingInner() {
               className={`${SECTION_HEADING_WIDE} !max-w-none w-full`}
             />
 
-            <ShowcaseFilterTabs activeTab={activeTab} onTabChange={setActiveTab} />
+            <ShowcaseFilterTabs
+              activeTab={activeTab}
+              onTabChange={() => {}}
+              tabs={filterTabs}
+              labelForTab={pageNav.filterLabelForTab}
+            />
 
             <div ref={gridRef} className={SHOWCASE_PROJECT_GRID_WRAP}>
               <div className={SHOWCASE_PROJECT_GRID}>

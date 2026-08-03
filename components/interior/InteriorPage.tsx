@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import FilterPanel from "@/components/interior/FilterPanel";
+import InteriorCategoryTabs from "@/components/interior/InteriorCategoryTabs";
 import SectionHeading from "@/components/ui/SectionHeading";
 import PageShell from "@/components/ui/PageShell";
 import {
@@ -21,7 +22,6 @@ import {
   SHOWCASE_LISTING_GRID_WRAP,
 } from "@/components/ui/showcaseGridShared";
 import {
-  CATEGORY_HERO,
   CATEGORY_SUBCATEGORIES,
   EMPTY_FILTERS,
   INTERIOR_CATEGORIES,
@@ -31,6 +31,10 @@ import {
   type InteriorCategory,
   type SortOption,
 } from "@/lib/interiorData";
+import {
+  buildInteriorPageNav,
+  interiorCategoriesForUi,
+} from "@/lib/interiorPageNav";
 import { MEDIA } from "@/lib/mediaAssets";
 import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import type { Locale } from "@/lib/i18n/routing";
@@ -122,7 +126,7 @@ function FilterIcon({ className = "" }: { className?: string }) {
   );
 }
 
-export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
+export default function InteriorPage({ initialCategory = "All" }: Props) {
   const locale = useLocale();
   const site = useSiteSettings();
   const catalogMode = site?.interiorCatalogMode || "hybrid";
@@ -135,7 +139,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
     () => categoryFromQuery(searchParams.get("category"), initialCategory),
     [searchParams, initialCategory],
   );
-  const [category, setCategory] = useState<InteriorCategory>(urlCategory);
+  const category = urlCategory;
   const [subcategory, setSubcategory] = useState<string>("All");
   const [sortBy, setSortBy] = useState<SortOption>("all");
   const [filters, setFilters] = useState<AdvancedFilters>(EMPTY_FILTERS);
@@ -148,6 +152,15 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
   const sortRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
+  const pageNav = useMemo(
+    () => buildInteriorPageNav(site, tHero, tCat),
+    [site, tHero, tCat],
+  );
+  const categoryTabs = useMemo(
+    () => interiorCategoriesForUi(pageNav, category),
+    [pageNav, category],
+  );
+
   const subcategoryOptions = useMemo(() => {
     if (category === "All" || !CATEGORY_SUBCATEGORIES[category as Exclude<InteriorCategory, "All">]) {
       return null;
@@ -156,10 +169,9 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
   }, [category]);
 
   useEffect(() => {
-    setCategory(urlCategory);
     setSubcategory("All");
     setFilters(EMPTY_FILTERS);
-  }, [urlCategory]);
+  }, [category]);
 
   useEffect(() => {
     let cancelled = false;
@@ -264,31 +276,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
     [filteredItems, currentPage],
   );
 
-  const hero = useMemo(() => {
-    const map: Record<InteriorCategory, { title: string; subtitle: string }> = {
-      All: { title: tHero("allTitle"), subtitle: tHero("allSubtitle") },
-      Kitchen: { title: tHero("kitchenTitle"), subtitle: tHero("kitchenSubtitle") },
-      Bedroom: { title: tHero("bedroomTitle"), subtitle: tHero("bedroomSubtitle") },
-      Bathroom: { title: tHero("bathroomTitle"), subtitle: tHero("bathroomSubtitle") },
-      Furniture: { title: tHero("furnitureTitle"), subtitle: tHero("furnitureSubtitle") },
-      "Door & Windows": { title: tHero("doorWindowsTitle"), subtitle: tHero("doorWindowsSubtitle") },
-      "Whole House Solutions": { title: tHero("wholeHouseTitle"), subtitle: tHero("wholeHouseSubtitle") },
-    };
-    return map[category] ?? CATEGORY_HERO[category];
-  }, [category, tHero]);
-
-  const categoryLabels = useMemo(
-    (): Record<InteriorCategory, string> => ({
-      All: tCat("all"),
-      Kitchen: tCat("kitchen"),
-      Bedroom: tCat("bedroom"),
-      Bathroom: tCat("bathroom"),
-      Furniture: tCat("furniture"),
-      "Door & Windows": tCat("doorWindows"),
-      "Whole House Solutions": tCat("wholeHouse"),
-    }),
-    [tCat],
-  );
+  const hero = useMemo(() => pageNav.metaForCategory(category), [pageNav, category]);
 
   const sortOptions = useMemo(
     () =>
@@ -306,7 +294,7 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
   const sortLabel = sortOptions.find((opt) => opt.value === sortBy)?.label ?? tSort("allOption");
   const gridKey = `${category}-${subcategory}-${sortBy}-${activeFilterCount}-${currentPage}`;
   const toolbarTitleLabel =
-    category === "All" ? tCommon("allInterior") : categoryLabels[category];
+    category === "All" ? tCommon("allInterior") : pageNav.labelForCategory(category);
 
   function selectSubcategory(sub: string) {
     setSubcategory(sub);
@@ -340,6 +328,13 @@ export default function InteriorPage({ initialCategory = "Kitchen" }: Props) {
               />
             </motion.div>
           </AnimatePresence>
+
+          <InteriorCategoryTabs
+            activeCategory={category}
+            onCategoryChange={() => {}}
+            categories={categoryTabs}
+            labelForCategory={pageNav.labelForCategory}
+          />
 
           {subcategoryOptions && (
             <div className="overflow-hidden">

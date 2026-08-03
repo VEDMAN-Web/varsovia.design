@@ -2,19 +2,23 @@
 
 import { useRouter } from "@/lib/i18n/navigation";
 import { useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
 import { SHOWCASE_TABS, type ShowcaseTab } from "@/lib/showcaseData";
-import { showcaseTabMessageKey } from "@/lib/showcaseTabI18n";
 
 type ShowcaseFilterTabsProps = {
   activeTab: ShowcaseTab;
   onTabChange: (tab: ShowcaseTab) => void;
+  tabs: ShowcaseTab[];
+  labelForTab: (tab: ShowcaseTab) => string;
 };
 
-export default function ShowcaseFilterTabs({ activeTab, onTabChange }: ShowcaseFilterTabsProps) {
+export default function ShowcaseFilterTabs({
+  activeTab,
+  onTabChange,
+  tabs,
+  labelForTab,
+}: ShowcaseFilterTabsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const t = useTranslations("showcase");
 
   function selectTab(tab: ShowcaseTab) {
     onTabChange(tab);
@@ -31,10 +35,9 @@ export default function ShowcaseFilterTabs({ activeTab, onTabChange }: ShowcaseF
   return (
     <div className="mt-8 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:mt-10 md:mb-10 [&::-webkit-scrollbar]:hidden">
       <div className="mx-auto flex w-max min-w-full items-center justify-start gap-4 md:justify-center">
-        {SHOWCASE_TABS.map((tab) => {
+        {tabs.map((tab) => {
           const active = activeTab === tab;
-          const key = showcaseTabMessageKey(tab);
-          const label = t(`tabLabels.${key}`);
+          const label = labelForTab(tab);
 
           return (
             <button
