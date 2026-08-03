@@ -4,10 +4,51 @@ import { hasLocalizedMap, pickLocalized, pickSiteCopy } from "./i18n/pickLocaliz
 import type { Locale } from "./i18n/routing";
 import type { ApiProject, HomeData, SiteBlock, SiteContent } from "./siteTypes";
 import type { SearchApiResponse } from "./searchTypes";
+import {
+  getApiMeta,
+  readApiErrorMessage,
+  unwrapApiData,
+  unwrapApiList,
+} from "./apiEnvelope";
 
 export type { ApiProject, SiteContent, HomeData };
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+const LIST_PAGE_SIZE = 100;
+
+async function parseApiResponse(res: Response) {
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(readApiErrorMessage(body));
+  }
+  return body;
+}
+
+/** Fetch every page of a list endpoint (max 100 items per page). */
+async function fetchAllListItems(
+  path: string,
+  locale?: Locale,
+  init?: RequestInit & { next?: { revalidate?: number } },
+): Promise<unknown[]> {
+  const all: unknown[] = [];
+  let page = 1;
+
+  while (true) {
+    const url = withLocale(`${API_URL}${path}?page=${page}&limit=${LIST_PAGE_SIZE}`, locale);
+    const res = await fetch(url, {
+      ...init,
+      headers: { ...localeHeaders(locale), ...(init?.headers ?? {}) },
+    });
+    const body = await parseApiResponse(res);
+    all.push(...unwrapApiList(body));
+    const pagination = getApiMeta(body)?.pagination;
+    if (!pagination?.hasNext) break;
+    page += 1;
+  }
+
+  return all;
+}
 
 function withLocale(url: string, locale?: Locale) {
   if (!locale) return url;
@@ -148,7 +189,8 @@ export async function fetchSite(locale?: Locale): Promise<SiteContent> {
       next: { revalidate: 60 },
     });
     if (!res.ok) throw new Error("Failed to fetch site");
-    const data = await res.json();
+    const body = await res.json();
+    const data = unwrapApiData<Record<string, unknown>>(body);
     if (!data) throw new Error("Empty");
     return await mergeSiteFallback(data, locale);
   } catch {
@@ -157,19 +199,29 @@ export async function fetchSite(locale?: Locale): Promise<SiteContent> {
   }
 }
 
-export async function fetchProducts(locale?: Locale) {
+export type FetchedProduct = {
+  _id: string;
+  title: string;
+  slug?: string;
+  description?: string;
+  image?: string;
+  category?: string;
+  [key: string]: unknown;
+};
+
+export async function fetchProducts(locale?: Locale): Promise<FetchedProduct[]> {
   try {
-    const res = await fetch(withLocale(`${API_URL}/products`, locale), {
-      headers: localeHeaders(locale),
-      next: { revalidate: 30 },
+    const rows = await fetchAllListItems("/products", locale, { next: { revalidate: 30 } });
+    if (!rows.length) throw new Error("Empty");
+    return rows.map((row, index) => {
+      const product = row as Record<string, unknown>;
+      return {
+        ...product,
+        _id: String(product._id ?? product.id ?? index),
+        title: String(product.title ?? ""),
+        image: resolveMediaUrl(product.image as string | undefined, MEDIA.products[index % MEDIA.products.length]),
+      };
     });
-    if (!res.ok) throw new Error("Failed to fetch products");
-    const data = await res.json();
-    if (!data || data.length === 0) throw new Error("Empty");
-    return data.map((product: Record<string, unknown>, index: number) => ({
-      ...product,
-      image: resolveMediaUrl(product.image as string | undefined, MEDIA.products[index % MEDIA.products.length]),
-    }));
   } catch {
     const { fallbackHomeData } = await import("./fallbackData");
     return fallbackHomeData.products;
@@ -184,7 +236,8 @@ export async function fetchProductBySlug(slug: string, locale?: Locale) {
       next: { revalidate: 30 },
     });
     if (res.ok) {
-      const apiProduct = (await res.json()) as Record<string, unknown>;
+      const body = await res.json();
+      const apiProduct = unwrapApiData<Record<string, unknown>>(body);
       const galleryRaw = Array.isArray(apiProduct.gallery) ? apiProduct.gallery : [];
       const gallery = galleryRaw.length
         ? galleryRaw.map((u) => resolveMediaUrl(String(u)))
@@ -228,12 +281,12 @@ export async function fetchProductBySlug(slug: string, locale?: Locale) {
     if (!apiProduct && !local) return null;
     const base = local || {
       slug,
-      title: apiProduct.title,
-      category: apiProduct.category || "Kitchen",
-      shortDescription: apiProduct.description || "",
-      fullDescription: apiProduct.description || "",
-      image: apiProduct.image || "/home/product/product-1.png",
-      gallery: [apiProduct.image || "/home/product/product-1.png"],
+      title: apiProduct?.title ?? slug,
+      category: apiProduct?.category || "Kitchen",
+      shortDescription: String(apiProduct?.description ?? ""),
+      fullDescription: String(apiProduct?.description ?? ""),
+      image: apiProduct?.image || "/home/product/product-1.png",
+      gallery: [apiProduct?.image || "/home/product/product-1.png"],
       features: [],
       specs: [],
     };
@@ -309,14 +362,9 @@ async function mergeFeaturedProjects(apiProjects: Record<string, unknown>[]) {
 export async function fetchProjects(locale?: Locale): Promise<ApiProject[]> {
   const { fallbackHomeData } = await import("./fallbackData");
   try {
-    const res = await fetch(withLocale(`${API_URL}/projects`, locale), {
-      headers: localeHeaders(locale),
-      next: { revalidate: 30 },
-    });
-    if (!res.ok) throw new Error("Failed to fetch projects");
-    const data = await res.json();
-    if (!data || data.length === 0) throw new Error("Empty");
-    return (await mergeFeaturedProjects(data)) as ApiProject[];
+    const rows = await fetchAllListItems("/projects", locale, { next: { revalidate: 30 } });
+    if (!rows.length) throw new Error("Empty");
+    return (await mergeFeaturedProjects(rows as Record<string, unknown>[])) as ApiProject[];
   } catch {
     return fallbackHomeData.projects.map(normalizeProjectCover) as ApiProject[];
   }
@@ -329,7 +377,8 @@ export async function fetchHomeData(locale?: Locale): Promise<HomeData> {
       next: { revalidate: 30 },
     });
     if (!res.ok) throw new Error("Failed to fetch home data");
-    const data = await res.json();
+    const body = await res.json();
+    const data = unwrapApiData<HomeData>(body);
     if (data.site) {
       data.site = await mergeSiteFallback(data.site as Record<string, unknown>, locale);
     }
@@ -347,12 +396,13 @@ export async function fetchHomeData(locale?: Locale): Promise<HomeData> {
       data.catalogues = data.catalogues.map(
         (catalogue: Record<string, unknown>, index: number) => ({
           ...catalogue,
+          title: String(catalogue.title ?? ""),
           coverImage: resolveMediaUrl(
             catalogue.coverImage as string | undefined,
             MEDIA.catalogues[index % MEDIA.catalogues.length],
           ),
         }),
-      );
+      ) as HomeData["catalogues"];
     }
     return data;
   } catch {
@@ -375,28 +425,27 @@ export async function submitContact(payload: Record<string, string>) {
     );
   }
 
-  let data: { message?: string } = {};
+  let body: unknown = {};
   try {
-    data = await res.json();
+    body = await res.json();
   } catch {
     if (!res.ok) {
       throw new Error("Something went wrong while sending your message. Please try again.");
     }
   }
 
-  if (!res.ok) throw new Error(data.message || "Submission failed");
-  return data;
+  if (!res.ok) throw new Error(readApiErrorMessage(body, "Submission failed"));
+
+  const data = unwrapApiData<{ contact?: unknown }>(body);
+  const message =
+    getApiMeta(body)?.message || readApiErrorMessage(body, "Thank you! We will get back to you soon.");
+  return { message, contact: data.contact, ...data };
 }
 
-export async function fetchBlogs(locale?: Locale) {
+export async function fetchBlogs(locale?: Locale): Promise<Record<string, unknown>[]> {
   try {
-    const res = await fetch(withLocale(`${API_URL}/blogs`, locale), {
-      headers: localeHeaders(locale),
-      next: { revalidate: 10 },
-    });
-    if (!res.ok) throw new Error("Failed to fetch blogs");
-    const data = await res.json();
-    if (Array.isArray(data) && data.length > 0) return data;
+    const rows = await fetchAllListItems("/blogs", locale, { next: { revalidate: 10 } });
+    if (rows.length > 0) return rows as Record<string, unknown>[];
   } catch {
     /* fall through to fallback */
   }
@@ -411,7 +460,8 @@ export async function fetchBlogById(id: string, locale?: Locale) {
       next: { revalidate: 10 },
     });
     if (res.ok) {
-      const data = await res.json();
+      const body = await res.json();
+      const data = unwrapApiData<Record<string, unknown>>(body);
       if (data && typeof data === "object" && "title" in data) {
         return {
           ...data,
@@ -450,27 +500,23 @@ export async function fetchBlogById(id: string, locale?: Locale) {
   return getBlogById(id, null, undefined, locale) ?? null;
 }
 
-export async function fetchTeamMembers(locale?: Locale) {
+export async function fetchTeamMembers(locale?: Locale): Promise<Record<string, unknown>[]> {
   try {
-    const res = await fetch(withLocale(`${API_URL}/team`, locale), {
-      headers: localeHeaders(locale),
-      next: { revalidate: 10 },
-    });
-    if (!res.ok) throw new Error("Failed to fetch team");
-    return await res.json();
+    return (await fetchAllListItems("/team", locale, { next: { revalidate: 10 } })) as Record<
+      string,
+      unknown
+    >[];
   } catch {
     return [];
   }
 }
 
-export async function fetchFAQs(locale?: Locale) {
+export async function fetchFAQs(locale?: Locale): Promise<Record<string, unknown>[]> {
   try {
-    const res = await fetch(withLocale(`${API_URL}/faqs`, locale), {
-      headers: localeHeaders(locale),
-      next: { revalidate: 10 },
-    });
-    if (!res.ok) throw new Error("Failed to fetch FAQs");
-    return await res.json();
+    return (await fetchAllListItems("/faqs", locale, { next: { revalidate: 10 } })) as Record<
+      string,
+      unknown
+    >[];
   } catch {
     return [];
   }
@@ -520,32 +566,22 @@ export async function fetchProjectById(id: string, locale?: Locale) {
   }
 }
 
-export async function fetchCatalogues(locale?: Locale) {
+export async function fetchCatalogues(locale?: Locale): Promise<Record<string, unknown>[]> {
   try {
-    const res = await fetch(withLocale(`${API_URL}/catalogues`, locale), {
-      headers: localeHeaders(locale),
-      next: { revalidate: 10 },
-    });
-    if (!res.ok) throw new Error("Failed to fetch catalogues");
-    const data = await res.json();
-    if (!data || data.length === 0) throw new Error("Empty");
-    return data;
+    const rows = await fetchAllListItems("/catalogues", locale, { next: { revalidate: 10 } });
+    if (!rows.length) throw new Error("Empty");
+    return rows as Record<string, unknown>[];
   } catch {
     const { fallbackHomeData } = await import("./fallbackData");
-    return fallbackHomeData.catalogues;
+    return fallbackHomeData.catalogues as Record<string, unknown>[];
   }
 }
 
 export async function fetchShowcases(locale?: Locale) {
   try {
-    const res = await fetch(withLocale(`${API_URL}/showcases`, locale), {
-      headers: localeHeaders(locale),
-      next: { revalidate: 30 },
-    });
-    if (!res.ok) throw new Error("Failed to fetch showcases");
-    const data = await res.json();
-    if (!data || data.length === 0) throw new Error("Empty");
-    return data as {
+    const rows = await fetchAllListItems("/showcases", locale, { next: { revalidate: 30 } });
+    if (!rows.length) throw new Error("Empty");
+    return rows as {
       _id: string;
       title: string;
       category: string;
@@ -576,5 +612,13 @@ export async function fetchSearch(
   if (!res.ok) {
     throw new Error("Search failed");
   }
-  return res.json() as Promise<SearchApiResponse>;
+  const body = await res.json();
+  const payload = unwrapApiData<{ query: string; results: SearchApiResponse["results"] }>(body);
+  const meta = getApiMeta(body);
+  return {
+    query: payload.query,
+    locale: meta?.locale ?? locale ?? "en",
+    results: payload.results ?? [],
+    tookMs: meta?.tookMs,
+  } satisfies SearchApiResponse;
 }

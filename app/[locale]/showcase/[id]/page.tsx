@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import ShowcaseDetailContent from "@/components/showcase/ShowcaseDetailContent";
 import { getShowcaseProjectById, showcaseStaticParams, SHOWCASE_TABS, type ShowcaseProject, type ShowcaseTab } from "@/lib/showcaseData";
-import { API_URL } from "@/lib/api";
+import { fetchShowcases } from "@/lib/api";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 import { setRequestLocale } from "next-intl/server";
 
@@ -18,10 +18,9 @@ export const dynamic = "auto";
 
 async function fetchShowcaseById(id: string): Promise<ShowcaseProject | null> {
   try {
-    const res = await fetch(`${API_URL}/showcases`, { next: { revalidate: 30 } });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const found = data.find((s: { _id: string }) => s._id === id);
+    const data = await fetchShowcases();
+    if (!data) return null;
+    const found = data.find((s) => s._id === id);
     if (!found) return null;
     return {
       id: found._id,
