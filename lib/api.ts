@@ -163,6 +163,7 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
         : fb.searchPages,
     navMenus: (data.navMenus as SiteContent["navMenus"]) || fb.navMenus,
     mainNavigation: (data.mainNavigation as SiteContent["mainNavigation"]) || fb.mainNavigation,
+    footerNavigation: (data.footerNavigation as SiteContent["footerNavigation"]) || fb.footerNavigation,
     qualitySale: (data.qualitySale as SiteContent["qualitySale"]) || fb.qualitySale,
     interiorCatalogMode: (data.interiorCatalogMode as SiteContent["interiorCatalogMode"]) || fb.interiorCatalogMode,
     inquiryForm: (data.inquiryForm as SiteContent["inquiryForm"]) || fb.inquiryForm,
