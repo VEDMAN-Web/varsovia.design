@@ -103,11 +103,24 @@ async function migrateMainNavigation() {
   }
 }
 
+async function migrateFooterNavigation() {
+  const { DEFAULT_FOOTER_NAVIGATION } = require("../validation/footerNavigation");
+  const site = await SiteContent.findOne({ key: "main" }).select("footerNavigation").lean();
+  if (!site?.footerNavigation?.linkColumns?.length) {
+    await SiteContent.updateOne(
+      { key: "main" },
+      { $set: { footerNavigation: DEFAULT_FOOTER_NAVIGATION } },
+      { upsert: true },
+    );
+  }
+}
+
 async function seedIfEmpty() {
   await migrateProjectCategories();
   await migrateProjectFilterMetadata();
   await migrateInquiryForm();
   await migrateMainNavigation();
+  await migrateFooterNavigation();
 
   if (await needsCanonicalSync()) {
     console.log("Applying canonical seed (empty or incomplete data detected)...");

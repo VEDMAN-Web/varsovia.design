@@ -42,6 +42,7 @@ router.patch("/contacts/:id", ctrl.updateContactStatus);
 router.get("/projects/interior-catalog/spec", ctrl.getInteriorCatalogFieldSpec);
 router.get("/inquiry-form/spec", ctrl.getInquiryFormSpec);
 router.get("/navigation/spec", ctrl.getMainNavigationSpec);
+router.get("/footer/spec", ctrl.getFooterNavigationSpec);
 
 function mountCrud(path, handlers, createSchema, updateSchema) {
   router.post(`/${path}`,    validate(createSchema), handlers.create);

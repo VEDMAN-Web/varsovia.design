@@ -144,6 +144,7 @@ function siteContentDoc() {
     interiorCatalogMode: "api",
     inquiryForm: require("../validation/inquiryForm").DEFAULT_INQUIRY_FORM,
     mainNavigation: require("../validation/mainNavigation").DEFAULT_MAIN_NAVIGATION,
+    footerNavigation: require("../validation/footerNavigation").DEFAULT_FOOTER_NAVIGATION,
     qualitySale: {
       heroTitle: "Quality & After-Sales Support",
       heroSubtitle: "Built to last — supported long after installation",

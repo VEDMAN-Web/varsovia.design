@@ -141,6 +141,14 @@ function localizeSiteContent(doc, locale) {
     out.mainNavigation = localizeMainNavigation(DEFAULT_MAIN_NAVIGATION, locale);
   }
 
+  if (out.footerNavigation) {
+    const { localizeFooterNavigation } = require("../validation/footerNavigation");
+    out.footerNavigation = localizeFooterNavigation(out.footerNavigation, locale);
+  } else {
+    const { localizeFooterNavigation, DEFAULT_FOOTER_NAVIGATION } = require("../validation/footerNavigation");
+    out.footerNavigation = localizeFooterNavigation(DEFAULT_FOOTER_NAVIGATION, locale);
+  }
+
   return out;
 }
 

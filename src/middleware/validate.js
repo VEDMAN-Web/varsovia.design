@@ -282,6 +282,41 @@ const mainNavigationSchema = z.object({
   items: z.array(mainNavItemSchema).min(1).max(20),
 });
 
+const footerNavLinkSchema = z.object({
+  label: localizedString,
+  href: z.string().max(500).trim(),
+  enabled: z.boolean().optional(),
+  order: z.number().int().min(0).max(999).optional(),
+});
+
+const footerNavColumnSchema = z.object({
+  id: z.string().min(1).max(80).trim(),
+  order: z.number().int().min(0).max(999).optional(),
+  enabled: z.boolean().optional(),
+  links: z.array(footerNavLinkSchema).max(30).optional(),
+});
+
+const footerNavigationSchema = z.object({
+  version: z.number().int().min(1).optional(),
+  linkColumns: z.array(footerNavColumnSchema).min(1).max(6).optional(),
+  legalLinks: z.array(footerNavLinkSchema).max(12).optional(),
+  contactHeading: localizedString.optional(),
+  contactLabels: z
+    .object({
+      email: localizedString.optional(),
+      mobileWhatsapp: localizedString.optional(),
+      contactNumber: localizedString.optional(),
+    })
+    .optional(),
+  socialLabels: z
+    .object({
+      whatsapp: localizedString.optional(),
+      facebook: localizedString.optional(),
+    })
+    .optional(),
+  copyright: localizedString.optional(),
+});
+
 const siteUpdateSchema = z.object({
   heroEyebrow:            localizedString.optional(),
   heroHeadline:           localizedString.optional(),
@@ -323,6 +358,7 @@ const siteUpdateSchema = z.object({
   interiorCatalogMode:    z.enum(["hybrid", "api"]).optional(),
   inquiryForm:            inquiryFormSchema.optional(),
   mainNavigation:         mainNavigationSchema.optional(),
+  footerNavigation:       footerNavigationSchema.optional(),
 });
 const showcaseSchema = z.object({
   title:      localizedRequired,

@@ -74,6 +74,8 @@ const siteContentSchema = new mongoose.Schema(
     navMenus: { type: mongoose.Schema.Types.Mixed, default: [] },
     /** Main header navigation (top bar + dropdown / showcase mega menus) */
     mainNavigation: { type: mongoose.Schema.Types.Mixed, default: undefined },
+    /** Footer link columns, legal row, and contact section labels */
+    footerNavigation: { type: mongoose.Schema.Types.Mixed, default: undefined },
     /** Quality & after-sales page CMS payload */
     qualitySale: { type: mongoose.Schema.Types.Mixed, default: {} },
     /** Admin-defined contact / inquiry forms (contact page + catalogue modal) */

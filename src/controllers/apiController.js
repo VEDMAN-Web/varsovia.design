@@ -16,6 +16,11 @@ const {
   getMainNavigationSpec,
   localizeMainNavigation,
 } = require("../validation/mainNavigation");
+const {
+  DEFAULT_FOOTER_NAVIGATION,
+  getFooterNavigationSpec,
+  localizeFooterNavigation,
+} = require("../validation/footerNavigation");
 const { invalidateInquiryFormCache } = require("../middleware/validateContactSubmission");
 const { parsePagination, sendSuccess, sendList, sendError } = require("../utils/apiResponse");
 
@@ -214,6 +219,7 @@ async function getSite(req, res) {
       const payload = site ? (site.toObject ? site.toObject() : site) : { key: "main" };
       if (!payload.inquiryForm) payload.inquiryForm = DEFAULT_INQUIRY_FORM;
       if (!payload.mainNavigation) payload.mainNavigation = DEFAULT_MAIN_NAVIGATION;
+      if (!payload.footerNavigation) payload.footerNavigation = DEFAULT_FOOTER_NAVIGATION;
       return sendSuccess(res, payload, { req });
     }
 
@@ -224,6 +230,9 @@ async function getSite(req, res) {
     }
     if (!payload.mainNavigation) {
       payload.mainNavigation = localizeMainNavigation(DEFAULT_MAIN_NAVIGATION, locale);
+    }
+    if (!payload.footerNavigation) {
+      payload.footerNavigation = localizeFooterNavigation(DEFAULT_FOOTER_NAVIGATION, locale);
     }
     return sendSuccess(res, payload, { req });
   } catch (error) {
@@ -237,6 +246,10 @@ async function getInquiryFormSpec(req, res) {
 
 async function getMainNavigationSpecHandler(req, res) {
   return sendSuccess(res, getMainNavigationSpec(), { req });
+}
+
+async function getFooterNavigationSpecHandler(req, res) {
+  return sendSuccess(res, getFooterNavigationSpec(), { req });
 }
 
 async function updateSite(req, res) {
@@ -292,6 +305,7 @@ module.exports = {
   getInteriorCatalogFieldSpec: getInteriorCatalogFieldSpecHandler,
   getInquiryFormSpec,
   getMainNavigationSpec: getMainNavigationSpecHandler,
+  getFooterNavigationSpec: getFooterNavigationSpecHandler,
   getProductBySlug,
   products: crud(Product, "Product"),
   projects: crud(Project, "Project"),
