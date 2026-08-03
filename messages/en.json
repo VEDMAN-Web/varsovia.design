@@ -195,7 +195,13 @@
       "emailInvalid": "Enter a valid email address.",
       "phoneRequired": "Phone number is required.",
       "phoneInvalid": "Enter a valid phone number for your selected region.",
+      "phoneMin": "Phone number is too short for your region.",
+      "phoneMax": "Phone number is too long.",
       "whatsappInvalid": "WhatsApp number can only contain digits (6–15 digits).",
+      "fieldRequired": "This field is required.",
+      "placeMin": "Enter at least 2 characters.",
+      "placeInvalid": "Use letters only — no numbers or symbols.",
+      "selectInvalid": "Please choose a valid option.",
       "cityInvalid": "City can only contain letters — no numbers or symbols.",
       "countryInvalid": "Country can only contain letters — no numbers or symbols.",
       "messageMax": "Message cannot exceed 2000 characters."

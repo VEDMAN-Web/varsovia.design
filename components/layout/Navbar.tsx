@@ -26,14 +26,11 @@ import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import { locales, type Locale } from "@/lib/i18n/routing";
 import type { SearchResultType } from "@/lib/searchTypes";
 import { useNavBackdropTone } from "@/hooks/useNavBackdropTone";
-
-type NavItem = {
-  id: string;
-  label: string;
-  href: string;
-  hasArrow?: boolean;
-  children?: { label: string; href: string }[];
-};
+import {
+  buildFallbackMainNavigation,
+  resolveMainNavigation,
+} from "@/lib/mainNavigation";
+import type { ResolvedNavItem } from "@/lib/mainNavigationTypes";
 
 type SearchPage = {
   title: string;
@@ -85,76 +82,6 @@ const navLinkClass = (active: boolean) =>
 const headerBtnBase =
   "inline-flex h-[50px] items-center justify-center rounded-[6px] font-outfit text-[15px] font-normal leading-[23px] transition duration-200";
 
-const NAV_MENU_CONFIG = {
-  interior: {
-    sectionKey: "byRoom" as const,
-    featuredHref: "/interior",
-    featuredLabelKey: "allInteriors" as const,
-    featuredSubtitleHref: "/interior",
-  },
-  company: {
-    sectionKey: "companySection" as const,
-    featuredHref: "/about",
-    featuredLabelKey: "aboutVarsovia" as const,
-    featuredSubtitleHref: "/about",
-  },
-  contact: {
-    sectionKey: "supportSection" as const,
-    featuredHref: "/contact",
-    featuredLabelKey: "getInTouch" as const,
-    featuredSubtitleHref: "/contact",
-  },
-} as const;
-
-function useNavItems(): NavItem[] {
-  const t = useTranslations("nav");
-
-  return useMemo(
-    () => [
-      { id: "home", label: t("home"), href: "/" },
-      {
-        id: "interior",
-        label: t("interior"),
-        href: "/interior",
-        hasArrow: true,
-        children: [
-          { label: t("kitchen"), href: "/interior?category=Kitchen" },
-          { label: t("bedroom"), href: "/interior?category=Bedroom" },
-          { label: t("bathroom"), href: "/interior?category=Bathroom" },
-          { label: t("furniture"), href: "/interior?category=Furniture" },
-          { label: t("doorWindows"), href: "/interior?category=Door%20%26%20Windows" },
-          { label: t("wholeHouse"), href: "/interior?category=Whole%20House%20Solutions" },
-        ],
-      },
-      { id: "catalogue", label: t("freeCatalogue"), href: "/catalogue" },
-      { id: "showcase", label: t("showcase"), href: "/showcase", hasArrow: true, children: [] },
-      {
-        id: "company",
-        label: t("company"),
-        href: "/about",
-        hasArrow: true,
-        children: [
-          { label: t("aboutVarsovia"), href: "/about" },
-          { label: t("ourTeam"), href: "/team" },
-          { label: t("ourBlog"), href: "/blog" },
-          { label: t("qualityAfterSales"), href: "/quality-sale" },
-        ],
-      },
-      {
-        id: "contact",
-        label: t("contact"),
-        href: "/contact",
-        hasArrow: true,
-        children: [
-          { label: t("getInTouch"), href: "/contact" },
-          { label: t("faq"), href: "/faq" },
-        ],
-      },
-    ],
-    [t],
-  );
-}
-
 function useSearchablePages(): SearchPage[] {
   const t = useTranslations("search");
   const site = useSiteSettings();
@@ -192,11 +119,17 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   const t = useTranslations("nav");
   const tSearch = useTranslations("search");
   const tDrop = useTranslations("navDropdown");
+  const tShowcase = useTranslations("showcase");
   const locale = useLocale() as Locale;
   const pathname = usePathname();
   const router = useRouter();
   const lenis = useLenis();
-  const navItems = useNavItems();
+  const site = useSiteSettings();
+  const navItems = useMemo(() => {
+    const fromApi = resolveMainNavigation(site);
+    if (fromApi.length > 0) return fromApi;
+    return buildFallbackMainNavigation(t, tDrop, tShowcase);
+  }, [site, t, tDrop, tShowcase]);
   const searchablePages = useSearchablePages();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
@@ -223,18 +156,6 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   const navDropSubtitle = (href: string) => getNavDropdownSubtitle(href, tDrop);
 
   const languageLabel = (code: Locale) => LANGUAGE_NAME_EN[code];
-
-  const navMenuFeatured = (itemId: keyof typeof NAV_MENU_CONFIG) => {
-    const cfg = NAV_MENU_CONFIG[itemId];
-    return {
-      href: cfg.featuredHref,
-      label: t(cfg.featuredLabelKey),
-      subtitle: navDropSubtitle(cfg.featuredSubtitleHref),
-    };
-  };
-
-  const navMenuSection = (itemId: keyof typeof NAV_MENU_CONFIG) =>
-    t(NAV_MENU_CONFIG[itemId].sectionKey);
 
   const searchTypeLabel = (type: SearchResultType) => tSearch(SEARCH_TYPE_KEYS[type]);
 
@@ -392,7 +313,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
     setMobileOpen(false);
   }
 
-  function isActive(item: NavItem) {
+  function isActive(item: ResolvedNavItem) {
     if (item.href === "/") return pathname === "/";
     if (item.href.startsWith("/interior")) return pathname.startsWith("/interior");
     return false;
@@ -467,24 +388,30 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
                 )}
 
                 <AnimatePresence>
-                  {item.hasArrow && openMenu === item.id && item.id === "showcase" && (
-                    <ShowcaseNavDropdown key={`menu-${item.id}`} onNavigate={() => setOpenMenu(null)} />
+                  {item.hasArrow && openMenu === item.id && item.menuKind === "showcaseMega" && item.menu && (
+                    <ShowcaseNavDropdown
+                      key={`menu-${item.id}`}
+                      menu={item.menu}
+                      onNavigate={() => setOpenMenu(null)}
+                    />
                   )}
 
-                  {item.hasArrow &&
-                    openMenu === item.id &&
-                    item.children &&
-                    item.children.length > 0 &&
-                    item.id !== "showcase" && (
-                      <NavMenuDropdown
-                        key={`menu-${item.id}`}
-                        featured={navMenuFeatured(item.id as keyof typeof NAV_MENU_CONFIG)}
-                        sectionLabel={navMenuSection(item.id as keyof typeof NAV_MENU_CONFIG)}
-                        children={item.children}
-                        onNavigate={() => setOpenMenu(null)}
-                        getSubtitle={navDropSubtitle}
-                      />
-                    )}
+                  {item.hasArrow && openMenu === item.id && item.menuKind === "dropdown" && item.menu && (
+                    <NavMenuDropdown
+                      key={`menu-${item.id}`}
+                      featured={item.menu.featured}
+                      sectionLabel={item.menu.sectionLabel}
+                      children={item.menu.links.map((link) => ({
+                        label: link.label ?? link.title ?? "",
+                        href: link.href,
+                      }))}
+                      onNavigate={() => setOpenMenu(null)}
+                      getSubtitle={(href) => {
+                        const link = item.menu?.links.find((l) => l.href === href);
+                        return link?.subtitle ?? navDropSubtitle(href);
+                      }}
+                    />
+                  )}
                 </AnimatePresence>
               </li>
             );
@@ -709,47 +636,38 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
                   >
                     <div className="overflow-hidden">
                       <div className="flex flex-col gap-0.5 border-l border-[#e5dcd3]/80 pl-4 pb-2">
-                        {item.id === "showcase" ? (
-                          <MobileShowcaseLinks onNavigate={closeMobileMenu} />
-                        ) : (
+                        {item.menuKind === "showcaseMega" && item.menu ? (
+                          <MobileShowcaseLinks menu={item.menu} onNavigate={closeMobileMenu} />
+                        ) : item.menu ? (
                           <>
-                            {item.id in NAV_MENU_CONFIG && (
-                              <Link
-                                href={navMenuFeatured(item.id as keyof typeof NAV_MENU_CONFIG).href}
-                                className={mobileSubLinkFeatured}
-                                onClick={closeMobileMenu}
-                              >
-                                {navMenuFeatured(item.id as keyof typeof NAV_MENU_CONFIG).label}
-                              </Link>
-                            )}
-                            {item.children
-                              ?.filter(
-                                (child) =>
-                                  !(
-                                    item.id in NAV_MENU_CONFIG &&
-                                    child.href ===
-                                      navMenuFeatured(item.id as keyof typeof NAV_MENU_CONFIG).href
-                                  ),
-                              )
+                            <Link
+                              href={item.menu.featured.href}
+                              className={mobileSubLinkFeatured}
+                              onClick={closeMobileMenu}
+                            >
+                              {item.menu.featured.label}
+                            </Link>
+                            {item.menu.links
+                              .filter((child) => child.href !== item.menu!.featured.href)
                               .map((child) => (
                                 <Link
-                                  key={child.label}
+                                  key={child.href}
                                   href={child.href}
                                   className={mobileSubLinkRich}
                                   onClick={closeMobileMenu}
                                 >
                                   <span className="block font-outfit text-[15px] font-medium text-[#444] transition-colors hover:text-maroon">
-                                    {child.label}
+                                    {child.label ?? child.title}
                                   </span>
-                                  {navDropSubtitle(child.href) ? (
+                                  {(child.subtitle ?? navDropSubtitle(child.href)) ? (
                                     <span className="mt-0.5 block font-outfit text-[12px] text-[#6a414d]/65">
-                                      {navDropSubtitle(child.href)}
+                                      {child.subtitle ?? navDropSubtitle(child.href)}
                                     </span>
                                   ) : null}
                                 </Link>
                               ))}
                           </>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   </div>

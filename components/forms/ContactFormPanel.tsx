@@ -111,7 +111,7 @@ export default function ContactFormPanel({
     >
       <div
         ref={panelRowRef}
-        className="relative flex min-w-0 flex-col md:flex-row md:items-stretch"
+        className="relative flex min-w-0 flex-col md:min-h-[min(846px,52vw)] md:flex-row md:items-stretch"
       >
         <ContactCollageMobileSlider images={images} className="shrink-0 md:hidden" />
 
@@ -132,7 +132,7 @@ export default function ContactFormPanel({
 
         <motion.div
           ref={formColumnRef}
-          className={`${CONTACT_FORM_BAND} ${CONTACT_FORM_PADDING} md:flex md:flex-col md:justify-start ${className}`.trim()}
+          className={`${CONTACT_FORM_BAND} ${CONTACT_FORM_PADDING} flex min-h-0 flex-col md:h-full md:min-h-full md:justify-stretch ${className}`.trim()}
           initial={formMotion ? { opacity: 0, x: 20 } : false}
           whileInView={formMotion ? { opacity: 1, x: 0 } : undefined}
           viewport={{ once: true, margin: "-5%" }}
@@ -143,6 +143,7 @@ export default function ContactFormPanel({
             downloadUrl={downloadUrl}
             density="section"
             onSubmitted={onSubmitted}
+            className="min-h-0 flex-1"
           />
         </motion.div>
       </div>

@@ -1,9 +1,13 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChevronDown, Download } from "lucide-react";
 import { submitContact } from "@/lib/api";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
+import { groupInquiryFields, resolveInquiryForm } from "@/lib/inquiryForm";
+import type { InquiryFormField } from "@/lib/inquiryFormTypes";
+import { sanitizeInquiryValue, validateInquiryForm } from "@/lib/inquiryFormValidation";
 import {
   CONTACT_FIELD,
   CONTACT_FIELD_ROW,
@@ -17,14 +21,7 @@ import {
   MODAL_LABEL,
   type InquiryPurpose,
 } from "@/components/forms/contactFormShared";
-import {
-  PHONE_CONFIG,
-  sanitizeNameInput,
-  sanitizePhoneDigits,
-  sanitizePlaceInput,
-  validateContactForm,
-  type ContactField,
-} from "@/lib/contactFormValidation";
+import { PHONE_CONFIG } from "@/lib/contactFormValidation";
 import type { Locale } from "@/lib/i18n/routing";
 
 type ContactInquiryFormProps = {
@@ -45,89 +42,88 @@ export default function ContactInquiryForm({
   const t = useTranslations("contact");
   const tCommon = useTranslations("common");
   const locale = useLocale() as Locale;
+  const site = useSiteSettings();
+  const inquiryForm = useMemo(() => resolveInquiryForm(site), [site]);
   const phoneConfig = PHONE_CONFIG[locale] ?? PHONE_CONFIG.en;
+  const rows = useMemo(() => groupInquiryFields(inquiryForm.fields), [inquiryForm.fields]);
 
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<Partial<Record<ContactField, string>>>({});
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phoneDigits, setPhoneDigits] = useState("");
-  const [whatsappDigits, setWhatsappDigits] = useState("");
-  const [city, setCity] = useState("");
-  const [country, setCountry] = useState("");
-  const [formMessage, setFormMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [values, setValues] = useState<Record<string, string>>({});
   const [formKey, setFormKey] = useState(0);
 
   const copy = INQUIRY_COPY[purpose];
   const isModal = density === "modal";
+  const stretchSection = density === "section";
   const labelClass = isModal ? MODAL_LABEL : CONTACT_LABEL;
   const fieldClass = isModal ? MODAL_FIELD : CONTACT_FIELD;
   const rowClass = isModal ? MODAL_FIELD_ROW : CONTACT_FIELD_ROW;
   const formGapClass = isModal ? MODAL_FORM_GAP : CONTACT_FORM_GAP;
+  const fieldClassSized =
+    stretchSection && !isModal ? `${fieldClass} sm:h-[52px] md:h-[54px]` : fieldClass;
 
-  function fieldErrorClass(field: ContactField) {
-    return fieldErrors[field] ? "ring-2 ring-red-500/60" : "";
-  }
-
-  function clearFieldError(field: ContactField) {
+  function setFieldValue(key: string, field: InquiryFormField, raw: string) {
+    setValues((prev) => ({
+      ...prev,
+      [key]: sanitizeInquiryValue(field, raw, phoneConfig),
+    }));
     setFieldErrors((prev) => {
-      if (!prev[field]) return prev;
+      if (!prev[key]) return prev;
       const next = { ...prev };
-      delete next[field];
+      delete next[key];
       return next;
     });
   }
 
+  function validationMessage(code: string, field: InquiryFormField) {
+    if (code === "required") {
+      if (field.type === "name") return t("validation.nameRequired");
+      if (field.type === "email") return t("validation.emailRequired");
+      if (field.type === "phone") return t("validation.phoneRequired");
+      return t("validation.fieldRequired");
+    }
+    if (code === "nameMin") return t("validation.nameMin");
+    if (code === "nameInvalid") return t("validation.nameInvalid");
+    if (code === "emailInvalid") return t("validation.emailInvalid");
+    if (code === "phoneMin" || code === "phoneMax") return t("validation.phoneInvalid");
+    if (code === "whatsappInvalid") return t("validation.whatsappInvalid");
+    if (code === "placeInvalid") return t("validation.placeInvalid");
+    if (code === "placeMin") return t("validation.placeMin");
+    if (code === "selectInvalid") return t("validation.selectInvalid");
+    if (code === "messageMax") return t("validation.messageMax");
+    return t("validation.fieldRequired");
+  }
+
   function resetForm() {
-    setName("");
-    setEmail("");
-    setPhoneDigits("");
-    setWhatsappDigits("");
-    setCity("");
-    setCountry("");
-    setFormMessage("");
+    setValues({});
     setFieldErrors({});
     setFormKey((k) => k + 1);
   }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = e.currentTarget;
-    const data = new FormData(form);
 
-    const values = {
-      name,
-      email,
-      phone: phoneDigits,
-      whatsapp: whatsappDigits,
-      city,
-      country,
-      message: formMessage,
-    };
-
-    const errors = validateContactForm(values, phoneConfig);
+    const errors = validateInquiryForm(inquiryForm, values, phoneConfig);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       setMessage("");
       return;
     }
 
-    const payload: Record<string, string> = {
-      name: values.name.trim(),
-      email: values.email.trim(),
-      phone: `${phoneConfig.dialCode} ${phoneDigits}`,
-    };
+    const payload: Record<string, string> = {};
 
-    if (whatsappDigits.trim()) payload.whatsapp = whatsappDigits;
-    if (city.trim()) payload.city = city.trim();
-    if (country.trim()) payload.country = country.trim();
-    if (formMessage.trim()) payload.message = formMessage.trim();
+    for (const field of inquiryForm.fields) {
+      const raw = (values[field.key] ?? "").trim();
+      if (!raw) continue;
 
-    const projectType = String(data.get("projectType") ?? "").trim();
-    const budget = String(data.get("budget") ?? "").trim();
-    if (projectType) payload.projectType = projectType;
-    if (budget) payload.budget = budget;
+      if (field.type === "phone" && field.useLocaleDialCode !== false) {
+        payload[field.key] = `${phoneConfig.dialCode} ${raw.replace(/\D/g, "")}`;
+      } else {
+        payload[field.key] = raw;
+      }
+    }
+
     if (purpose === "catalogue") payload.source = "catalogue-download";
 
     setStatus("loading");
@@ -143,6 +139,124 @@ export default function ContactInquiryForm({
       setStatus("error");
       setMessage(err instanceof Error ? err.message : tCommon("somethingWrong"));
     }
+  }
+
+  function renderField(field: InquiryFormField, stretchTextarea = false) {
+    const id = `contact-${field.key}`;
+    const err = fieldErrors[field.key];
+    const value = values[field.key] ?? "";
+
+    if (field.type === "phone" && field.useLocaleDialCode !== false) {
+      return (
+        <div key={field.key}>
+          <label className={labelClass} htmlFor={id}>
+            {field.label}
+          </label>
+          <div className={`${fieldClassSized} flex min-w-0 items-center gap-2 px-3 ${err ? "ring-2 ring-red-500/60" : ""}`}>
+            <img src={phoneConfig.flag} alt="" className="h-[18px] w-[22px] shrink-0 rounded-[2px] object-cover" />
+            <span className="shrink-0 text-[13px] font-medium text-[#251b1e] sm:text-[14px]">{phoneConfig.dialCode}</span>
+            <span className="h-4 w-px shrink-0 bg-[#6a414d]/20" aria-hidden />
+            <input
+              id={id}
+              name={field.key}
+              required={field.required}
+              value={value}
+              onChange={(e) => setFieldValue(field.key, field, e.target.value)}
+              inputMode="numeric"
+              placeholder={field.placeholder || phoneConfig.placeholder}
+              className="min-w-0 flex-1 bg-transparent text-[13px] text-[#251b1e] outline-none placeholder:text-[rgba(37,27,30,0.45)] sm:text-[14px]"
+            />
+          </div>
+          {err ? <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{validationMessage(err, field)}</p> : null}
+        </div>
+      );
+    }
+
+    if (field.type === "select") {
+      return (
+        <div key={field.key}>
+          <label className={labelClass} htmlFor={id}>
+            {field.label}
+          </label>
+          <div className="relative">
+            <select
+              id={id}
+              name={field.key}
+              required={field.required}
+              value={value}
+              onChange={(e) => setFieldValue(field.key, field, e.target.value)}
+              className={`${fieldClassSized} cursor-pointer appearance-none pr-10 ${err ? "ring-2 ring-red-500/60" : ""}`}
+            >
+              <option value="" disabled>
+                {field.placeholder || "—"}
+              </option>
+              {(field.options ?? []).map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              size={16}
+              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#6a414d]/70"
+              aria-hidden
+            />
+          </div>
+          {err ? <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{validationMessage(err, field)}</p> : null}
+        </div>
+      );
+    }
+
+    if (field.type === "textarea") {
+      return (
+        <div
+          key={field.key}
+          className={`flex min-h-0 flex-col ${stretchTextarea ? "min-h-[120px] flex-1" : isModal ? "min-h-[48px]" : ""}`}
+        >
+          <label className={labelClass} htmlFor={id}>
+            {field.label}
+          </label>
+          <textarea
+            id={id}
+            name={field.key}
+            required={field.required}
+            value={value}
+            onChange={(e) => setFieldValue(field.key, field, e.target.value)}
+            placeholder={field.placeholder}
+            className={`resize-none ${err ? "ring-2 ring-red-500/60" : ""} ${
+              stretchTextarea
+                ? `${fieldClassSized} min-h-[120px] flex-1 py-3`
+                : isModal
+                  ? `${fieldClass} min-h-[48px] max-h-[112px] py-2 sm:max-h-[120px] lg:max-h-[140px]`
+                  : CONTACT_TEXTAREA
+            }`}
+          />
+          {err ? <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{validationMessage(err, field)}</p> : null}
+        </div>
+      );
+    }
+
+    const inputType = field.type === "email" ? "email" : "text";
+
+    return (
+      <div key={field.key}>
+        <label className={labelClass} htmlFor={id}>
+          {field.label}
+        </label>
+        <input
+          id={id}
+          name={field.key}
+          type={inputType}
+          required={field.required}
+          value={value}
+          onChange={(e) => setFieldValue(field.key, field, e.target.value)}
+          placeholder={field.placeholder}
+          inputMode={field.type === "whatsapp" || field.type === "phone" ? "numeric" : undefined}
+          className={`${fieldClassSized} ${err ? "ring-2 ring-red-500/60" : ""}`}
+        />
+        {err ? <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{validationMessage(err, field)}</p> : null}
+      </div>
+    );
   }
 
   if (status === "success") {
@@ -185,243 +299,41 @@ export default function ContactInquiryForm({
     );
   }
 
+  const submitLabel = inquiryForm.submitLabel?.trim() || tCommon("submit");
+
+  const lastTextareaKey = [...inquiryForm.fields].reverse().find((f) => f.type === "textarea")?.key;
+
   return (
     <form
       key={formKey}
       onSubmit={onSubmit}
       noValidate
-      className={`${formGapClass} ${isModal ? "flex w-full min-w-0 flex-col" : ""} ${className}`.trim()}
+      className={`${stretchSection ? "flex h-full min-h-0 flex-1 flex-col" : formGapClass} ${isModal ? "flex w-full min-w-0 flex-col" : ""} ${className}`.trim()}
     >
-      <div>
-        <label className={labelClass} htmlFor="contact-name">
-          {t("fullName")}
-        </label>
-        <input
-          id="contact-name"
-          name="name"
-          required
-          value={name}
-          onChange={(e) => {
-            setName(sanitizeNameInput(e.target.value));
-            clearFieldError("name");
-          }}
-          placeholder={t("fullNamePh")}
-          className={`${fieldClass} ${fieldErrorClass("name")}`}
-        />
-        {fieldErrors.name ? (
-          <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{t(`validation.${fieldErrors.name}`)}</p>
-        ) : null}
-      </div>
-
-      <div>
-        <label className={labelClass} htmlFor="contact-email">
-          {t("email")}
-        </label>
-        <input
-          id="contact-email"
-          name="email"
-          type="email"
-          required
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            clearFieldError("email");
-          }}
-          placeholder={t("emailPh")}
-          className={`${fieldClass} ${fieldErrorClass("email")}`}
-        />
-        {fieldErrors.email ? (
-          <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{t(`validation.${fieldErrors.email}`)}</p>
-        ) : null}
-      </div>
-
-      <div className={rowClass}>
-        <div>
-          <label className={labelClass} htmlFor="contact-whatsapp">
-            {t("whatsapp")}
-          </label>
-          <input
-            id="contact-whatsapp"
-            name="whatsapp"
-            inputMode="numeric"
-            value={whatsappDigits}
-            onChange={(e) => {
-              setWhatsappDigits(sanitizePhoneDigits(e.target.value, 15));
-              clearFieldError("whatsapp");
-            }}
-            placeholder={t("whatsappPh")}
-            className={`${fieldClass} ${fieldErrorClass("whatsapp")}`}
-          />
-          {fieldErrors.whatsapp ? (
-            <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{t(`validation.${fieldErrors.whatsapp}`)}</p>
-          ) : null}
-        </div>
-        <div>
-          <label className={labelClass} htmlFor="contact-phone">
-            {t("phone")}
-          </label>
-          <div className={`${fieldClass} flex min-w-0 items-center gap-2 px-3 ${fieldErrorClass("phone")}`}>
-            <img
-              src={phoneConfig.flag}
-              alt=""
-              className="h-[18px] w-[22px] shrink-0 rounded-[2px] object-cover"
-            />
-            <span className="shrink-0 text-[13px] font-medium text-[#251b1e] sm:text-[14px]">{phoneConfig.dialCode}</span>
-            <span className="h-4 w-px shrink-0 bg-[#6a414d]/20" aria-hidden />
-            <input
-              id="contact-phone"
-              name="phone"
-              required
-              value={phoneDigits}
-              onChange={(e) => {
-                setPhoneDigits(sanitizePhoneDigits(e.target.value, phoneConfig.maxDigits));
-                clearFieldError("phone");
-              }}
-              inputMode="numeric"
-              placeholder={phoneConfig.placeholder}
-              className="min-w-0 flex-1 bg-transparent text-[13px] text-[#251b1e] outline-none placeholder:text-[rgba(37,27,30,0.45)] sm:text-[14px]"
-            />
-          </div>
-          {fieldErrors.phone ? (
-            <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{t(`validation.${fieldErrors.phone}`)}</p>
-          ) : null}
-        </div>
-      </div>
-
-      <div className={rowClass}>
-        <div>
-          <label className={labelClass} htmlFor="contact-city">
-            {t("city")}
-          </label>
-          <input
-            id="contact-city"
-            name="city"
-            value={city}
-            onChange={(e) => {
-              setCity(sanitizePlaceInput(e.target.value));
-              clearFieldError("city");
-            }}
-            placeholder={t("cityPh")}
-            className={`${fieldClass} ${fieldErrorClass("city")}`}
-          />
-          {fieldErrors.city ? (
-            <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{t(`validation.${fieldErrors.city}`)}</p>
-          ) : null}
-        </div>
-        <div>
-          <label className={labelClass} htmlFor="contact-country">
-            {t("country")}
-          </label>
-          <input
-            id="contact-country"
-            name="country"
-            value={country}
-            onChange={(e) => {
-              setCountry(sanitizePlaceInput(e.target.value));
-              clearFieldError("country");
-            }}
-            placeholder={t("countryPh")}
-            className={`${fieldClass} ${fieldErrorClass("country")}`}
-          />
-          {fieldErrors.country ? (
-            <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{t(`validation.${fieldErrors.country}`)}</p>
-          ) : null}
-        </div>
-      </div>
-
-      <div className={rowClass}>
-        <div>
-          <label className={labelClass} htmlFor="contact-project-type">
-            {t("projectType")}
-          </label>
-          <div className="relative">
-            <select
-              id="contact-project-type"
-              name="projectType"
-              defaultValue=""
-              className={`${fieldClass} cursor-pointer appearance-none pr-10`}
-            >
-              <option value="" disabled>
-                {t("projectTypePh")}
-              </option>
-              <option value="Modular Kitchen">{t("projectModularKitchen")}</option>
-              <option value="Wardrobe">{t("projectWardrobe")}</option>
-              <option value="TV Unit">{t("projectTvUnit")}</option>
-              <option value="Interior Design">{t("projectInteriorDesign")}</option>
-              <option value="Other">{t("projectOther")}</option>
-            </select>
-            <ChevronDown
-              size={16}
-              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#6a414d]/70"
-              aria-hidden
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className={labelClass} htmlFor="contact-budget">
-            {t("budgetRange")}
-          </label>
-          <div className="relative">
-            <select
-              id="contact-budget"
-              name="budget"
-              defaultValue=""
-              className={`${fieldClass} cursor-pointer appearance-none pr-10`}
-            >
-              <option value="" disabled>
-                {t("budgetPh")}
-              </option>
-              <option value={t("budget1")}>{t("budget1")}</option>
-              <option value={t("budget2")}>{t("budget2")}</option>
-              <option value={t("budget3")}>{t("budget3")}</option>
-              <option value={t("budget4")}>{t("budget4")}</option>
-              <option value={t("budget5")}>{t("budget5")}</option>
-            </select>
-            <ChevronDown
-              size={16}
-              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#6a414d]/70"
-              aria-hidden
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className={`flex min-h-0 flex-col ${isModal ? "min-h-[48px]" : ""}`}>
-        <label className={labelClass} htmlFor="contact-message">
-          {t("message")}
-        </label>
-        <textarea
-          id="contact-message"
-          name="message"
-          value={formMessage}
-          onChange={(e) => {
-            setFormMessage(e.target.value.slice(0, 2000));
-            clearFieldError("message");
-          }}
-          placeholder={t("messagePh")}
-          className={`resize-none ${fieldErrorClass("message")} ${
-            isModal
-              ? `${fieldClass} min-h-[48px] max-h-[112px] py-2 sm:max-h-[120px] lg:max-h-[140px]`
-              : CONTACT_TEXTAREA
-          }`}
-        />
-        {fieldErrors.message ? (
-          <p className="font-outfit mt-1 pl-4 text-[13px] text-red-700">{t(`validation.${fieldErrors.message}`)}</p>
-        ) : null}
+      <div className={`flex min-h-0 flex-col ${stretchSection ? "flex-1" : ""} ${formGapClass}`}>
+        {rows.map((row, index) => {
+          if (row.kind === "full") {
+            return renderField(row.field, stretchSection && row.field.key === lastTextareaKey);
+          }
+          return (
+            <div key={`row-${index}`} className={rowClass}>
+              {row.fields.map((field) =>
+                renderField(field, stretchSection && field.key === lastTextareaKey),
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <div
         className={
           isModal
-            ? "flex w-full shrink-0 flex-col items-stretch pt-2 sm:items-end"
-            : "flex w-full shrink-0 flex-col items-center pt-4 sm:pt-5"
+            ? "mt-auto flex w-full shrink-0 flex-col items-stretch pt-2 sm:items-end"
+            : `mt-auto flex w-full shrink-0 flex-col items-center pt-4 sm:pt-5 ${stretchSection ? "md:pt-3" : ""}`
         }
       >
         {message ? (
-          <p
-            className={`font-outfit mb-2 text-center text-[14px] ${status === "error" ? "text-red-700" : "text-[#6a414d]"}`}
-          >
+          <p className={`font-outfit mb-2 text-center text-[14px] ${status === "error" ? "text-red-700" : "text-[#6a414d]"}`}>
             {message}
           </p>
         ) : null}
@@ -435,7 +347,7 @@ export default function ContactInquiryForm({
               : "h-[48px] w-full max-w-[320px] px-6 text-[16px] sm:h-[50px] sm:px-5 sm:text-[18px] min-[520px]:w-auto min-[520px]:max-w-none"
           }`}
         >
-          {status === "loading" ? tCommon("submitting") : tCommon("submit")}
+          {status === "loading" ? tCommon("submitting") : submitLabel}
         </button>
       </div>
     </form>

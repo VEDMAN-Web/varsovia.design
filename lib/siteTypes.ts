@@ -59,8 +59,10 @@ export type SiteContent = {
   sectionCopy?: Record<string, SiteSectionCopy>;
   searchPages?: SiteSearchPage[];
   navMenus?: SiteNavItem[];
+  mainNavigation?: import("./mainNavigationTypes").MainNavigationConfig;
   qualitySale?: Record<string, unknown>;
   interiorCatalogMode?: "hybrid" | "api";
+  inquiryForm?: import("./inquiryFormTypes").InquiryFormConfig;
 };
 
 export type ApiCoreStrength = {
