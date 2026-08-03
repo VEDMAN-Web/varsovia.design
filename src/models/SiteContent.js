@@ -72,8 +72,12 @@ const siteContentSchema = new mongoose.Schema(
     ],
     /** Optional nav override; when empty, frontend uses i18n defaults */
     navMenus: { type: mongoose.Schema.Types.Mixed, default: [] },
+    /** Main header navigation (top bar + dropdown / showcase mega menus) */
+    mainNavigation: { type: mongoose.Schema.Types.Mixed, default: undefined },
     /** Quality & after-sales page CMS payload */
     qualitySale: { type: mongoose.Schema.Types.Mixed, default: {} },
+    /** Admin-defined contact / inquiry forms (contact page + catalogue modal) */
+    inquiryForm: { type: mongoose.Schema.Types.Mixed, default: undefined },
     /** api = API interior projects only (with fallback); hybrid = merge mock + API */
     interiorCatalogMode: { type: String, enum: ["hybrid", "api"], default: "hybrid" },
   },

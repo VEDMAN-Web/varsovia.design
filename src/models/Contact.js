@@ -11,6 +11,8 @@ const contactSchema = new mongoose.Schema(
     projectType: { type: String, default: "" },
     budget: { type: String, default: "" },
     message: { type: String, default: "" },
+    source: { type: String, default: "" },
+    responses: { type: mongoose.Schema.Types.Mixed, default: {} },
     status: {
       type: String,
       enum: ["new", "contacted", "closed"],

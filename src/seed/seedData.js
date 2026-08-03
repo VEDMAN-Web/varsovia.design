@@ -142,6 +142,8 @@ function siteContentDoc() {
       { title: "Terms of Use", description: "Website terms of use", href: "/terms", order: 16 },
     ],
     interiorCatalogMode: "api",
+    inquiryForm: require("../validation/inquiryForm").DEFAULT_INQUIRY_FORM,
+    mainNavigation: require("../validation/mainNavigation").DEFAULT_MAIN_NAVIGATION,
     qualitySale: {
       heroTitle: "Quality & After-Sales Support",
       heroSubtitle: "Built to last — supported long after installation",

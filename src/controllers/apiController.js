@@ -6,6 +6,17 @@ const {
   localizeModelDocs,
 } = require("../utils/locale");
 const { getInteriorCatalogFieldSpec } = require("../validation/projectInteriorCatalog");
+const {
+  DEFAULT_INQUIRY_FORM,
+  getInquiryFormFieldSpec,
+  localizeInquiryForm,
+} = require("../validation/inquiryForm");
+const {
+  DEFAULT_MAIN_NAVIGATION,
+  getMainNavigationSpec,
+  localizeMainNavigation,
+} = require("../validation/mainNavigation");
+const { invalidateInquiryFormCache } = require("../middleware/validateContactSubmission");
 const { parsePagination, sendSuccess, sendList, sendError } = require("../utils/apiResponse");
 
 const Product = require("../models/Product");
@@ -67,21 +78,8 @@ async function getHomeData(req, res) {
 
 async function submitContact(req, res) {
   try {
-    const { name, email, phone, whatsapp, city, country, projectType, budget, message } = req.body;
-    if (!name || !email || !phone) {
-      return sendError(res, 400, { message: "Name, email, and phone are required." });
-    }
-    const contact = await Contact.create({
-      name,
-      email,
-      phone,
-      whatsapp,
-      city,
-      country,
-      projectType,
-      budget,
-      message,
-    });
+    const payload = req.contactPayload;
+    const contact = await Contact.create(payload);
     return sendSuccess(
       res,
       { contact },
@@ -212,13 +210,33 @@ async function getProductBySlug(req, res) {
 async function getSite(req, res) {
   try {
     const site = await SiteContent.findOne({ key: "main" });
-    const payload = isAdminRequest(req)
-      ? site
-      : localizeSiteContent(site, getRequestLocale(req));
+    if (isAdminRequest(req)) {
+      const payload = site ? (site.toObject ? site.toObject() : site) : { key: "main" };
+      if (!payload.inquiryForm) payload.inquiryForm = DEFAULT_INQUIRY_FORM;
+      if (!payload.mainNavigation) payload.mainNavigation = DEFAULT_MAIN_NAVIGATION;
+      return sendSuccess(res, payload, { req });
+    }
+
+    const locale = getRequestLocale(req);
+    const payload = site ? localizeSiteContent(site, locale) : { key: "main" };
+    if (!payload.inquiryForm) {
+      payload.inquiryForm = localizeInquiryForm(DEFAULT_INQUIRY_FORM, locale);
+    }
+    if (!payload.mainNavigation) {
+      payload.mainNavigation = localizeMainNavigation(DEFAULT_MAIN_NAVIGATION, locale);
+    }
     return sendSuccess(res, payload, { req });
   } catch (error) {
     return sendError(res, 500, { message: error.message });
   }
+}
+
+async function getInquiryFormSpec(req, res) {
+  return sendSuccess(res, getInquiryFormFieldSpec(), { req });
+}
+
+async function getMainNavigationSpecHandler(req, res) {
+  return sendSuccess(res, getMainNavigationSpec(), { req });
 }
 
 async function updateSite(req, res) {
@@ -228,6 +246,7 @@ async function updateSite(req, res) {
       new: true,
       upsert: true,
     });
+    invalidateInquiryFormCache();
     return sendSuccess(res, site, { req });
   } catch (error) {
     return sendError(res, 400, { message: error.message });
@@ -271,6 +290,8 @@ module.exports = {
   getBlogById,
   getProjectById,
   getInteriorCatalogFieldSpec: getInteriorCatalogFieldSpecHandler,
+  getInquiryFormSpec,
+  getMainNavigationSpec: getMainNavigationSpecHandler,
   getProductBySlug,
   products: crud(Product, "Product"),
   projects: crud(Project, "Project"),

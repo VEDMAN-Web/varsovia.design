@@ -1,6 +1,7 @@
 const express = require("express");
 const adminAuth = require("../middleware/adminAuth");
 const { contactLimiter, adminLimiter, searchLimiter } = require("../middleware/rateLimiter");const { validate, schemas } = require("../middleware/validate");
+const { validateContactSubmission } = require("../middleware/validateContactSubmission");
 const validateProjectInteriorCatalog = require("../middleware/validateProjectInteriorCatalog");
 const ctrl = require("../controllers/apiController");
 const { searchSite } = require("../controllers/searchController");
@@ -10,7 +11,7 @@ const router = express.Router();
 // ─── Public routes ────────────────────────────────────────────────────────────
 router.get("/home", ctrl.getHomeData);
 router.get("/site", ctrl.getSite);
-router.post("/contact", contactLimiter, validate(schemas.contact), ctrl.submitContact);
+router.post("/contact", contactLimiter, validateContactSubmission, ctrl.submitContact);
 
 router.get("/products",        ctrl.products.list);
 router.get("/products/:slug",  ctrl.getProductBySlug);
@@ -39,6 +40,8 @@ router.get("/contacts", ctrl.listContacts);
 router.patch("/contacts/:id", ctrl.updateContactStatus);
 
 router.get("/projects/interior-catalog/spec", ctrl.getInteriorCatalogFieldSpec);
+router.get("/inquiry-form/spec", ctrl.getInquiryFormSpec);
+router.get("/navigation/spec", ctrl.getMainNavigationSpec);
 
 function mountCrud(path, handlers, createSchema, updateSchema) {
   router.post(`/${path}`,    validate(createSchema), handlers.create);

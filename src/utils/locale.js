@@ -125,6 +125,22 @@ function localizeSiteContent(doc, locale) {
     out.sectionCopy = copy;
   }
 
+  if (out.inquiryForm) {
+    const { localizeInquiryForm, DEFAULT_INQUIRY_FORM } = require("../validation/inquiryForm");
+    out.inquiryForm = localizeInquiryForm(out.inquiryForm || DEFAULT_INQUIRY_FORM, locale);
+  } else {
+    const { localizeInquiryForm, DEFAULT_INQUIRY_FORM } = require("../validation/inquiryForm");
+    out.inquiryForm = localizeInquiryForm(DEFAULT_INQUIRY_FORM, locale);
+  }
+
+  if (out.mainNavigation) {
+    const { localizeMainNavigation } = require("../validation/mainNavigation");
+    out.mainNavigation = localizeMainNavigation(out.mainNavigation, locale);
+  } else {
+    const { localizeMainNavigation, DEFAULT_MAIN_NAVIGATION } = require("../validation/mainNavigation");
+    out.mainNavigation = localizeMainNavigation(DEFAULT_MAIN_NAVIGATION, locale);
+  }
+
   return out;
 }
 

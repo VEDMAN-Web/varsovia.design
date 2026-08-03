@@ -222,6 +222,66 @@ const searchPageSchema = z.object({
   order:       z.number().int().min(0).optional(),
 });
 
+const inquiryFormOptionSchema = z.object({
+  value: z.string().min(1).max(200).trim(),
+  label: localizedRequired,
+});
+
+const inquiryFormFieldSchema = z.object({
+  key: z
+    .string()
+    .min(1)
+    .max(64)
+    .trim()
+    .regex(/^[a-zA-Z][a-zA-Z0-9_]*$/, "Field key must start with a letter."),
+  type: z.enum(["name", "text", "email", "phone", "whatsapp", "textarea", "select", "place"]),
+  label: localizedRequired,
+  placeholder: localizedString.optional(),
+  required: z.boolean().optional(),
+  width: z.enum(["full", "half"]).optional(),
+  order: z.number().int().min(0).optional(),
+  enabled: z.boolean().optional(),
+  useLocaleDialCode: z.boolean().optional(),
+  maxLength: z.number().int().min(1).max(10000).optional(),
+  options: z.array(inquiryFormOptionSchema).optional(),
+});
+
+const inquiryFormSchema = z.object({
+  version: z.number().int().min(1).optional(),
+  submitLabel: localizedString.optional(),
+  fields: z.array(inquiryFormFieldSchema).min(1).max(40),
+});
+
+const mainNavLinkSchema = z.object({
+  label: localizedString.optional(),
+  title: localizedString.optional(),
+  subtitle: localizedString.optional(),
+  href: z.string().max(500).trim(),
+});
+
+const mainNavMenuSchema = z.object({
+  featuredLabel: localizedString.optional(),
+  featuredSubtitle: localizedString.optional(),
+  featuredHref: z.string().max(500).trim().optional(),
+  sectionLabel: localizedString.optional(),
+  links: z.array(mainNavLinkSchema).max(40).optional(),
+});
+
+const mainNavItemSchema = z.object({
+  id: z.string().min(1).max(80).trim(),
+  label: localizedString,
+  href: z.string().max(500).trim(),
+  menuKind: z.enum(["none", "dropdown", "showcaseMega"]).optional(),
+  enabled: z.boolean().optional(),
+  order: z.number().int().min(0).max(999).optional(),
+  menu: mainNavMenuSchema.optional(),
+});
+
+const mainNavigationSchema = z.object({
+  version: z.number().int().min(1).optional(),
+  items: z.array(mainNavItemSchema).min(1).max(20),
+});
+
 const siteUpdateSchema = z.object({
   heroEyebrow:            localizedString.optional(),
   heroHeadline:           localizedString.optional(),
@@ -261,6 +321,8 @@ const siteUpdateSchema = z.object({
   navMenus:               z.array(z.record(z.string(), z.unknown())).optional(),
   qualitySale:            z.record(z.string(), z.unknown()).optional(),
   interiorCatalogMode:    z.enum(["hybrid", "api"]).optional(),
+  inquiryForm:            inquiryFormSchema.optional(),
+  mainNavigation:         mainNavigationSchema.optional(),
 });
 const showcaseSchema = z.object({
   title:      localizedRequired,

@@ -1,4 +1,5 @@
 const Project = require("../models/Project");
+const SiteContent = require("../models/SiteContent");
 const CoreStrength = require("../models/CoreStrength");
 const Partner = require("../models/Partner");
 const Product = require("../models/Product");
@@ -78,9 +79,35 @@ async function needsCanonicalSync() {
   return false;
 }
 
+async function migrateInquiryForm() {
+  const { DEFAULT_INQUIRY_FORM } = require("../validation/inquiryForm");
+  const site = await SiteContent.findOne({ key: "main" }).select("inquiryForm").lean();
+  if (!site?.inquiryForm?.fields?.length) {
+    await SiteContent.updateOne(
+      { key: "main" },
+      { $set: { inquiryForm: DEFAULT_INQUIRY_FORM } },
+      { upsert: true },
+    );
+  }
+}
+
+async function migrateMainNavigation() {
+  const { DEFAULT_MAIN_NAVIGATION } = require("../validation/mainNavigation");
+  const site = await SiteContent.findOne({ key: "main" }).select("mainNavigation").lean();
+  if (!site?.mainNavigation?.items?.length) {
+    await SiteContent.updateOne(
+      { key: "main" },
+      { $set: { mainNavigation: DEFAULT_MAIN_NAVIGATION } },
+      { upsert: true },
+    );
+  }
+}
+
 async function seedIfEmpty() {
   await migrateProjectCategories();
   await migrateProjectFilterMetadata();
+  await migrateInquiryForm();
+  await migrateMainNavigation();
 
   if (await needsCanonicalSync()) {
     console.log("Applying canonical seed (empty or incomplete data detected)...");
