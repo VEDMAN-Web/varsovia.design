@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const { sendError } = require("../utils/apiResponse");
 
 /**
  * Timing-safe admin key verification.
@@ -10,7 +11,7 @@ function adminAuth(req, res, next) {
   const expected = process.env.ADMIN_KEY || "";
 
   if (!key || !expected) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return sendError(res, 401, { message: "Unauthorized" });
   }
 
   try {
@@ -24,10 +25,10 @@ function adminAuth(req, res, next) {
     const expectedHash = crypto.createHash("sha256").update(expectedBuf).digest();
 
     if (!crypto.timingSafeEqual(keyHash, expectedHash)) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return sendError(res, 401, { message: "Unauthorized" });
     }
   } catch {
-    return res.status(401).json({ message: "Unauthorized" });
+    return sendError(res, 401, { message: "Unauthorized" });
   }
 
   next();

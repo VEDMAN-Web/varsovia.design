@@ -1,4 +1,5 @@
 const Project = require("../models/Project");
+const { sendError } = require("../utils/apiResponse");
 const { getInteriorCatalogValidationErrors } = require("../validation/projectInteriorCatalog");
 
 /**
@@ -17,9 +18,10 @@ async function validateProjectInteriorCatalog(req, res, next) {
 
     const errors = getInteriorCatalogValidationErrors(merged);
     if (errors.length > 0) {
-      return res.status(422).json({
+      return sendError(res, 422, {
+        code: "INTERIOR_CATALOG_VALIDATION",
         message: "Interior catalog validation failed. Include all filter fields for this category.",
-        errors,
+        details: errors,
       });
     }
 

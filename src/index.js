@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const connectDB = require("./config/db");
+const { sendError } = require("./utils/apiResponse");
 const apiRoutes = require("./routes/api");
 const seedIfEmpty = require("./seed/seedIfEmpty");
 const { globalLimiter } = require("./middleware/rateLimiter");
@@ -51,10 +52,10 @@ app.use("/api", apiRoutes);
 // ─── Global error handler ─────────────────────────────────────────────────────
 app.use((err, req, res, _next) => {
   if (err.message && err.message.startsWith("CORS:")) {
-    return res.status(403).json({ message: err.message });
+    return sendError(res, 403, { message: err.message });
   }
   console.error("Unhandled error:", err);
-  res.status(500).json({ message: "Internal server error." });
+  return sendError(res, 500, { message: "Internal server error." });
 });
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────

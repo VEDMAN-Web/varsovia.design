@@ -1,4 +1,5 @@
 const { z } = require("zod");
+const { sendError } = require("../utils/apiResponse");
 
 const localizedString = z.union([
   z.string().max(50000),
@@ -48,7 +49,11 @@ function validate(schema) {
         field: (e.path || []).join("."),
         message: e.message,
       }));
-      return res.status(422).json({ message: "Validation failed.", errors });
+      return sendError(res, 422, {
+        code: "VALIDATION_ERROR",
+        message: "Validation failed.",
+        details: errors,
+      });
     }
     // Preserve raw Unicode string fields that Zod may sanitize
     const PRESERVE_RAW = ["budget", "message", "whatsapp", "city", "country", "address"];

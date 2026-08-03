@@ -6,6 +6,7 @@ const Catalogue = require("../models/Catalogue");
 const TeamMember = require("../models/TeamMember");
 const FAQ = require("../models/FAQ");
 const { getRequestLocale } = require("../utils/locale");
+const { sendSuccess, sendError } = require("../utils/apiResponse");
 const {
   escapeRegex,
   normalizeQuery,
@@ -40,7 +41,11 @@ async function searchSite(req, res) {
     const limit = parseLimit(req.query.limit);
 
     if (!isValidSearchQuery(q)) {
-      return res.json({ query: q, locale, results: [], tookMs: Date.now() - started });
+      return sendSuccess(
+        res,
+        { query: q, results: [] },
+        { req, meta: { tookMs: Date.now() - started } },
+      );
     }
 
     const pattern = escapeRegex(q);
@@ -183,14 +188,13 @@ async function searchSite(req, res) {
     uniqueHits.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
     const results = uniqueHits.slice(0, limit).map(({ score: _s, ...rest }) => rest);
 
-    res.json({
-      query: q,
-      locale,
-      results,
-      tookMs: Date.now() - started,
-    });
+    return sendSuccess(
+      res,
+      { query: q, results },
+      { req, meta: { tookMs: Date.now() - started } },
+    );
   } catch (error) {
-    res.status(500).json({ message: error.message || "Search failed." });
+    return sendError(res, 500, { message: error.message || "Search failed." });
   }
 }
 

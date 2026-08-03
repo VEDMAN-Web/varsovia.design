@@ -1,3 +1,13 @@
+const {
+  getRequestLocale,
+  isAdminRequest,
+  localizeSiteContent,
+  localizeModelDoc,
+  localizeModelDocs,
+} = require("../utils/locale");
+const { getInteriorCatalogFieldSpec } = require("../validation/projectInteriorCatalog");
+const { parsePagination, sendSuccess, sendList, sendError } = require("../utils/apiResponse");
+
 const Product = require("../models/Product");
 const Project = require("../models/Project");
 const Testimonial = require("../models/Testimonial");
@@ -11,14 +21,6 @@ const Blog = require("../models/Blog");
 const TeamMember = require("../models/TeamMember");
 const FAQ = require("../models/FAQ");
 const CoreStrength = require("../models/CoreStrength");
-const {
-  getRequestLocale,
-  isAdminRequest,
-  localizeSiteContent,
-  localizeModelDoc,
-  localizeModelDocs,
-} = require("../utils/locale");
-const { getInteriorCatalogFieldSpec } = require("../validation/projectInteriorCatalog");
 
 async function getHomeData(req, res) {
   try {
@@ -35,7 +37,7 @@ async function getHomeData(req, res) {
       ]);
 
     if (isAdminRequest(req)) {
-      return res.json({
+      return sendSuccess(res, {
         site,
         products,
         projects,
@@ -44,11 +46,11 @@ async function getHomeData(req, res) {
         partners,
         showrooms,
         coreStrengths,
-      });
+      }, { req });
     }
 
     const locale = getRequestLocale(req);
-    res.json({
+    return sendSuccess(res, {
       site: localizeSiteContent(site, locale),
       products: localizeModelDocs("Product", products, locale),
       projects: localizeModelDocs("Project", projects, locale),
@@ -57,9 +59,9 @@ async function getHomeData(req, res) {
       partners: localizeModelDocs("Partner", partners, locale),
       showrooms: localizeModelDocs("Showroom", showrooms, locale),
       coreStrengths: localizeModelDocs("CoreStrength", coreStrengths, locale),
-    });
+    }, { req });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return sendError(res, 500, { message: error.message });
   }
 }
 
@@ -67,7 +69,7 @@ async function submitContact(req, res) {
   try {
     const { name, email, phone, whatsapp, city, country, projectType, budget, message } = req.body;
     if (!name || !email || !phone) {
-      return res.status(400).json({ message: "Name, email, and phone are required." });
+      return sendError(res, 400, { message: "Name, email, and phone are required." });
     }
     const contact = await Contact.create({
       name,
@@ -80,18 +82,30 @@ async function submitContact(req, res) {
       budget,
       message,
     });
-    res.status(201).json({ message: "Thank you! We will get back to you soon.", contact });
+    return sendSuccess(
+      res,
+      { contact },
+      {
+        status: 201,
+        req,
+        meta: { message: "Thank you! We will get back to you soon." },
+      },
+    );
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return sendError(res, 500, { message: error.message });
   }
 }
 
 async function listContacts(req, res) {
   try {
-    const contacts = await Contact.find().sort({ createdAt: -1 });
-    res.json(contacts);
+    const { page, limit, skip } = parsePagination(req.query);
+    const [contacts, total] = await Promise.all([
+      Contact.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Contact.countDocuments(),
+    ]);
+    return sendList(res, req, contacts, { page, limit, total });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return sendError(res, 500, { message: error.message });
   }
 }
 
@@ -102,10 +116,10 @@ async function updateContactStatus(req, res) {
       { status: req.body.status },
       { new: true },
     );
-    if (!contact) return res.status(404).json({ message: "Not found" });
-    res.json(contact);
+    if (!contact) return sendError(res, 404, { message: "Not found" });
+    return sendSuccess(res, contact, { req });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return sendError(res, 500, { message: error.message });
   }
 }
 
@@ -113,45 +127,25 @@ function crud(Model, modelName) {
   return {
     list: async (req, res) => {
       try {
-        const page = Math.max(1, parseInt(req.query.page) || 0);
-        const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 0));
-        const paginate = page > 0 && limit > 0 && (req.query.page || req.query.limit);
-
-        if (paginate) {
-          const skip = (page - 1) * limit;
-          const [items, total] = await Promise.all([
-            Model.find().sort({ order: 1, createdAt: -1 }).skip(skip).limit(limit),
-            Model.countDocuments(),
-          ]);
-          const payload = isAdminRequest(req)
-            ? items
-            : localizeModelDocs(modelName, items, getRequestLocale(req));
-          return res.json({
-            data: payload,
-            pagination: {
-              total,
-              page,
-              limit,
-              totalPages: Math.ceil(total / limit),
-              hasNext: page * limit < total,
-              hasPrev: page > 1,
-            },
-          });
-        }
-
-        const items = await Model.find().sort({ order: 1, createdAt: -1 });
-        if (isAdminRequest(req)) return res.json(items);
-        res.json(localizeModelDocs(modelName, items, getRequestLocale(req)));
+        const { page, limit, skip } = parsePagination(req.query);
+        const [items, total] = await Promise.all([
+          Model.find().sort({ order: 1, createdAt: -1 }).skip(skip).limit(limit),
+          Model.countDocuments(),
+        ]);
+        const payload = isAdminRequest(req)
+          ? items
+          : localizeModelDocs(modelName, items, getRequestLocale(req));
+        return sendList(res, req, payload, { page, limit, total });
       } catch (error) {
-        res.status(500).json({ message: error.message });
+        return sendError(res, 500, { message: error.message });
       }
     },
     create: async (req, res) => {
       try {
         const item = await Model.create(req.body);
-        res.status(201).json(item);
+        return sendSuccess(res, item, { status: 201, req });
       } catch (error) {
-        res.status(400).json({ message: error.message });
+        return sendError(res, 400, { message: error.message });
       }
     },
     update: async (req, res) => {
@@ -160,21 +154,21 @@ function crud(Model, modelName) {
           new: true,
           runValidators: true,
         });
-        if (!item) return res.status(404).json({ message: "Not found" });
-        res.json(item);
+        if (!item) return sendError(res, 404, { message: "Not found" });
+        return sendSuccess(res, item, { req });
       } catch (error) {
-        if (error.name === "CastError") return res.status(404).json({ message: "Not found" });
-        res.status(400).json({ message: error.message });
+        if (error.name === "CastError") return sendError(res, 404, { message: "Not found" });
+        return sendError(res, 400, { message: error.message });
       }
     },
     remove: async (req, res) => {
       try {
         const item = await Model.findByIdAndDelete(req.params.id);
-        if (!item) return res.status(404).json({ message: "Not found" });
-        res.json({ message: "Deleted" });
+        if (!item) return sendError(res, 404, { message: "Not found" });
+        return sendSuccess(res, null, { req, meta: { message: "Deleted" } });
       } catch (error) {
-        if (error.name === "CastError") return res.status(404).json({ message: "Not found" });
-        res.status(500).json({ message: error.message });
+        if (error.name === "CastError") return sendError(res, 404, { message: "Not found" });
+        return sendError(res, 500, { message: error.message });
       }
     },
   };
@@ -185,16 +179,18 @@ async function getProjectById(req, res) {
     const { id } = req.params;
     const project =
       (await Project.findById(id).catch(() => null)) || (await Project.findOne({ slug: id }));
-    if (!project) return res.status(404).json({ message: "Project not found" });
-    if (isAdminRequest(req)) return res.json(project);
-    res.json(localizeModelDoc("Project", project, getRequestLocale(req)));
+    if (!project) return sendError(res, 404, { message: "Project not found" });
+    const payload = isAdminRequest(req)
+      ? project
+      : localizeModelDoc("Project", project, getRequestLocale(req));
+    return sendSuccess(res, payload, { req });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return sendError(res, 500, { message: error.message });
   }
 }
 
-function getInteriorCatalogFieldSpecHandler(_req, res) {
-  res.json(getInteriorCatalogFieldSpec());
+function getInteriorCatalogFieldSpecHandler(req, res) {
+  return sendSuccess(res, getInteriorCatalogFieldSpec(), { req });
 }
 
 async function getProductBySlug(req, res) {
@@ -203,21 +199,25 @@ async function getProductBySlug(req, res) {
     const product =
       (await Product.findOne({ slug }).catch(() => null)) ||
       (await Product.findById(slug).catch(() => null));
-    if (!product) return res.status(404).json({ message: "Product not found" });
-    if (isAdminRequest(req)) return res.json(product);
-    res.json(localizeModelDoc("Product", product, getRequestLocale(req)));
+    if (!product) return sendError(res, 404, { message: "Product not found" });
+    const payload = isAdminRequest(req)
+      ? product
+      : localizeModelDoc("Product", product, getRequestLocale(req));
+    return sendSuccess(res, payload, { req });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return sendError(res, 500, { message: error.message });
   }
 }
 
 async function getSite(req, res) {
   try {
     const site = await SiteContent.findOne({ key: "main" });
-    if (isAdminRequest(req)) return res.json(site);
-    res.json(localizeSiteContent(site, getRequestLocale(req)));
+    const payload = isAdminRequest(req)
+      ? site
+      : localizeSiteContent(site, getRequestLocale(req));
+    return sendSuccess(res, payload, { req });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return sendError(res, 500, { message: error.message });
   }
 }
 
@@ -228,9 +228,9 @@ async function updateSite(req, res) {
       new: true,
       upsert: true,
     });
-    res.json(site);
+    return sendSuccess(res, site, { req });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    return sendError(res, 400, { message: error.message });
   }
 }
 
@@ -238,22 +238,26 @@ async function getBlogById(req, res) {
   try {
     const blog = await Blog.findById(req.params.id).catch(() => null);
     if (blog) {
-      if (isAdminRequest(req)) return res.json(blog);
-      return res.json(localizeModelDoc("Blog", blog, getRequestLocale(req)));
+      const payload = isAdminRequest(req)
+        ? blog
+        : localizeModelDoc("Blog", blog, getRequestLocale(req));
+      return sendSuccess(res, payload, { req });
     }
 
     const parsed = parseInt(req.params.id, 10);
     if (!isNaN(parsed)) {
       const blogByOrder = await Blog.findOne({ order: parsed });
       if (blogByOrder) {
-        if (isAdminRequest(req)) return res.json(blogByOrder);
-        return res.json(localizeModelDoc("Blog", blogByOrder, getRequestLocale(req)));
+        const payload = isAdminRequest(req)
+          ? blogByOrder
+          : localizeModelDoc("Blog", blogByOrder, getRequestLocale(req));
+        return sendSuccess(res, payload, { req });
       }
     }
 
-    return res.status(404).json({ message: "Blog not found" });
+    return sendError(res, 404, { message: "Blog not found" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return sendError(res, 500, { message: error.message });
   }
 }
 
