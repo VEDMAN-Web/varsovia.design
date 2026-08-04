@@ -204,7 +204,11 @@
       "cityInvalid": "Miasto może zawierać tylko litery — bez cyfr.",
       "countryInvalid": "Kraj może zawierać tylko litery — bez cyfr.",
       "messageMax": "Wiadomość nie może przekraczać 2000 znaków."
-    }
+    },
+    "ourLocationTitle": "Nasza lokalizacja",
+    "ourLocationSubtitle": "Dogodna lokalizacja, aby sprostać Twoim potrzebom projektowym",
+    "mapAriaLabel": "Mapa z lokalizacją biura Varsovia Design",
+    "openInMaps": "Otwórz w Google Maps"
   },
   "blogListing": {
     "heroTitle": "Nasz blog",

@@ -207,7 +207,11 @@
       "cityInvalid": "City can only contain letters — no numbers or symbols.",
       "countryInvalid": "Country can only contain letters — no numbers or symbols.",
       "messageMax": "Message cannot exceed 2000 characters."
-    }
+    },
+    "ourLocationTitle": "Our Location",
+    "ourLocationSubtitle": "Conveniently located to serve your interior design needs",
+    "mapAriaLabel": "Map showing Varsovia Design office location",
+    "openInMaps": "Open in Google Maps"
   },
   "blogListing": {
     "heroTitle": "Our Blog",

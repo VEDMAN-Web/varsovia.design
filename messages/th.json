@@ -204,7 +204,11 @@
       "cityInvalid": "ชื่อเมืองใช้ได้เฉพาะตัวอักษร — ห้ามใส่ตัวเลข",
       "countryInvalid": "ชื่อประเทศใช้ได้เฉพาะตัวอักษร — ห้ามใส่ตัวเลข",
       "messageMax": "ข้อความต้องไม่เกิน 2000 ตัวอักษร"
-    }
+    },
+    "ourLocationTitle": "ที่ตั้งของเรา",
+    "ourLocationSubtitle": "ตั้งอยู่ในทำเลที่สะดวกเพื่อตอบโจทย์ความต้องการด้านออกแบบภายใน",
+    "mapAriaLabel": "แผนที่แสดงที่ตั้งสำนักงาน Varsovia Design",
+    "openInMaps": "เปิดใน Google Maps"
   },
   "blogListing": {
     "heroTitle": "บล็อกของเรา",
