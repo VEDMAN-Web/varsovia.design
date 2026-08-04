@@ -397,13 +397,56 @@ export async function fetchFAQs(locale?: Locale): Promise<Record<string, unknown
   }
 }
 
-export async function fetchProjectById(id: string, locale?: Locale) {
+export async function fetchProjectById(idOrSlug: string, locale?: Locale) {
   const { getInteriorProjectById, resolveInteriorDetailIntro } = await import("./interiorData");
+  const { interiorDetailSlug } = await import("./interiorRoutes");
+
+  try {
+    const res = await fetch(withLocale(`${API_URL}/projects/${encodeURIComponent(idOrSlug)}`, locale), {
+      headers: localeHeaders(locale),
+      next: { revalidate: 30 },
+    });
+    if (res.ok) {
+      const body = await res.json();
+      const apiProject = unwrapApiData<Record<string, unknown>>(body);
+      const cover = resolveMediaUrl(
+        (apiProject.coverImage || apiProject.image) as string | undefined,
+        MEDIA.interior[0],
+      );
+      const galleryRaw = Array.isArray(apiProject.gallery) ? apiProject.gallery : [];
+      const gallery =
+        galleryRaw.length > 0
+          ? galleryRaw.map((url) => resolveMediaUrl(String(url), cover))
+          : [cover, cover, cover];
+
+      const title = pickLocalizedString(apiProject.title, locale, "Interior Project");
+      const mongoId = String(apiProject._id ?? idOrSlug);
+      const slugField = typeof apiProject.slug === "string" ? apiProject.slug : undefined;
+
+      return {
+        _id: mongoId,
+        slug: interiorDetailSlug({ slug: slugField, _id: mongoId, title }),
+        title,
+        detailTitle: pickLocalizedString(apiProject.detailTitle, locale, title),
+        description: resolveInteriorDetailIntro(
+          pickLocalizedString(apiProject.detailDescription, locale, ""),
+        ),
+        coverImage: cover,
+        gallery,
+        category: apiProject.category as string | undefined,
+        isNew: Boolean(apiProject.isNew),
+        narrativeOne: pickLocalizedString(apiProject.narrativeOne, locale, ""),
+        narrativeTwo: pickLocalizedString(apiProject.narrativeTwo, locale, ""),
+      };
+    }
+  } catch {
+    /* try list fallback */
+  }
 
   try {
     const projects = await fetchProjects(locale);
     const apiProject = projects.find(
-      (p) => p._id === id || p.slug === id,
+      (p) => p._id === idOrSlug || p.slug === idOrSlug,
     ) as ApiProject | undefined;
     if (apiProject) {
       const cover = resolveMediaUrl(
@@ -417,8 +460,14 @@ export async function fetchProjectById(id: string, locale?: Locale) {
 
       const apiRec = apiProject as Record<string, unknown>;
       const title = pickLocalizedString(apiProject.title, locale, "Interior Project");
+      const mongoId = String(apiProject._id ?? idOrSlug);
       return {
-        _id: String(apiProject._id ?? id),
+        _id: mongoId,
+        slug: interiorDetailSlug({
+          slug: apiProject.slug,
+          _id: mongoId,
+          title,
+        }),
         title,
         detailTitle: pickLocalizedString(apiRec.detailTitle, locale, title),
         description: resolveInteriorDetailIntro(
@@ -436,7 +485,15 @@ export async function fetchProjectById(id: string, locale?: Locale) {
     // fall through to static mock
   }
 
-  return getInteriorProjectById(id);
+  try {
+    const { getInteriorProjectFromFallback } = await import("./interiorData");
+    const fromFallback = getInteriorProjectFromFallback(idOrSlug, locale);
+    if (fromFallback) return fromFallback;
+  } catch {
+    /* continue */
+  }
+
+  return getInteriorProjectById(idOrSlug);
 }
 
 export async function fetchCatalogues(locale?: Locale): Promise<Record<string, unknown>[]> {

@@ -8,6 +8,7 @@ import type { InteriorDetailProject } from "@/lib/interiorData";
 import { buildInteriorDetailBody, getInteriorBackHref, INTERIOR_DETAIL_BODY_FALLBACK } from "@/lib/interiorData";
 import type { Locale } from "@/lib/i18n/routing";
 import ShowcaseProductCard from "@/components/ui/ShowcaseProductCard";
+import { interiorDetailPath } from "@/lib/interiorRoutes";
 import {
   SHOWCASE_LISTING_GRID,
   SHOWCASE_LISTING_GRID_WRAP,
@@ -202,7 +203,7 @@ function YouMayLikeSection({
               category={item.category || category}
               image={item.coverImage}
               imageFallback={FALLBACK}
-              href={`/interior/${item._id}`}
+              href={interiorDetailPath(item)}
               isNew={Boolean(item.isNew)}
               motionVariant="mount"
             />

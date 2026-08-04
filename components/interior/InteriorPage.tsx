@@ -16,6 +16,7 @@ import {
   INTERIOR_LISTING_TOOLBAR_MT,
 } from "@/components/interior/interiorLayoutShared";
 import ShowcaseProductCard from "@/components/ui/ShowcaseProductCard";
+import { interiorDetailPath } from "@/lib/interiorRoutes";
 import {
   SHOWCASE_LISTING_GRID,
   SHOWCASE_LISTING_GRID_WRAP,
@@ -470,7 +471,7 @@ export default function InteriorPage({ initialCategory = "All" }: Props) {
                         category={item.category || category}
                         image={item.coverImage}
                         imageFallback={INTERIOR_FALLBACK}
-                        href={`/interior/${item._id}`}
+                        href={interiorDetailPath(item)}
                         isNew={Boolean(item.isNew)}
                         motionVariant="mount"
                       />

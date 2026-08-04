@@ -1,6 +1,9 @@
 import { getLocaleOrDefault } from "@/lib/i18n/messageCatalog";
 import { pickLocalized } from "@/lib/i18n/pickLocalized";
 import type { Locale } from "@/lib/i18n/routing";
+import { interiorDetailSlug, interiorMockSlugForId } from "@/lib/interiorRoutes";
+import { fallbackHomeData } from "./fallbackData";
+import { CMS_INTERIOR_SEED_SLUGS } from "@/lib/cmsInteriorSeedSlugs";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 
 export type InteriorCategory =
@@ -35,6 +38,7 @@ export type InteriorItem = {
 
 export type InteriorDetailProject = {
   _id: string;
+  slug?: string;
   title: string;
   detailTitle: string;
   description: string;
@@ -283,6 +287,15 @@ export function getFilterOptionsForSection(
     .filter((v): v is string => typeof v === "string" && v.trim().length > 0)
     .map((v) => v.trim());
   return uniqueSorted([...base, ...fromCatalog]);
+}
+
+function findMockInteriorItem(idOrSlug: string) {
+  return INTERIOR_ITEMS.find(
+    (entry) =>
+      entry.id === idOrSlug ||
+      interiorMockSlugForId(entry.id) === idOrSlug ||
+      interiorDetailSlug({ _id: entry.id, title: entry.title }) === idOrSlug,
+  );
 }
 
 function isMockInteriorId(id: string) {
@@ -899,7 +912,9 @@ export function normalizeInteriorProject(
   const image = item.image as string | undefined;
   const coverImage = item.coverImage as string | undefined;
   const category = (item.category as string | undefined) || "Kitchen";
-  const mockItem = INTERIOR_ITEMS.find((m) => m.id === id);
+  const mockItem = INTERIOR_ITEMS.find(
+    (m) => m.id === id || interiorMockSlugForId(m.id) === id,
+  );
 
   const title =
     pickLocalized(item.title, loc) ||
@@ -932,6 +947,11 @@ export function normalizeInteriorProject(
       (source === "mock" ? mockItem?.createdAt : "") ||
       "",
     order: typeof item.order === "number" ? item.order : mockItem?.order,
+    slug: interiorDetailSlug({
+      slug: typeof item.slug === "string" ? item.slug : undefined,
+      _id: id,
+      title,
+    }),
   };
 }
 
@@ -996,15 +1016,50 @@ function buildInteriorGallery(primary: string, extra?: string[]) {
   ];
 }
 
-export function getInteriorProjectById(id: string): InteriorDetailProject | null {
-  const item = INTERIOR_ITEMS.find((entry) => entry.id === id);
+export function getInteriorProjectFromFallback(
+  idOrSlug: string,
+  locale?: Locale,
+): InteriorDetailProject | null {
+  for (const row of fallbackHomeData.projects) {
+    const rec = row as Record<string, unknown>;
+    const slug = interiorDetailSlug({
+      slug: rec.slug as string | undefined,
+      _id: String(rec._id ?? ""),
+      title: String(rec.title ?? ""),
+    });
+    const id = String(rec._id ?? "");
+    if (idOrSlug !== id && idOrSlug !== rec.slug && idOrSlug !== slug) continue;
+
+    const normalized = normalizeInteriorProject(rec, 0, locale, { source: "api" });
+    const coverImage = normalized.coverImage as string;
+    return {
+      _id: String(normalized._id),
+      slug,
+      title: String(normalized.title),
+      detailTitle: String(normalized.title),
+      description: String(normalized.description ?? ""),
+      coverImage,
+      gallery: buildInteriorGallery(coverImage),
+      category: normalized.category as string | undefined,
+      isNew: Boolean(normalized.isNew),
+      narrativeOne: INTERIOR_NARRATIVE_ONE,
+      narrativeTwo: INTERIOR_NARRATIVE_TWO,
+    };
+  }
+  return null;
+}
+
+export function getInteriorProjectById(idOrSlug: string): InteriorDetailProject | null {
+  const item = findMockInteriorItem(idOrSlug);
   if (!item) return null;
 
   const coverImage = resolveInteriorImage(item.image, item.gallery, item.image, 0);
   const gallery = buildInteriorGallery(coverImage, item.gallery);
+  const slug = interiorDetailSlug({ _id: item.id, title: item.title });
 
   return {
     _id: item.id,
+    slug,
     title: item.title,
     detailTitle: item.detailTitle || item.title,
     description: resolveInteriorDetailIntro(
@@ -1020,18 +1075,22 @@ export function getInteriorProjectById(id: string): InteriorDetailProject | null
 }
 
 export function getRelatedInteriorProjects(
-  id: string,
+  idOrSlug: string,
   category?: string,
-  limit = 3
+  limit = 3,
 ): InteriorDetailProject[] {
+  const current = findMockInteriorItem(idOrSlug);
+  const currentId = current?.id ?? idOrSlug;
+
   return INTERIOR_ITEMS.filter(
-    (item) => item.id !== id && (!category || item.category === category)
+    (item) => item.id !== currentId && (!category || item.category === category),
   )
     .slice(0, limit)
     .map((item, index) => {
       const coverImage = resolveInteriorImage(item.image, item.gallery, item.image, index);
       return {
         _id: item.id,
+        slug: interiorDetailSlug({ _id: item.id, title: item.title }),
         title: item.title,
         detailTitle: item.detailTitle || item.title,
         description: item.detailDescription || item.description,
@@ -1049,5 +1108,38 @@ export function getInteriorBackHref(category?: string) {
 }
 
 export function interiorStaticParams() {
-  return INTERIOR_ITEMS.map((item) => ({ id: item.id }));
+  return INTERIOR_ITEMS.map((item) => ({
+    slug: interiorDetailSlug({ _id: item.id, title: item.title }),
+  }));
+}
+
+/** Mock slugs plus any CMS project slugs available at build time. */
+export async function interiorDetailStaticParams() {
+  const params = interiorStaticParams();
+  const seen = new Set(params.map((p) => p.slug));
+
+  for (const seedSlug of CMS_INTERIOR_SEED_SLUGS) {
+    if (!seen.has(seedSlug)) {
+      seen.add(seedSlug);
+      params.push({ slug: seedSlug });
+    }
+  }
+
+  try {
+    const { fetchProjects } = await import("./api");
+    const projects = await fetchProjects();
+    for (const row of projects) {
+      const p = row as { _id?: string; slug?: string; title?: unknown };
+      if (!p._id) continue;
+      const title = typeof p.title === "string" ? p.title : undefined;
+      const slug = interiorDetailSlug({ slug: p.slug, _id: p._id, title });
+      if (seen.has(slug)) continue;
+      seen.add(slug);
+      params.push({ slug });
+    }
+  } catch {
+    /* offline build — mock slugs only */
+  }
+
+  return params;
 }

@@ -499,7 +499,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
           >
             <button
               type="button"
-              className={`${headerBtnBase} w-[110px] gap-[6px] px-[17px] ${
+              className={`${headerBtnBase} min-w-[7.75rem] justify-between gap-2 px-4 ${
                 frostedBar
                   ? "border border-[#d8d8d8] bg-white/95 text-[#444] hover:border-[#b8b8b8]"
                   : "border border-[#d8d8d8]/90 bg-transparent text-[#444] hover:bg-white/40"
@@ -510,17 +510,19 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
                 setSearchFocused(false);
               }}
             >
-              <Image
-                src={currentLanguage.flag}
-                alt=""
-                width={20}
-                height={20}
-                className="h-5 w-5 shrink-0 rounded-[2px] object-cover"
-              />
-              <span className="whitespace-nowrap">{languageLabel(locale)}</span>
+              <span className="inline-flex min-w-0 items-center gap-2">
+                <Image
+                  src={currentLanguage.flag}
+                  alt=""
+                  width={20}
+                  height={20}
+                  className="h-5 w-5 shrink-0 rounded-[2px] object-cover"
+                />
+                <span className="text-[17px] leading-none whitespace-nowrap">{languageLabel(locale)}</span>
+              </span>
               <NavChevron
                 size={12}
-                className={`text-[#444] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${langOpen ? "rotate-180" : ""}`}
+                className={`shrink-0 text-[#444] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${langOpen ? "rotate-180" : ""}`}
               />
             </button>
 
