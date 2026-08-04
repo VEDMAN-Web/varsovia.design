@@ -19,6 +19,25 @@ const {
   pickLocalizedFields,
 } = require("../utils/searchQuery");
 
+function slugifyInteriorTitle(title) {
+  if (!title || typeof title !== "string") return "";
+  return title
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function interiorProjectHref(doc, locale) {
+  const explicit = typeof doc.slug === "string" ? doc.slug.trim() : "";
+  if (explicit) return `/interior/${explicit}`;
+  const loc = pickLocalizedFields(doc, locale, ["title"]);
+  const fromTitle = slugifyInteriorTitle(loc.title);
+  if (fromTitle) return `/interior/${fromTitle}`;
+  return `/interior/${doc._id}`;
+}
+
 const PER_TYPE_CAP = 6;
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 20;
@@ -88,7 +107,7 @@ async function searchSite(req, res) {
         id: String(doc._id),
         title,
         snippet,
-        href: `/interior/${doc._id}`,
+        href: interiorProjectHref(doc, locale),
         meta: loc.category || undefined,
         score: scoreSearchHit("interior", title, snippet, queryLower, loc.category),
       });
