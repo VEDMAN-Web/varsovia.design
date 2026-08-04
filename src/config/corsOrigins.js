@@ -22,6 +22,24 @@ function splitEnvList(name, fallback = "") {
     .filter(Boolean);
 }
 
+function expandWwwAliases(origins) {
+  const set = new Set(origins);
+  for (const o of origins) {
+    try {
+      const u = new URL(o);
+      const port = u.port ? `:${u.port}` : "";
+      if (u.hostname.startsWith("www.")) {
+        set.add(`${u.protocol}//${u.hostname.slice(4)}${port}`);
+      } else if (!u.hostname.includes("localhost") && !u.hostname.includes("127.0.0.1")) {
+        set.add(`${u.protocol}//www.${u.hostname}${port}`);
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  return [...set];
+}
+
 function buildAllowedOrigins() {
   const set = new Set();
 
@@ -47,7 +65,7 @@ function buildAllowedOrigins() {
     set.add("http://127.0.0.1:3000");
   }
 
-  return [...set];
+  return expandWwwAliases([...set]);
 }
 
 function buildOriginPatterns() {
