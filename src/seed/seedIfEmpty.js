@@ -47,6 +47,26 @@ async function migrateProjectCategories() {
   );
 }
 
+/** Backfill interior detail copy from canonical seed (detailTitle, intro, slider body). */
+const INTERIOR_DETAIL_KEYS = ["detailTitle", "detailDescription", "narrativeOne", "narrativeTwo"];
+
+async function migrateProjectInteriorDetail() {
+  for (const doc of projectsDocs()) {
+    if (!doc.slug) continue;
+    const patch = {};
+    for (const key of INTERIOR_DETAIL_KEYS) {
+      const val = doc[key];
+      if (val === undefined || val === null || val === "") continue;
+      patch[key] = val;
+    }
+    if (Object.keys(patch).length === 0) continue;
+    const result = await Project.updateOne({ slug: doc.slug }, { $set: patch });
+    if (result.matchedCount > 0) {
+      console.log(`Interior detail fields updated: ${doc.slug}`);
+    }
+  }
+}
+
 /** Backfill filter metadata on canonical seed slugs when fields are still empty. */
 async function migrateProjectFilterMetadata() {
   for (const doc of projectsDocs()) {
@@ -118,6 +138,7 @@ async function migrateFooterNavigation() {
 async function seedIfEmpty() {
   await migrateProjectCategories();
   await migrateProjectFilterMetadata();
+  await migrateProjectInteriorDetail();
   await migrateInquiryForm();
   await migrateMainNavigation();
   await migrateFooterNavigation();
@@ -127,6 +148,7 @@ async function seedIfEmpty() {
     await syncCanonicalSeed();
     await migrateProjectCategories();
     await migrateProjectFilterMetadata();
+    await migrateProjectInteriorDetail();
     return;
   }
 
@@ -137,3 +159,4 @@ module.exports = seedIfEmpty;
 module.exports.syncCanonicalSeed = syncCanonicalSeed;
 module.exports.migrateProjectCategories = migrateProjectCategories;
 module.exports.migrateProjectFilterMetadata = migrateProjectFilterMetadata;
+module.exports.migrateProjectInteriorDetail = migrateProjectInteriorDetail;

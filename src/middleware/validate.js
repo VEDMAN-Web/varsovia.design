@@ -347,6 +347,8 @@ const siteUpdateSchema = z.object({
   contactPhone:           z.string().max(30).trim().optional(),
   facebookUrl:            z.string().max(500).trim().optional(),
   whatsappUrl:            z.string().max(500).trim().optional(),
+  instagramUrl:           z.string().max(500).trim().optional(),
+  xUrl:                   z.string().max(500).trim().optional(),
   footerOffices:          z.array(footerOfficeSchema).optional(),
   sectionCopy:            z.record(z.string(), z.object({
     title: localizedString.optional(),

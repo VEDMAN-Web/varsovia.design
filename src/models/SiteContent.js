@@ -53,6 +53,8 @@ const siteContentSchema = new mongoose.Schema(
     contactPhone: { type: String, default: "" },
     facebookUrl: { type: String, default: "" },
     whatsappUrl: { type: String, default: "" },
+    instagramUrl: { type: String, default: "" },
+    xUrl: { type: String, default: "" },
     footerOffices: [
       {
         label: mongoose.Schema.Types.Mixed,

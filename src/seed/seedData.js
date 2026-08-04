@@ -126,20 +126,18 @@ function siteContentDoc() {
     searchPages: [
       { title: "Home", description: "Varsovia Design homepage", href: "/", order: 1 },
       { title: "Interior", description: "Browse all interior designs", href: "/interior", order: 2 },
-      { title: "Products", description: "Browse all Varsovia products", href: "/products", order: 3 },
-      { title: "Kitchen Cabinet", description: "Kitchen cabinet product detail", href: "/product/kitchen-cabinet", order: 4 },
-      { title: "Bedroom Interior", description: "Bedroom interior product detail", href: "/product/bedroom-interior", order: 5 },
-      { title: "Kitchen Interior", description: "Kitchen designs", href: "/interior?category=Kitchen", order: 6 },
-      { title: "About Us", description: "Our story and values", href: "/about", order: 7 },
-      { title: "Team", description: "Meet the team", href: "/team", order: 8 },
-      { title: "Blog", description: "Design insights and news", href: "/blog", order: 9 },
-      { title: "Catalogue", description: "Download catalogues", href: "/catalogue", order: 10 },
-      { title: "Contact", description: "Get in touch", href: "/contact", order: 11 },
-      { title: "FAQ", description: "Common questions", href: "/faq", order: 12 },
-      { title: "Showcase", description: "Project showcase", href: "/showcase", order: 13 },
-      { title: "Quality & After-sales", description: "Quality and support", href: "/quality-sale", order: 14 },
-      { title: "Privacy Policy", description: "Privacy and data protection", href: "/privacy", order: 15 },
-      { title: "Terms of Use", description: "Website terms of use", href: "/terms", order: 16 },
+      { title: "Kitchen Interior", description: "Kitchen designs", href: "/interior?category=Kitchen", order: 3 },
+      { title: "Bedroom Interior", description: "Bedroom designs", href: "/interior?category=Bedroom", order: 4 },
+      { title: "About Us", description: "Our story and values", href: "/about", order: 5 },
+      { title: "Team", description: "Meet the team", href: "/team", order: 6 },
+      { title: "Blog", description: "Design insights and news", href: "/blog", order: 7 },
+      { title: "Catalogue", description: "Download catalogues", href: "/catalogue", order: 8 },
+      { title: "Contact", description: "Get in touch", href: "/contact", order: 9 },
+      { title: "FAQ", description: "Common questions", href: "/faq", order: 10 },
+      { title: "Showcase", description: "Project showcase", href: "/showcase", order: 11 },
+      { title: "Quality & After-sales", description: "Quality and support", href: "/quality-sale", order: 12 },
+      { title: "Privacy Policy", description: "Privacy and data protection", href: "/privacy", order: 13 },
+      { title: "Terms of Use", description: "Website terms of use", href: "/terms", order: 14 },
     ],
     interiorCatalogMode: "api",
     inquiryForm: require("../validation/inquiryForm").DEFAULT_INQUIRY_FORM,
@@ -297,12 +295,21 @@ function productsDocs() {
 }
 
 function projectsDocs() {
+  const kitchenDetailNarrative =
+    "The objective was to create a kitchen that felt spacious while accommodating generous storage and a dining area. The challenge was solved by introducing an open island layout, concealed storage, and a neutral material palette that enhances natural light and visual openness.";
+  const kitchenDetailIntroLong =
+    "This modern kitchen was designed to create a warm, elegant, and highly functional space for everyday living. Featuring a spacious island, premium finishes, integrated appliances, and clean architectural lines, the design balances aesthetics with practicality. Every detail was carefully considered to maximize storage, improve workflow, and create a welcoming environment for cooking, dining, and entertaining.";
+
   return [
     {
       title: "The Amber Residence",
       slug: "amber-residence",
+      detailTitle:
+        "The Amber Residence Open-Plan Kitchen with Island Seating and Premium Finishes AMB1000",
       description: "A warm open-plan kitchen with island seating.",
-      detailDescription: "A warm open-plan kitchen with island seating designed for everyday gathering.",
+      detailDescription:
+        "A warm open-plan kitchen with island seating designed for everyday gathering.",
+      narrativeOne: kitchenDetailNarrative,
       location: "Mumbai",
       coverImage: L.project1,
       gallery: [L.project1, L.project2, L.project3],
@@ -321,7 +328,11 @@ function projectsDocs() {
     {
       title: "Skyline Apartment",
       slug: "skyline-apartment",
+      detailTitle:
+        "Skyline Apartment Modern L-Shape Kitchen Cabinetry with Full-Height Storage SKY2200",
       description: "Compact luxury with full-height storage.",
+      detailDescription: kitchenDetailIntroLong,
+      narrativeOne: kitchenDetailNarrative,
       location: "Pune",
       coverImage: L.project2,
       gallery: [L.project2, L.project3],
@@ -339,7 +350,11 @@ function projectsDocs() {
     {
       title: "Warm Walnut",
       slug: "warm-walnut",
+      detailTitle:
+        "Warm Walnut Residence Traditional U-Shape Kitchen with Marble Accents WW3300",
       description: "Rich walnut tones with marble accents.",
+      detailDescription: kitchenDetailIntroLong,
+      narrativeOne: kitchenDetailNarrative,
       location: "Bangalore",
       coverImage: L.project3,
       gallery: [L.project3],

@@ -15,6 +15,7 @@
     "start": "node src/index.js",
     "seed": "node src/seed/seed.js",
     "seed:sync": "node scripts/run-seed-sync.js",
+    "migrate:interior-detail": "node scripts/migrate-interior-detail.js",
     "seed:site": "node scripts/sync-site-from-seed.js"
   },
   "dependencies": {

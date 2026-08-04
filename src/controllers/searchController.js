@@ -134,7 +134,9 @@ async function searchSite(req, res) {
         id: slug,
         title,
         snippet,
-        href: `/product/${encodeURIComponent(slug)}`,
+        href: loc.category
+          ? `/interior?category=${encodeURIComponent(loc.category)}`
+          : "/interior",
         meta: loc.category || undefined,
         score: scoreSearchHit("product", title, snippet, queryLower, loc.category),
       });
