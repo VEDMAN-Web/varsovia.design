@@ -318,9 +318,12 @@ export async function fetchHomeData(locale?: Locale): Promise<HomeData> {
 }
 
 export async function submitContact(payload: Record<string, string>) {
+  const url =
+    typeof window !== "undefined" ? "/api/contact" : `${API_URL}/contact`;
+
   let res: Response;
   try {
-    res = await fetch(`${API_URL}/contact`, {
+    res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
