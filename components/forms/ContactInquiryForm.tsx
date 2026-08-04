@@ -3,7 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChevronDown, Download } from "lucide-react";
-import { submitContact } from "@/lib/api";
+import { submitContact } from "@/lib/submitContactClient";
 import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import { groupInquiryFields, resolveInquiryForm } from "@/lib/inquiryForm";
 import type { InquiryFormField } from "@/lib/inquiryFormTypes";

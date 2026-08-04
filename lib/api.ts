@@ -317,40 +317,6 @@ export async function fetchHomeData(locale?: Locale): Promise<HomeData> {
   }
 }
 
-export async function submitContact(payload: Record<string, string>) {
-  const url =
-    typeof window !== "undefined" ? "/api/contact" : `${API_URL}/contact`;
-
-  let res: Response;
-  try {
-    res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-  } catch {
-    throw new Error(
-      "We couldn't reach our servers right now. Please try again in a moment, or call us directly.",
-    );
-  }
-
-  let body: unknown = {};
-  try {
-    body = await res.json();
-  } catch {
-    if (!res.ok) {
-      throw new Error("Something went wrong while sending your message. Please try again.");
-    }
-  }
-
-  if (!res.ok) throw new Error(readApiErrorMessage(body, "Submission failed"));
-
-  const data = unwrapApiData<{ contact?: unknown }>(body);
-  const message =
-    getApiMeta(body)?.message || readApiErrorMessage(body, "Thank you! We will get back to you soon.");
-  return { message, contact: data.contact, ...data };
-}
-
 export async function fetchBlogs(locale?: Locale): Promise<Record<string, unknown>[]> {
   try {
     const rows = await fetchAllListItems("/blogs", locale, { next: { revalidate: 10 } });
