@@ -69,7 +69,7 @@ export default function Hero({
             initial={{ opacity: 0, y: 22 }}
             animate={introComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 22 }}
             transition={{ duration: 0.45, delay: 0.1, ease: REVEAL_EASE }}
-            className="font-display text-balance break-words text-[clamp(1.55rem,5.2vw,3.6rem)] font-bold uppercase leading-[1.08] tracking-[0.04em] text-white sm:tracking-[0.05em]"
+            className="font-outfit text-balance break-words text-[clamp(1.55rem,5.2vw,3.6rem)] font-semibold uppercase leading-[1.12] tracking-[0.02em] text-white sm:tracking-[0.025em]"
           >
             {resolvedHeadline}
           </motion.h1>
