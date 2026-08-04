@@ -50,11 +50,11 @@ export default async function Home({ params }: Props) {
           images={site.aboutImages}
         />
         <Stats stats={site.stats} statsImage={site.statsImage} />
-        <Products products={products} />
+        <FeaturedProjects projects={projects} />
         <div id="catalogue">
           <Catalogue catalogues={data.catalogues || []} contactImages={site.contactImages || []} />
         </div>
-        <FeaturedProjects projects={projects} />
+        <Products products={products} />
         <Testimonials testimonials={data.testimonials || []} />
         <CoreStrengths strengths={data.coreStrengths} />
         <div id="partners">

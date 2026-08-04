@@ -67,7 +67,7 @@ const FALLBACK_PRODUCTS: Product[] = [
 export default function Products({ products }: ProductsProps) {
   const t = useTranslations("home");
   const site = useSiteSettings();
-  const section = site?.sectionCopy?.products;
+  const section = site?.sectionCopy?.featured;
   const reduceMotion = useReducedMotion();
   const itemVariant = reduceMotion ? reducedScaleFadeItem : scaleFadeItem;
   const ctaVariant = reduceMotion ? reducedFadeUpItem : fadeUpItem;
@@ -78,8 +78,8 @@ export default function Products({ products }: ProductsProps) {
     <section id="products" className={`bg-[#fdf2f0] ${SITE_SECTION_PADDING_Y}`}>
       <SectionShell>
         <SectionHeadingReveal
-          title={section?.title || t("productsTitle")}
-          subtitle={section?.subtitle || t("productsSubtitle")}
+          title={section?.title || t("featuredTitle")}
+          subtitle={section?.subtitle || t("featuredSubtitle")}
           className={SECTION_HEADING_WIDE}
         />
 

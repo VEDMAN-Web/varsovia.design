@@ -18,6 +18,7 @@ import {
 } from "@/lib/motionPresets";
 import { fallbackHomeData } from "@/lib/fallbackData";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 
 type Project = {
   _id: string;
@@ -67,6 +68,8 @@ function buildDisplayProjects(projects?: Project[]) {
 
 export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
   const t = useTranslations("home");
+  const site = useSiteSettings();
+  const section = site?.sectionCopy?.products;
   const reduceMotion = useReducedMotion();
   const [active, setActive] = useState(0);
   const [hovered, setHovered] = useState<number | null>(null);
@@ -104,8 +107,8 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
     <section id="projects" className={`bg-transparent ${SITE_SECTION_PADDING_Y}`}>
       <SectionShell>
         <SectionHeadingReveal
-          title={t("featuredTitle")}
-          subtitle={t("featuredSubtitle")}
+          title={section?.title || t("productsTitle")}
+          subtitle={section?.subtitle || t("productsSubtitle")}
           className={SECTION_HEADING_WIDE}
         />
 
