@@ -16,6 +16,8 @@ type CompanyHeroProps = {
   sectionClassName?: string;
   fadeClassName?: string;
   leading?: React.ReactNode;
+  /** Extra classes on the gradient heading block (e.g. tighter spacing below subtitle). */
+  headingClassName?: string;
 };
 
 export default function CompanyHero({
@@ -30,6 +32,7 @@ export default function CompanyHero({
   sectionClassName = "",
   fadeClassName = "",
   leading,
+  headingClassName = "",
 }: CompanyHeroProps) {
   return (
     <section className={`${COMPANY_SHELL} ${COMPANY_HERO_SECTION_PAD} ${sectionClassName}`.trim()}>
@@ -44,7 +47,7 @@ export default function CompanyHero({
           subtitleSentenceCase={subtitleSentenceCase}
           subtitleClassName={subtitleClassName}
           leading={leading}
-          className={`w-full rounded-[12px] sm:rounded-[16px] ${SECTION_HEADING_WIDE}`}
+          className={`w-full rounded-[12px] sm:rounded-[16px] ${SECTION_HEADING_WIDE} ${headingClassName}`.trim()}
         >
           {children && (
             <div className={`mx-auto mt-8 max-w-4xl px-2 md:px-4 ${PAGE_BODY_LEAD_CLASS}`}>{children}</div>

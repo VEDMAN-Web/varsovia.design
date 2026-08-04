@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/seo";
-import { fetchBlogs, fetchProducts, fetchProjects, fetchShowcases } from "@/lib/api";
+import { fetchBlogs, fetchProjects, fetchShowcases } from "@/lib/api";
 import { getShowcaseProjects } from "@/lib/showcaseData";
 import { locales } from "@/lib/i18n/routing";
 
@@ -37,7 +37,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/team", priority: 0.8, freq: "weekly" },
     { path: "/showcase", priority: 0.8, freq: "weekly" },
     { path: "/interior", priority: 0.8, freq: "weekly" },
-    { path: "/products", priority: 0.8, freq: "weekly" },
     { path: "/quality-sale", priority: 0.8, freq: "weekly" },
     { path: "/privacy", priority: 0.3, freq: "yearly" },
     { path: "/terms", priority: 0.3, freq: "yearly" },
@@ -47,16 +46,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     localeEntries(path, priority, freq),
   );
 
-  const [products, projects, blogs, showcases] = await Promise.all([
-    fetchProducts().catch(() => []),
+  const [projects, blogs, showcases] = await Promise.all([
     fetchProjects().catch(() => []),
     fetchBlogs().catch(() => []),
     fetchShowcases().catch(() => null),
   ]);
-
-  const productDetailRoutes = products
-    .filter((p: { slug?: string }) => p.slug)
-    .flatMap((p: { slug?: string }) => localeEntries(`/product/${p.slug}`, 0.7, "weekly"));
 
   const interiorRoutes = projects.flatMap((p: { _id?: string }) =>
     p._id ? localeEntries(`/interior/${p._id}`, 0.7, "weekly") : [],
@@ -81,5 +75,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     localeEntries(`/showcase/${id}`, 0.6, "monthly"),
   );
 
-  return [...staticRoutes, ...productDetailRoutes, ...interiorRoutes, ...blogRoutes, ...showcaseRoutes];
+  return [...staticRoutes, ...interiorRoutes, ...blogRoutes, ...showcaseRoutes];
 }

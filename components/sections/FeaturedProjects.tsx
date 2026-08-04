@@ -104,7 +104,7 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
   const ctaVariant = reduceMotion ? reducedFadeUpItem : fadeUpItem;
 
   return (
-    <section id="projects" className={`bg-transparent ${SITE_SECTION_PADDING_Y}`}>
+    <section id="projects" className={`bg-transparent ${SITE_SECTION_PADDING_Y} !pb-6 sm:!pb-8 md:!pb-10`}>
       <SectionShell>
         <SectionHeadingReveal
           title={section?.title || t("productsTitle")}

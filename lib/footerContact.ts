@@ -4,6 +4,8 @@ export const FOOTER_CONTACT = {
   contactPhone: "+66 64 683 9777",
   facebook: "https://www.facebook.com/ThailandKitchens/",
   whatsapp: "https://wa.me/66993596916",
+  instagramUrl: "",
+  xUrl: "",
   offices: [
     {
       labelKey: "samuiOffice" as const,

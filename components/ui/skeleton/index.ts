@@ -19,7 +19,6 @@ export {
   BlogListingRouteSkeleton,
   CatalogueListingRouteSkeleton,
   InteriorListingRouteSkeleton,
-  ProductsListingRouteSkeleton,
   ShowcaseListingRouteSkeleton,
   TeamRouteSkeleton,
 } from "@/components/ui/skeleton/routeSkeletons";

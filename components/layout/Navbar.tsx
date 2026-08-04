@@ -75,12 +75,12 @@ function NavChevron({ className = "", size = 16 }: { className?: string; size?: 
 }
 
 const navLinkClass = (active: boolean) =>
-  `flex shrink-0 items-center gap-[10px] whitespace-nowrap text-[19px] font-normal leading-[28px] transition-colors ${
+  `font-outfit flex shrink-0 items-center gap-[10px] whitespace-nowrap text-[18px] font-medium leading-[23px] transition-colors ${
     active ? "text-maroon" : "text-[#2b2b2b] hover:text-maroon"
   }`;
 
 const headerBtnBase =
-  "inline-flex h-[50px] items-center justify-center rounded-[6px] font-outfit text-[15px] font-normal leading-[23px] transition duration-200";
+  "inline-flex h-[50px] items-center justify-center rounded-[6px] font-outfit text-[18px] font-normal leading-[23px] transition duration-200";
 
 function useSearchablePages(): SearchPage[] {
   const t = useTranslations("search");
@@ -100,9 +100,8 @@ function useSearchablePages(): SearchPage[] {
     return [
       { title: t("homeTitle"), href: "/", description: t("homeDesc") },
       { title: t("interiorTitle"), href: "/interior", description: t("interiorDesc") },
-      { title: t("kitchenCabinetTitle"), href: "/product/kitchen-cabinet", description: t("kitchenCabinetDesc") },
-      { title: t("bedroomInteriorTitle"), href: "/product/bedroom-interior", description: t("bedroomInteriorDesc") },
       { title: t("kitchenInteriorTitle"), href: "/interior?category=Kitchen", description: t("kitchenInteriorDesc") },
+      { title: t("bedroomInteriorTitle"), href: "/interior?category=Bedroom", description: t("bedroomInteriorDesc") },
       { title: t("aboutTitle"), href: "/about", description: t("aboutDesc") },
       { title: t("teamTitle"), href: "/team", description: t("teamDesc") },
       { title: t("blogTitle"), href: "/blog", description: t("blogDesc") },

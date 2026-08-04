@@ -14,10 +14,11 @@ type SectionHeadingProps = {
   leading?: React.ReactNode;
 };
 
-/** Shared homepage + inner-page section typography */
+/** Oswald — gradient band / page hero section titles (Figma 50px Regular, uppercase) */
 export const SECTION_TITLE_CLASS =
   "font-display px-1 text-balance break-words text-[clamp(1.35rem,3.4vw,3.125rem)] font-normal uppercase tracking-[0.06em] text-[#6a414d] sm:tracking-[0.1em]";
 
+/** Outfit — pink uppercase line under section title (Figma 22px) */
 export const SECTION_SUBTITLE_CLASS =
   "font-outfit mx-auto mt-4 max-w-[68rem] break-words px-2 text-[clamp(0.75rem,2vw,1.25rem)] font-normal uppercase tracking-[0.14em] text-[#cf5374] sm:mt-[30px] sm:tracking-[0.28em]";
 
@@ -34,6 +35,10 @@ export const PAGE_BODY_LEAD_CLASS =
 
 export const SUBSECTION_TITLE_CLASS =
   "font-outfit text-[clamp(1.125rem,2vw,1.5rem)] font-semibold text-[#6a414d]";
+
+/** Oswald — in-page display headings (product/detail related blocks) */
+export const PAGE_DISPLAY_HEADING_CLASS =
+  "font-display text-balance text-[clamp(1.375rem,2.6vw,2.125rem)] font-normal uppercase tracking-[0.06em] text-[#6a414d] sm:tracking-[0.08em]";
 
 export const SUBSECTION_EYEBROW_CLASS =
   "font-outfit text-sm font-medium uppercase tracking-[0.18em] text-[#cf5374]";

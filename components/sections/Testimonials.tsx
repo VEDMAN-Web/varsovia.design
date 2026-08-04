@@ -258,7 +258,10 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
   }
 
   return (
-    <section id="stories" className={`bg-transparent ${SITE_SECTION_PADDING_Y}`}>
+    <section
+      id="stories"
+      className={`bg-transparent ${SITE_SECTION_PADDING_Y} !pb-6 !pt-8 sm:!pb-8 sm:!pt-10 md:!pb-10 md:!pt-14`}
+    >
       <SectionShell>
       {/* Heading */}
       <div className="text-center">

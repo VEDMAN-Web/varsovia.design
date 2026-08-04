@@ -30,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning className={`${oswald.variable} ${outfit.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-cream text-ink font-sans">{children}</body>
+      <body className="min-h-full flex flex-col bg-cream font-outfit text-ink antialiased">{children}</body>
     </html>
   );
 }

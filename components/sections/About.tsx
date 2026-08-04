@@ -27,13 +27,11 @@ import {
   VIEWPORT_ONCE,
 } from "@/lib/motionPresets";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
-
-/** Figma Frame 2147205349 — layout positions within 686×500 collage */
-const ABOUT_LAYOUT = [
-  { altKey: "aboutImageAlt1" as const, className: "left-[1.75%] top-[0.2%] h-[76.2%] w-[43.4%]" },
-  { altKey: "aboutImageAlt2" as const, className: "left-[37.9%] top-[26.2%] h-[44%] w-[56%]" },
-  { altKey: "aboutImageAlt3" as const, className: "left-[10.9%] top-[54%] h-[44%] w-[51.3%]" },
-];
+import {
+  ABOUT_COLLAGE_ASPECT,
+  ABOUT_COLLAGE_TILE_CLASS,
+  ABOUT_LAYOUT,
+} from "@/components/sections/aboutLayoutShared";
 
 const FALLBACK_ABOUT_IMAGES = [...MEDIA.about];
 
@@ -91,7 +89,11 @@ export default function About({ title, text, images }: AboutProps) {
   const subtitleItem: Variants = reduceMotion ? reducedFadeUpItem : fadeUpBlurItem;
 
   return (
-    <section ref={sectionRef} id="about" className={`bg-[#fdf2f0] ${SITE_SECTION_PADDING_Y}`}>
+    <section
+      ref={sectionRef}
+      id="about"
+      className={`bg-[#fdf2f0] ${SITE_SECTION_PADDING_Y} !pt-[4.5rem] sm:!pt-[5.5rem] md:!pt-[7.5rem]`}
+    >
       <SectionShell>
         <motion.div
           className={headingBlockClass}
@@ -112,7 +114,7 @@ export default function About({ title, text, images }: AboutProps) {
         <div className="mt-10 grid w-full items-center gap-10 sm:mt-12 lg:mt-16 lg:grid-cols-[1.38fr_1fr] lg:gap-x-12 xl:gap-x-20">
           <motion.div
             style={{ y: collageY }}
-            className="relative mx-auto aspect-[686/500] w-full max-w-[640px] min-w-0 will-change-transform lg:mx-0 lg:max-w-none"
+            className={`relative mx-auto ${ABOUT_COLLAGE_ASPECT} w-full max-w-[640px] min-w-0 will-change-transform lg:mx-0 lg:max-w-none`}
             onMouseLeave={() => setHovered(null)}
           >
             {displayImages.map((img, i) => {
@@ -128,7 +130,7 @@ export default function About({ title, text, images }: AboutProps) {
                   key={img.src}
                   type="button"
                   aria-label={img.alt}
-                  className={`absolute overflow-hidden rounded-[14px] border-2 border-white bg-white shadow-[0_10px_30px_rgba(80,40,50,0.12)] outline-none sm:rounded-[22px] sm:border-[3px] ${img.className}`}
+                  className={`absolute ${ABOUT_COLLAGE_TILE_CLASS} ${img.className}`}
                   style={{ zIndex: isHovered ? 20 : baseZ }}
                   initial="hidden"
                   whileInView="visible"
@@ -170,7 +172,7 @@ export default function About({ title, text, images }: AboutProps) {
                 key={p.slice(0, 32)}
                 variants={textItem}
                 custom={i}
-                className="mb-4 text-[0.95rem] leading-7 text-[#5a5254] sm:mb-5 sm:text-[1.02rem] sm:leading-8"
+                className="font-outfit mb-4 text-[clamp(1rem,1.6vw,1.25rem)] font-normal leading-[1.5] text-[#251b1e] sm:mb-5 sm:leading-[30px]"
               >
                 {p}
               </motion.p>
@@ -179,11 +181,11 @@ export default function About({ title, text, images }: AboutProps) {
             <motion.a
               href="#projects"
               variants={textItem}
-              className="group mt-2 inline-flex items-center gap-1 text-[0.95rem] font-medium text-[#e85d8a]"
+              className="font-outfit group mt-2 inline-flex items-center gap-1 text-[1.25rem] font-medium text-[#cf5374]"
               whileHover={reduceMotion ? undefined : { x: 3 }}
               transition={{ duration: 0.25, ease: REVEAL_EASE }}
             >
-              <span className="underline decoration-[#e85d8a]/70 underline-offset-4 transition-colors group-hover:text-[#d44575] group-hover:decoration-[#d44575]">
+              <span className="underline decoration-[#cf5374]/70 underline-offset-4 transition-colors group-hover:text-[#cf5374] group-hover:decoration-[#cf5374]">
                 {t("aboutLearnMore")}
               </span>
               <span

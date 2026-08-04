@@ -62,7 +62,7 @@ export default function ShowcaseSpecCard({ project, backHref }: ShowcaseSpecCard
       </Link>
 
       <header className="px-6 pb-9 pt-4 text-center sm:px-10 md:px-12 md:pb-11 md:pt-5">
-        <h1 className="font-outfit mx-auto max-w-[820px] text-[clamp(1.05rem,2.2vw,1.5rem)] font-bold leading-[1.45] text-[#2d2929]">
+        <h1 className="font-outfit mx-auto max-w-[820px] text-balance text-[clamp(1.375rem,2.8vw,2.125rem)] font-bold leading-[1.25] tracking-[-0.01em] text-[#2d2929]">
           {getShowcaseDisplayTitle(project.title)}
         </h1>
       </header>

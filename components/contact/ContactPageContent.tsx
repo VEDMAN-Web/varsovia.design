@@ -31,9 +31,12 @@ export default function ContactPageContent() {
         title="Get In touch"
         subtitle="Your dream space begins with a simple conversation"
         subtitleSentenceCase={false}
+        compact
+        fadeClassName="!mb-3 md:!mb-5"
+        headingClassName="pb-5 md:!min-h-0 md:pb-4"
       />
 
-      <section className={`${COMPANY_SHELL} mt-6 pb-16 sm:mt-8 md:mt-10 md:pb-24`}>
+      <section className={`${COMPANY_SHELL} mt-4 pb-16 md:mt-6 md:pb-24`}>
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}

@@ -59,7 +59,7 @@ export default function Hero({
               initial={{ opacity: 0, y: 16 }}
               animate={introComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
               transition={{ duration: 0.42, delay: 0.06, ease: REVEAL_EASE }}
-              className="mb-3 font-display text-xs tracking-[0.22em] text-white/85 sm:mb-4 sm:text-sm sm:tracking-[0.35em] md:text-base"
+              className="mb-3 font-display text-[11px] font-normal uppercase tracking-[0.35em] text-white/90 sm:mb-4 sm:text-xs sm:tracking-[0.42em] md:text-sm md:tracking-[0.48em]"
             >
               {resolvedEyebrow}
             </motion.p>
@@ -69,7 +69,7 @@ export default function Hero({
             initial={{ opacity: 0, y: 22 }}
             animate={introComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 22 }}
             transition={{ duration: 0.45, delay: 0.1, ease: REVEAL_EASE }}
-            className="font-display text-balance break-words text-[clamp(1.55rem,5.2vw,3.6rem)] font-bold leading-[1.12] tracking-[0.03em] text-white sm:tracking-[0.04em]"
+            className="font-display text-balance break-words text-[clamp(1.55rem,5.2vw,3.6rem)] font-bold uppercase leading-[1.08] tracking-[0.04em] text-white sm:tracking-[0.05em]"
           >
             {resolvedHeadline}
           </motion.h1>
@@ -79,7 +79,7 @@ export default function Hero({
               initial={{ opacity: 0, y: 16 }}
               animate={introComplete ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
               transition={{ duration: 0.42, delay: 0.12, ease: REVEAL_EASE }}
-              className="font-outfit mt-4 text-[clamp(1rem,1.8vw,1.25rem)] font-normal leading-snug text-white/90"
+              className="font-outfit mt-4 max-w-xl text-[clamp(1rem,1.8vw,1.25rem)] font-normal normal-case leading-snug text-white/92"
             >
               {subtitle}
             </motion.p>

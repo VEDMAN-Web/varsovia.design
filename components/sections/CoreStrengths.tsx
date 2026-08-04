@@ -228,7 +228,7 @@ export default function CoreStrengths({ strengths }: { strengths?: ApiCoreStreng
   const perspectivePx = 2200 * scale;
 
   return (
-    <section className={`bg-transparent ${SITE_SECTION_PADDING_Y}`}>
+    <section className={`bg-transparent ${SITE_SECTION_PADDING_Y} !pb-6 !pt-8 sm:!pb-8 sm:!pt-10 md:!pb-10 md:!pt-14`}>
       <SectionShell>
       <div className="text-center">
         <SectionHeading
@@ -367,7 +367,7 @@ export default function CoreStrengths({ strengths }: { strengths?: ApiCoreStreng
                       <div className="flex size-[46px] items-center justify-center rounded-full border-[1.5px] border-white/90 sm:size-[58px]">
                         <Icon size={20} strokeWidth={1.5} className="text-white sm:h-6 sm:w-6" />
                       </div>
-                      <p className="text-[0.95rem] font-semibold leading-[1.2] text-[#f4ebec] sm:text-[1.2rem]">
+                      <p className="font-outfit text-[0.95rem] font-semibold leading-[1.2] text-[#f4ebec] sm:text-[1.2rem]">
                         {item.title}
                       </p>
                       <p className="text-[0.72rem] leading-relaxed text-[#f4ebec]/80 sm:text-[0.85rem] sm:leading-6">

@@ -83,7 +83,7 @@ export default function Partners({ partners = [] }: { partners?: Partner[] }) {
   }, [partners]);
 
   return (
-    <section id="partners" className={`bg-blush ${SITE_SECTION_PADDING_Y}`}>
+    <section id="partners" className={`bg-blush ${SITE_SECTION_PADDING_Y} !pt-8 sm:!pt-10 md:!pt-14`}>
       <SectionShell className="text-center">
         <SectionHeadingReveal
           title={section?.title || t("partnersTitle")}

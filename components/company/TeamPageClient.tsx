@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { Award, CheckCircle2, Users } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import CompanyHero from "@/components/company/CompanyHero";
 import FadeInView from "@/components/company/FadeInView";
+import TeamStatCard from "@/components/company/TeamStatCard";
 import {
   TEAM_BLOCK_INNER,
   TEAM_BLOCK_SPACING,
@@ -23,7 +23,6 @@ import {
   TEAM_SECTION_EYEBROW,
   TEAM_SECTION_TITLE,
   TEAM_SHELL,
-  TEAM_STAT_CARD,
   TEAM_STAT_GRID,
   TEAM_STAT_SECTION,
   TEAM_TOOL_CARD_ACTIVE,
@@ -47,8 +46,6 @@ const TEAM_PORTRAIT_FALLBACK = MEDIA.about[0];
 
 const TEAM_HERO_TITLE =
   "font-display px-2 text-balance break-words text-[clamp(1.625rem,5.5vw,3.125rem)] font-normal uppercase tracking-[0.06em] text-[#6a414d] sm:px-1 sm:tracking-[0.1em]";
-
-const STAT_WATERMARKS = [CheckCircle2, Award] as const;
 
 function DesignToolCard({
   name,
@@ -95,47 +92,6 @@ function DesignToolCard({
             aria-hidden
           />
         </motion.div>
-      </div>
-    </FadeInView>
-  );
-}
-
-function TeamStatCard({
-  value,
-  label,
-  watermark: Watermark,
-  delay = 0,
-}: {
-  value: string;
-  label: string;
-  watermark: typeof CheckCircle2;
-  delay?: number;
-}) {
-  return (
-    <FadeInView delay={delay}>
-      <div className={`${TEAM_STAT_CARD} px-[clamp(1rem,3vw,2rem)] py-[clamp(1.25rem,3.5vw,2.5rem)]`}>
-        <Watermark
-          className="pointer-events-none absolute -right-1 bottom-0 top-1/2 hidden h-[70%] w-auto -translate-y-1/2 text-[#6a414d]/[0.07] min-[400px]:block sm:right-2 sm:h-[78%]"
-          strokeWidth={1}
-          aria-hidden
-        />
-        <div className="relative z-[1] flex min-w-0 items-center">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#cf5374]/18 text-[#cf5374] min-[480px]:h-12 min-[480px]:w-12 sm:h-14 sm:w-14">
-            <Users className="h-5 w-5 min-[480px]:h-[22px] min-[480px]:w-[22px]" strokeWidth={1.75} aria-hidden />
-          </div>
-          <div
-            className="mx-[clamp(0.75rem,3vw,1.5rem)] h-10 w-px shrink-0 bg-[#dcc8cc]/90 min-[480px]:h-11 sm:h-12"
-            aria-hidden
-          />
-          <div className="min-w-0 flex-1">
-            <p className="font-display text-[clamp(1.625rem,5vw,2.75rem)] font-bold leading-none tracking-wide text-[#6a414d]">
-              {value}
-            </p>
-            <p className="mt-2 text-pretty font-outfit text-[clamp(0.75rem,2.2vw,0.9375rem)] font-normal leading-snug text-[#6a414d]/88">
-              {label}
-            </p>
-          </div>
-        </div>
       </div>
     </FadeInView>
   );
@@ -223,9 +179,9 @@ export default function TeamPageClient() {
   );
 
   const stats = [
-    { value: t("statProjectsValue"), label: t("statProjectsLabel"), watermark: STAT_WATERMARKS[0] },
-    { value: t("statYearsValue"), label: t("statYearsLabel"), watermark: STAT_WATERMARKS[1] },
-  ] as const;
+    { value: t("statProjectsValue"), label: t("statProjectsLabel"), variant: "projects" as const },
+    { value: t("statYearsValue"), label: t("statYearsLabel"), variant: "years" as const },
+  ];
 
   return (
     <>
@@ -254,7 +210,7 @@ export default function TeamPageClient() {
                 key={stat.label}
                 value={stat.value}
                 label={stat.label}
-                watermark={stat.watermark}
+                variant={stat.variant}
                 delay={i * 0.08}
               />
             ))}

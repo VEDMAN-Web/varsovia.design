@@ -150,11 +150,11 @@ function CountUp({
   }, [active, to, duration]);
 
   return (
-    <span>
+    <>
       {prefix}
-      {n}
+      <span className="font-semibold">{n}</span>
       {suffix}
-    </span>
+    </>
   );
 }
 
@@ -185,10 +185,12 @@ export default function Stats({ stats, statsImage }: StatsProps) {
               viewport={{ once: true }}
               transition={{ delay: i * 0.1, duration: 0.5 }}
             >
-              <p className="font-display text-[clamp(2.75rem,5vw,4.25rem)] font-bold leading-none tracking-wide text-[#5c3b3e]">
+              <p className="font-display text-[clamp(2.75rem,5vw,3.125rem)] font-normal leading-none tracking-[0.1em] text-[#6a414d]">
                 <CountUp raw={stat.value} active={inView} />
               </p>
-              <p className="mt-3 text-[0.95rem] font-medium text-black md:text-base">{stat.label}</p>
+              <p className="mt-3 font-outfit text-[clamp(1rem,2.2vw,1.375rem)] font-medium tracking-[0.1em] text-[#251b1e]">
+                {stat.label}
+              </p>
             </motion.div>
           ))}
         </div>

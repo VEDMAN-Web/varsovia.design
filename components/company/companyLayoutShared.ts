@@ -18,6 +18,7 @@ import {
   SECTION_TITLE_CLASS,
   SUBSECTION_EYEBROW_CLASS,
   SUBSECTION_TITLE_CLASS,
+  PAGE_DISPLAY_HEADING_CLASS,
 } from "@/components/ui/SectionHeading";
 
 export {

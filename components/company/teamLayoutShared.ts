@@ -15,18 +15,23 @@ export const TEAM_HERO_SUBTITLE = `${SECTION_SUBTITLE_CLASS} !mt-2.5 max-w-[34re
 export const TEAM_INTRO_CLASS =
   "mx-auto max-w-[min(100%,820px)] text-pretty px-0.5 text-center font-outfit text-[clamp(0.875rem,2.2vw,1rem)] font-normal leading-[1.8] text-[#6a414d]/90 min-[480px]:leading-[1.85] md:text-[16px] md:leading-[1.9]";
 
-export const TEAM_STAT_SECTION = "mb-[clamp(2.5rem,7vw,6rem)] max-w-[min(100%,920px)]";
+export const TEAM_STAT_SECTION = "mb-[clamp(2.5rem,7vw,6rem)] max-w-[min(100%,1040px)]";
 
-export const TEAM_STAT_GRID = "grid grid-cols-1 gap-[clamp(1rem,3vw,2rem)] md:grid-cols-2";
+export const TEAM_STAT_GRID =
+  "grid w-full grid-cols-1 gap-4 lg:grid-cols-2 lg:items-stretch lg:gap-[60px]";
 
+/** Figma Our team — Frame 2147205510 / 5511: 490×183, radius 6, shadow */
 export const TEAM_STAT_CARD =
-  "relative overflow-hidden rounded-[12px] border border-[#f0e4e4]/80 bg-gradient-to-br from-[#f8eeee] via-[#fbf5f5] to-[#fdf9f9] shadow-[0_6px_28px_rgba(106,65,77,0.07)] min-[480px]:rounded-[14px] sm:rounded-[16px]";
+  "relative w-full min-w-0 overflow-hidden rounded-[6px] border border-[#f0e4e4]/60 bg-gradient-to-br from-[#f8eeee] via-[#fbf5f5] to-[#fdf9f9] shadow-[0_0_10px_rgba(0,0,0,0.1)]";
+
+export const TEAM_STAT_CARD_OVERLAY =
+  "pointer-events-none absolute inset-0 opacity-20 [background:radial-gradient(ellipse_120%_80%_at_1%_0%,rgba(208,128,151,0)_0%,rgba(157,96,114,0.5)_50%,rgba(106,65,77,1)_100%)]";
 
 export const TEAM_SECTION_TITLE =
-  "text-balance font-outfit text-[clamp(1.125rem,2.8vw,1.75rem)] font-semibold leading-[1.25] text-[#1f1f1f]";
+  "text-balance font-outfit text-[clamp(1.5rem,3.5vw,2.5rem)] font-medium leading-[1.2] text-[#251b1e] lg:text-[40px]";
 
 export const TEAM_SECTION_EYEBROW =
-  "font-outfit text-[clamp(0.875rem,2vw,1rem)] font-semibold normal-case tracking-normal text-[#d65e7d]";
+  "font-outfit text-[clamp(1.125rem,2.4vw,1.75rem)] font-medium normal-case tracking-normal text-[#cf5374] lg:text-[28px]";
 
 export const TEAM_TOOLS_TITLE =
   "text-balance font-outfit text-[clamp(1rem,2.2vw,1.375rem)] font-medium text-[#d65a7c]";

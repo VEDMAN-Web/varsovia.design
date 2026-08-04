@@ -37,22 +37,6 @@ export function BlogListingRouteSkeleton() {
   );
 }
 
-export function ProductsListingRouteSkeleton() {
-  return (
-    <>
-      <Navbar />
-      <main className={COMPANY_PAGE_BG}>
-        <SkeletonCompanyHeroBand />
-        <SkeletonListingToolbar />
-        <section className={`${COMPANY_SHELL} mb-4 md:mb-6`}>
-          <SkeletonProductGrid />
-        </section>
-        <SkeletonPagination className={`${COMPANY_SHELL} flex select-none items-center justify-center gap-1.5 pb-8 pt-2 sm:gap-2 md:pb-12`} />
-      </main>
-    </>
-  );
-}
-
 export function TeamRouteSkeleton() {
   return (
     <>

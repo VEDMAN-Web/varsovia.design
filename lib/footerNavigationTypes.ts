@@ -21,6 +21,8 @@ export type FooterNavigationConfig = {
   socialLabels: {
     whatsapp?: string;
     facebook?: string;
+    instagram?: string;
+    x?: string;
   };
   copyright: string;
 };

@@ -55,6 +55,8 @@ export type SiteContent = {
   contactPhone?: string;
   facebookUrl?: string;
   whatsappUrl?: string;
+  instagramUrl?: string;
+  xUrl?: string;
   footerOffices?: SiteOffice[];
   sectionCopy?: Record<string, SiteSectionCopy>;
   searchPages?: SiteSearchPage[];

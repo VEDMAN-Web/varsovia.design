@@ -18,10 +18,13 @@ export default function Contact({ images }: ContactProps) {
         <SectionHeadingReveal
           title={t("contactTitle")}
           subtitle={t("contactSubtitle")}
-          className={`${SECTION_HEADING_WIDE} mb-8 sm:mb-10 md:mb-20`}
+          compact
+          className={`${SECTION_HEADING_WIDE} pb-5 md:!min-h-0 md:pb-4`}
         />
 
-        <ContactFormPanel images={images} purpose="contact" entranceMotion />
+        <div className="mt-6 md:mt-8">
+          <ContactFormPanel images={images} purpose="contact" entranceMotion />
+        </div>
       </SectionShell>
     </section>
   );

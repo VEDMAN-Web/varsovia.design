@@ -152,6 +152,8 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
     contactPhone: pickString(data.contactPhone, fb.contactPhone) as string,
     facebookUrl: pickString(data.facebookUrl, fb.facebookUrl) as string,
     whatsappUrl: pickString(data.whatsappUrl, fb.whatsappUrl) as string,
+    instagramUrl: pickString(data.instagramUrl, fb.instagramUrl) as string,
+    xUrl: pickString(data.xUrl, fb.xUrl) as string,
     footerOffices:
       Array.isArray(data.footerOffices) && data.footerOffices.length > 0
         ? (data.footerOffices as SiteContent["footerOffices"])
@@ -228,105 +230,6 @@ export async function fetchProducts(locale?: Locale): Promise<FetchedProduct[]> 
   } catch {
     const { fallbackHomeData } = await import("./fallbackData");
     return fallbackHomeData.products;
-  }
-}
-
-export async function fetchProductBySlug(slug: string, locale?: Locale) {
-  const { getProductBySlug } = await import("./productData");
-  try {
-    const res = await fetch(withLocale(`${API_URL}/products/${encodeURIComponent(slug)}`, locale), {
-      headers: localeHeaders(locale),
-      next: { revalidate: 30 },
-    });
-    if (res.ok) {
-      const body = await res.json();
-      const apiProduct = unwrapApiData<Record<string, unknown>>(body);
-      const galleryRaw = Array.isArray(apiProduct.gallery) ? apiProduct.gallery : [];
-      const gallery = galleryRaw.length
-        ? galleryRaw.map((u) => resolveMediaUrl(String(u)))
-        : [resolveMediaUrl(apiProduct.image as string | undefined, "/home/product/product-1.png")];
-      const features = Array.isArray(apiProduct.features)
-        ? apiProduct.features.map((f: { text?: string }) => String(f.text || "")).filter(Boolean)
-        : [];
-      const specs = Array.isArray(apiProduct.specs)
-        ? apiProduct.specs.map((s: { label?: string; value?: string }) => ({
-            label: String(s.label || ""),
-            value: String(s.value || ""),
-          }))
-        : [];
-      const local = getProductBySlug(slug);
-      return {
-        slug: String(apiProduct.slug || slug),
-        title: String(apiProduct.title || local?.title || slug),
-        category: String(apiProduct.category || local?.category || "Kitchen"),
-        shortDescription: String(apiProduct.description || local?.shortDescription || ""),
-        fullDescription: String(
-          apiProduct.fullDescription || apiProduct.description || local?.fullDescription || "",
-        ),
-        image: resolveMediaUrl(
-          apiProduct.image as string | undefined,
-          local?.image || "/home/product/product-1.png",
-        ),
-        gallery,
-        features: features.length ? features : local?.features || [],
-        specs: specs.length ? specs : local?.specs || [],
-      };
-    }
-  } catch {
-    /* fall through */
-  }
-  try {
-    const products = await fetchProducts(locale);
-    const apiProduct = products.find(
-      (p: { slug?: string; _id?: string }) => p.slug === slug || p._id === slug,
-    );
-    const local = getProductBySlug(slug);
-    if (!apiProduct && !local) return null;
-    const base = local || {
-      slug,
-      title: apiProduct?.title ?? slug,
-      category: apiProduct?.category || "Kitchen",
-      shortDescription: String(apiProduct?.description ?? ""),
-      fullDescription: String(apiProduct?.description ?? ""),
-      image: apiProduct?.image || "/home/product/product-1.png",
-      gallery: [apiProduct?.image || "/home/product/product-1.png"],
-      features: [],
-      specs: [],
-    };
-    return {
-      ...base,
-      slug: apiProduct?.slug || base.slug,
-      title: apiProduct?.title || base.title,
-      category: apiProduct?.category || base.category,
-      shortDescription: apiProduct?.description || base.shortDescription,
-      image: apiProduct?.image || base.image,
-    };
-  } catch {
-    return getProductBySlug(slug);
-  }
-}
-
-export async function fetchRelatedProducts(slug: string, locale?: Locale) {
-  const { getRelatedProducts } = await import("./productData");
-  try {
-    const products = await fetchProducts(locale);
-    const related = products.filter(
-      (p: { slug?: string; _id?: string }) => p.slug !== slug && p._id !== slug,
-    ).slice(0, 3);
-    if (related.length === 0) return getRelatedProducts(slug);
-    return related.map((p: { slug?: string; _id?: string; title: string; category?: string; description?: string; image?: string }) => ({
-      slug: p.slug || p._id || "",
-      title: p.title,
-      category: p.category || "Kitchen",
-      shortDescription: p.description || "",
-      fullDescription: p.description || "",
-      image: p.image || "/home/product/product-1.png",
-      gallery: [p.image || "/home/product/product-1.png"],
-      features: [],
-      specs: [],
-    }));
-  } catch {
-    return getRelatedProducts(slug);
   }
 }
 
@@ -526,47 +429,45 @@ export async function fetchFAQs(locale?: Locale): Promise<Record<string, unknown
 }
 
 export async function fetchProjectById(id: string, locale?: Locale) {
-  const { getInteriorProjectById, INTERIOR_NARRATIVE_ONE, INTERIOR_NARRATIVE_TWO } =
-    await import("./interiorData");
-  const interior = getInteriorProjectById(id);
-  if (interior) return interior;
+  const { getInteriorProjectById, resolveInteriorDetailIntro } = await import("./interiorData");
 
   try {
     const projects = await fetchProjects(locale);
     const apiProject = projects.find(
       (p) => p._id === id || p.slug === id,
     ) as ApiProject | undefined;
-    if (!apiProject) return null;
+    if (apiProject) {
+      const cover = resolveMediaUrl(
+        apiProject.coverImage || apiProject.image,
+        MEDIA.interior[0],
+      );
+      const gallery =
+        apiProject.gallery && apiProject.gallery.length > 0
+          ? apiProject.gallery.map((url: string) => resolveMediaUrl(url, cover))
+          : [cover, cover, cover];
 
-    const cover = resolveMediaUrl(
-      apiProject.coverImage || apiProject.image,
-      MEDIA.interior[0],
-    );
-    const gallery =
-      apiProject.gallery && apiProject.gallery.length > 0
-        ? apiProject.gallery.map((url: string) => resolveMediaUrl(url, cover))
-        : [cover, cover, cover];
-
-    const apiRec = apiProject as Record<string, unknown>;
-    const title = pickLocalizedString(apiProject.title, locale, "Interior Project");
-    return {
-      _id: String(apiProject._id ?? id),
-      title,
-      detailTitle: pickLocalizedString(apiRec.detailTitle, locale, title),
-      description:
-        pickLocalizedString(apiRec.detailDescription, locale, "") ||
-        pickLocalizedString(apiProject.description, locale, "") ||
-        "A beautifully crafted interior designed for everyday living.",
-      coverImage: cover,
-      gallery,
-      category: apiProject.category,
-      isNew: apiProject.isNew,
-      narrativeOne: pickLocalizedString(apiRec.narrativeOne, locale, INTERIOR_NARRATIVE_ONE),
-      narrativeTwo: pickLocalizedString(apiRec.narrativeTwo, locale, INTERIOR_NARRATIVE_TWO),
-    };
+      const apiRec = apiProject as Record<string, unknown>;
+      const title = pickLocalizedString(apiProject.title, locale, "Interior Project");
+      return {
+        _id: String(apiProject._id ?? id),
+        title,
+        detailTitle: pickLocalizedString(apiRec.detailTitle, locale, title),
+        description: resolveInteriorDetailIntro(
+          pickLocalizedString(apiRec.detailDescription, locale, ""),
+        ),
+        coverImage: cover,
+        gallery,
+        category: apiProject.category,
+        isNew: apiProject.isNew,
+        narrativeOne: pickLocalizedString(apiRec.narrativeOne, locale, ""),
+        narrativeTwo: pickLocalizedString(apiRec.narrativeTwo, locale, ""),
+      };
+    }
   } catch {
-    return getInteriorProjectById(id);
+    // fall through to static mock
   }
+
+  return getInteriorProjectById(id);
 }
 
 export async function fetchCatalogues(locale?: Locale): Promise<Record<string, unknown>[]> {

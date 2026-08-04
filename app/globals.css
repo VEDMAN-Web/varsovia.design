@@ -33,13 +33,19 @@
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-gold: var(--gold);
-  --font-sans: var(--font-oswald);
+  --font-sans: var(--font-outfit);
   --font-display: var(--font-oswald);
   --font-outfit: var(--font-outfit);
 }
 
+/* Figma: Outfit = body, UI, subtitles, paragraphs; Oswald = section band titles & display headlines */
+
 .font-outfit {
-  font-family: var(--font-outfit), system-ui, sans-serif;
+  font-family: var(--font-outfit), sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-oswald), sans-serif;
 }
 
 /* Partners strip — infinite horizontal marquee (contained in section shell) */
@@ -133,6 +139,7 @@ html {
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) transparent;
+  font-family: var(--font-outfit), sans-serif;
 }
 
 html::-webkit-scrollbar {
@@ -171,7 +178,7 @@ html.lenis {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-oswald), system-ui, sans-serif;
+  font-family: var(--font-outfit), sans-serif;
   overflow-x: hidden;
   max-width: 100vw;
 }
@@ -226,10 +233,6 @@ body {
   color: var(--maroon-deep);
 }
 
-.font-display {
-  font-family: var(--font-oswald), Georgia, serif;
-}
-
 @keyframes skeleton-shimmer {
   0% {
     background-position: 200% 0;
@@ -271,7 +274,9 @@ body {
   background: var(--maroon);
   color: white;
   padding: 0.85rem 1.75rem;
+  font-family: var(--font-outfit), sans-serif;
   font-size: 0.8rem;
+  font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   transition: background 0.25s ease, transform 0.25s ease;
@@ -282,7 +287,7 @@ body {
 }
 
 .heading-section {
-  font-family: var(--font-oswald), Georgia, serif;
+  font-family: var(--font-oswald), sans-serif;
   color: #6a414d;
   font-size: clamp(1.45rem, 3.4vw, 3.125rem);
   font-weight: 400;
@@ -292,7 +297,7 @@ body {
 }
 
 .text-page-body {
-  font-family: var(--font-outfit), system-ui, sans-serif;
+  font-family: var(--font-outfit), sans-serif;
   font-size: clamp(0.9375rem, 1.5vw, 1.0625rem);
   font-weight: 400;
   line-height: 2;
@@ -300,7 +305,7 @@ body {
 }
 
 .text-page-subsection {
-  font-family: var(--font-outfit), system-ui, sans-serif;
+  font-family: var(--font-outfit), sans-serif;
   font-size: clamp(1.125rem, 2vw, 1.5rem);
   font-weight: 600;
   color: #6a414d;
@@ -311,6 +316,7 @@ body {
   border: 1px solid color-mix(in srgb, var(--maroon) 22%, white);
   background: white;
   padding: 0.85rem 1rem;
+  font-family: var(--font-outfit), sans-serif;
   font-size: 0.95rem;
   color: var(--ink);
   outline: none;

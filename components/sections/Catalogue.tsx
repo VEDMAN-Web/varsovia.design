@@ -240,7 +240,10 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
 
   return (
     <>
-      <section id="catalogue" className={`overflow-x-clip bg-transparent ${SITE_SECTION_PADDING_Y}`}>
+      <section
+        id="catalogue"
+        className={`overflow-x-clip bg-transparent ${SITE_SECTION_PADDING_Y} !pb-6 !pt-8 sm:!pb-8 sm:!pt-10 md:!pb-10 md:!pt-14`}
+      >
         <div className={CATALOGUE_SECTION_SHELL}>
           <div className={CATALOGUE_CONTENT_WIDTH}>
             <SectionHeadingReveal

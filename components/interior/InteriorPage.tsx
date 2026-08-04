@@ -6,7 +6,6 @@ import { useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import FilterPanel from "@/components/interior/FilterPanel";
-import InteriorCategoryTabs from "@/components/interior/InteriorCategoryTabs";
 import SectionHeading from "@/components/ui/SectionHeading";
 import PageShell from "@/components/ui/PageShell";
 import {
@@ -33,7 +32,6 @@ import {
 } from "@/lib/interiorData";
 import {
   buildInteriorPageNav,
-  interiorCategoriesForUi,
 } from "@/lib/interiorPageNav";
 import { MEDIA } from "@/lib/mediaAssets";
 import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
@@ -155,10 +153,6 @@ export default function InteriorPage({ initialCategory = "All" }: Props) {
   const pageNav = useMemo(
     () => buildInteriorPageNav(site, tHero, tCat),
     [site, tHero, tCat],
-  );
-  const categoryTabs = useMemo(
-    () => interiorCategoriesForUi(pageNav, category),
-    [pageNav, category],
   );
 
   const subcategoryOptions = useMemo(() => {
@@ -329,20 +323,13 @@ export default function InteriorPage({ initialCategory = "All" }: Props) {
             </motion.div>
           </AnimatePresence>
 
-          <InteriorCategoryTabs
-            activeCategory={category}
-            onCategoryChange={() => {}}
-            categories={categoryTabs}
-            labelForCategory={pageNav.labelForCategory}
-          />
-
           {subcategoryOptions && (
             <div className="overflow-hidden">
               <AnimatePresence initial={false}>
                 <motion.div
                   key={`subnav-${category}`}
                   {...SUBNAV_FADE}
-                  className="mt-5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:mt-6 [&::-webkit-scrollbar]:hidden"
+                  className="mt-4 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:mt-5 [&::-webkit-scrollbar]:hidden"
                 >
                   <div className="mx-auto flex w-max min-w-full items-center justify-start gap-4 md:justify-center">
                     <button

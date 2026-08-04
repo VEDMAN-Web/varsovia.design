@@ -34,6 +34,12 @@ type ProductsProps = {
   products?: Product[];
 };
 
+function interiorListingHref(category?: string) {
+  const c = category?.trim();
+  if (!c) return "/interior";
+  return `/interior?category=${encodeURIComponent(c)}`;
+}
+
 const FALLBACK_PRODUCTS: Product[] = [
   {
     _id: "1",
@@ -75,7 +81,10 @@ export default function Products({ products }: ProductsProps) {
   const displayProducts = (products && products.length > 0 ? products : FALLBACK_PRODUCTS).slice(0, 3);
 
   return (
-    <section id="products" className={`bg-[#fdf2f0] ${SITE_SECTION_PADDING_Y}`}>
+    <section
+      id="products"
+      className={`bg-[#fdf2f0] ${SITE_SECTION_PADDING_Y} !pb-6 !pt-8 sm:!pb-8 sm:!pt-10 md:!pb-10 md:!pt-14`}
+    >
       <SectionShell>
         <SectionHeadingReveal
           title={section?.title || t("featuredTitle")}
@@ -92,7 +101,6 @@ export default function Products({ products }: ProductsProps) {
         >
           <div className={SHOWCASE_LISTING_GRID}>
             {displayProducts.map((product, i) => {
-              const slug = product.slug || product._id;
               return (
                 <motion.div key={product._id} variants={itemVariant} className="min-w-0">
                   <ShowcaseProductCard
@@ -101,7 +109,7 @@ export default function Products({ products }: ProductsProps) {
                     description={product.description}
                     image={product.image}
                     imageFallback={MEDIA.products[i % MEDIA.products.length]}
-                    href={`/product/${slug}`}
+                    href={interiorListingHref(product.category)}
                     category={product.category}
                     motionVariant="none"
                   />
@@ -120,7 +128,7 @@ export default function Products({ products }: ProductsProps) {
         >
           <motion.div variants={ctaVariant}>
             <MagneticButton
-              href="/products"
+              href="/interior"
               variant="ghost"
               className="!rounded-md !border-transparent !bg-[#5c3d42] !px-8 !py-3 !text-sm !font-medium !normal-case !tracking-normal !text-white hover:!border-transparent hover:!bg-[#4a2f34] hover:!text-white"
               fullWidthMobile={false}

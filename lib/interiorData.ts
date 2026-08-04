@@ -49,11 +49,55 @@ export type InteriorDetailProject = {
 export const INTERIOR_DETAIL_DEFAULT_DESCRIPTION =
   "This modern kitchen was designed to create a warm, elegant, and highly functional space for everyday living. Featuring a spacious island, premium finishes, integrated appliances, and clean architectural lines, the design balances aesthetics with practicality. Every detail was carefully considered to maximize storage, improve workflow, and create a welcoming environment for cooking, dining, and entertaining.";
 
+/** Detail page header intro (Figma): long paragraph under bold title — never the listing one-liner. */
+export function resolveInteriorDetailIntro(detailDescription?: string): string {
+  const detail = detailDescription?.trim() ?? "";
+  if (detail.length >= 100) return detail;
+  return INTERIOR_DETAIL_DEFAULT_DESCRIPTION;
+}
+
 export const INTERIOR_NARRATIVE_ONE =
   "The objective was to create a space that is both spacious and functional, without compromising on styling. Smart storage, a warm palette, and an open layout balance utility and spaciousness.";
 
 export const INTERIOR_NARRATIVE_TWO =
   "Through thoughtful space planning, premium finishes, and integrated fixtures, we transformed this space with seamless functionality and lasting quality.";
+
+/** Single block below gallery slider (Figma) — used when CMS narratives are empty */
+export const INTERIOR_DETAIL_BODY_FALLBACK = `${INTERIOR_NARRATIVE_ONE.replace(/\s+$/, "")} ${INTERIOR_NARRATIVE_TWO.replace(/^\s+/, "")}`.trim();
+
+/**
+ * One paragraph for detail body: merges `narrativeOne` + `narrativeTwo` from CMS.
+ * Duplicate segments are collapsed; optional fallback when both fields are empty.
+ */
+export function buildInteriorDetailBody(
+  narrativeOne?: string,
+  narrativeTwo?: string,
+  options?: { useFallback?: boolean },
+): string {
+  const one = narrativeOne?.trim() ?? "";
+  const two = narrativeTwo?.trim() ?? "";
+  let merged = "";
+  if (one && two) {
+    merged = one === two ? one : `${one.replace(/\s+$/, "")} ${two.replace(/^\s+/, "")}`.trim();
+  } else {
+    merged = one || two;
+  }
+  if (!merged && options?.useFallback) {
+    return INTERIOR_DETAIL_BODY_FALLBACK;
+  }
+  return normalizeDetailBodyParagraph(merged);
+}
+
+/** Collapse exact duplicate half (common in CMS / Figma placeholder). */
+export function normalizeDetailBodyParagraph(text: string): string {
+  const t = text.trim();
+  if (t.length < 24) return t;
+  const mid = Math.floor(t.length / 2);
+  const first = t.slice(0, mid).trim();
+  const second = t.slice(mid).trim();
+  if (first && first === second) return first;
+  return t;
+}
 
 export type AdvancedFilters = {
   shapes: string[];
@@ -380,10 +424,18 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
   },
   {
     id: "2",
-    title: "Obsidian Black",
+    title: "Skyline Apartment",
+    detailTitle:
+      "Skyline Apartment Modern L-Shape Kitchen Cabinetry with Full-Height Storage SKY2200",
+    detailDescription: INTERIOR_DETAIL_DEFAULT_DESCRIPTION,
     category: "Kitchen",
-    description: "Matte black cabinets with gold bar handles. Bold and dramatic.",
+    description: "Compact luxury with full-height storage.",
     image: "/Interior-kitchen/kitchen2.png",
+    gallery: [
+      "/Interior-kitchen/kitchen2.png",
+      "/Interior-kitchen/kitchen1.png",
+      "/home/featured-project/feature-2.jpg",
+    ],
     isNew: true,
     createdAt: "2026-05-28",
     price: 265000,
@@ -955,10 +1007,9 @@ export function getInteriorProjectById(id: string): InteriorDetailProject | null
     _id: item.id,
     title: item.title,
     detailTitle: item.detailTitle || item.title,
-    description:
-      item.detailDescription ||
-      item.description ||
-      INTERIOR_DETAIL_DEFAULT_DESCRIPTION,
+    description: resolveInteriorDetailIntro(
+      item.detailDescription || item.description,
+    ),
     coverImage,
     gallery,
     category: item.category,

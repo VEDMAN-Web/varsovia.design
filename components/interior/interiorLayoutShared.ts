@@ -3,7 +3,7 @@ import { SITE_SECTION_SHELL, SITE_SECTION_HEADING_WIDE } from "@/components/ui/l
 /** Interior listing — same shell as detail pages */
 export const INTERIOR_DETAIL_SHELL = SITE_SECTION_SHELL;
 
-export const INTERIOR_DETAIL_BG = "#f7f3f2";
+export const INTERIOR_DETAIL_BG = "#f9f6f4";
 
 /** Tighter hero → toolbar rhythm than generic SITE_PAGE_HERO_SECTION_PAD */
 export const INTERIOR_LISTING_HERO_PAD = "pb-0 pt-10 md:pt-14";
