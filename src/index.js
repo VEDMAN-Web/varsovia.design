@@ -7,6 +7,7 @@ const { sendError } = require("./utils/apiResponse");
 const apiRoutes = require("./routes/api");
 const seedIfEmpty = require("./seed/seedIfEmpty");
 const { globalLimiter } = require("./middleware/rateLimiter");
+const { allowedOrigins, corsOriginCallback } = require("./config/corsOrigins");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,21 +19,17 @@ app.set("trust proxy", 1);
 app.use(helmet());
 
 // ─── Strict CORS ──────────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:3000")
-  .split(",")
-  .map((o) => o.trim());
+if (process.env.NODE_ENV === "production") {
+  console.log(`[CORS] Allowed origins: ${allowedOrigins.join(", ") || "(none — set CLIENT_URL)"}`);
+}
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // allow server-to-server / curl
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      callback(new Error(`CORS: origin '${origin}' not allowed.`));
-    },
+    origin: corsOriginCallback,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "X-Admin-Key", "Accept-Language"],
+    allowedHeaders: ["Content-Type", "X-Admin-Key", "Accept-Language", "Accept"],
     credentials: true,
-  })
+  }),
 );
 
 // ─── Body parser ──────────────────────────────────────────────────────────────

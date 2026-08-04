@@ -15,7 +15,7 @@ const globalLimiter = rateLimit({
   max: envInt("RATE_LIMIT_GLOBAL_MAX", 1000),
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => req.path === "/health",
+  skip: (req) => req.method === "OPTIONS" || req.path === "/health",
   message: { message: "Too many requests, please try again later." },
 });
 
