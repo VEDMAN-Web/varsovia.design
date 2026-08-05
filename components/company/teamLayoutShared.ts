@@ -20,12 +20,12 @@ export const TEAM_STAT_SECTION = "mb-[clamp(2.5rem,7vw,6rem)] max-w-[min(100%,10
 export const TEAM_STAT_GRID =
   "grid w-full grid-cols-1 gap-4 lg:grid-cols-2 lg:items-stretch lg:gap-[60px]";
 
-/** Figma Our team — Frame 2147205510 / 5511: 490×183, radius 6, shadow */
+/** Figma Our team — Frame 2147205510 / 5511: 490×183, radius 6, soft shadow */
 export const TEAM_STAT_CARD =
-  "relative w-full min-w-0 overflow-hidden rounded-[6px] border border-[#f0e4e4]/60 bg-gradient-to-br from-[#f8eeee] via-[#fbf5f5] to-[#fdf9f9] shadow-[0_0_10px_rgba(0,0,0,0.1)]";
+  "relative w-full min-w-0 overflow-hidden rounded-[6px] border border-[#f0e4e4]/50 bg-gradient-to-br from-[#f8eeee] via-[#fbf5f5] to-[#fdf9f9] shadow-[0_4px_16px_rgba(106,65,77,0.06)]";
 
 export const TEAM_STAT_CARD_OVERLAY =
-  "pointer-events-none absolute inset-0 opacity-20 [background:radial-gradient(ellipse_120%_80%_at_1%_0%,rgba(208,128,151,0)_0%,rgba(157,96,114,0.5)_50%,rgba(106,65,77,1)_100%)]";
+  "pointer-events-none absolute inset-0 opacity-[0.08] [background:radial-gradient(ellipse_120%_80%_at_1%_0%,rgba(208,128,151,0)_0%,rgba(157,96,114,0.25)_55%,rgba(106,65,77,0.45)_100%)]";
 
 export const TEAM_SECTION_TITLE =
   "text-balance font-outfit text-[clamp(1.5rem,3.5vw,2.5rem)] font-medium leading-[1.2] text-[#251b1e] lg:text-[40px]";
