@@ -18,12 +18,16 @@ type SectionHeadingProps = {
 export const SECTION_TITLE_CLASS =
   "font-display px-1 text-balance break-words text-[clamp(1.35rem,3.4vw,3.125rem)] font-normal uppercase tracking-[0.06em] text-[#6a414d] sm:tracking-[0.1em]";
 
+/** Shared layout: one line, full band width, no wrap overlap with content below. */
+export const SECTION_SUBTITLE_LAYOUT =
+  "w-full max-w-[min(100%,72rem)] shrink-0 text-center leading-snug whitespace-nowrap overflow-x-auto overflow-y-hidden px-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden";
+
 /** Outfit — pink uppercase line under section title (Figma 22px) */
 export const SECTION_SUBTITLE_CLASS =
-  "font-outfit mx-auto mt-4 max-w-[68rem] break-words px-2 text-[clamp(0.75rem,2vw,1.25rem)] font-normal uppercase tracking-[0.14em] text-[#cf5374] sm:mt-[30px] sm:tracking-[0.28em]";
+  `font-outfit mx-auto mt-4 text-[clamp(0.6875rem,1.2vw,1.375rem)] font-normal uppercase tracking-[0.06em] text-[#cf5374] sm:mt-[30px] sm:tracking-[0.12em] lg:tracking-[0.22em] ${SECTION_SUBTITLE_LAYOUT}`;
 
 export const SECTION_SUBTITLE_SENTENCE_CLASS =
-  "font-outfit mx-auto mt-[30px] max-w-[68rem] px-2 text-[clamp(0.8125rem,1.6vw,1.25rem)] font-normal normal-case tracking-normal text-[#cf5374]";
+  `font-outfit mx-auto mt-[30px] text-[clamp(0.75rem,1.25vw,1.25rem)] font-normal normal-case tracking-normal text-[#cf5374] ${SECTION_SUBTITLE_LAYOUT}`;
 
 export const SECTION_LABEL_CLASS =
   "font-outfit text-[10px] font-semibold uppercase tracking-[0.18em] text-[#cf5374]";

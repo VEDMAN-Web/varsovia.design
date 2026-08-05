@@ -2,10 +2,13 @@
 
 import { ArrowLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/lib/i18n/navigation";import Navbar from "@/components/layout/Navbar";
+import { Link } from "@/lib/i18n/navigation";
+import Navbar from "@/components/layout/Navbar";
 import BlogCard from "@/components/company/BlogCard";
 import BlogDetailBody from "@/components/company/BlogDetailBody";
 import BlogShareButton from "@/components/company/BlogShareButton";
+import ImageHeroBand from "@/components/ui/ImageHeroBand";
+import PagePanelReveal from "@/components/ui/PagePanelReveal";
 import {
   BLOG_DETAIL_CARD_BG,
   BLOG_DETAIL_CARD_PAD,
@@ -44,23 +47,18 @@ export default function BlogDetailView({ blog, related }: Props) {
         className="min-h-screen pb-16 md:pb-24"
         style={{ backgroundColor: BLOG_DETAIL_PAGE_BG }}
       >
-        {/* —— 1. Hero band (full bleed) —— */}
-        <section className={`relative w-full overflow-hidden ${BLOG_DETAIL_HERO_HEIGHT}`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={blog.image}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover object-center"
-          />
-          <div
-            className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 from-0% via-black/5 via-[45%] to-transparent to-[72%]"
-            aria-hidden
-          />
-        </section>
+        <ImageHeroBand
+          image={blog.image}
+          alt=""
+          navBackdrop={false}
+          sectionClassName={`relative w-full overflow-hidden ${BLOG_DETAIL_HERO_HEIGHT}`}
+          overlayClassName="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 from-0% via-black/5 via-[45%] to-transparent to-[72%]"
+        />
 
         {/* —— 2. Overlap card + article —— */}
         <div className={`${COMPANY_SHELL} relative z-10 ${BLOG_DETAIL_OVERLAP}`}>
           <div className={BLOG_DETAIL_COLUMN}>
+            <PagePanelReveal trigger="mount" delay={0.1}>
             <article
               className={`overflow-hidden ${BLOG_DETAIL_CARD_ROUNDED} ${BLOG_DETAIL_CARD_SHADOW}`}
               style={{ backgroundColor: BLOG_DETAIL_CARD_BG }}
@@ -106,6 +104,7 @@ export default function BlogDetailView({ blog, related }: Props) {
                 <BlogDetailBody sections={blog.sections} />
               </div>
             </article>
+            </PagePanelReveal>
           </div>
 
           {related.length > 0 && (

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getPublicSiteUrl } from "./publicEnv";
 
 const SITE_NAME = "Varsovia Design";
 const DEFAULT_DESCRIPTION =
@@ -13,8 +14,8 @@ export function pageMetadata({
   description?: string;
   path?: string;
 }): Metadata {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://varsoviadesign.com";
-  const url = `${baseUrl.replace(/\/$/, "")}${path}`;
+  const baseUrl = getPublicSiteUrl();
+  const url = `${baseUrl}${path}`;
 
   return {
     title: `${title} | ${SITE_NAME}`,
@@ -34,4 +35,4 @@ export function pageMetadata({
   };
 }
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://varsoviadesign.com";
+export const SITE_URL = getPublicSiteUrl();

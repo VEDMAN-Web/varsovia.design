@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import ContactFormPanel from "@/components/forms/ContactFormPanel";
 import ContactOurLocationSection from "@/components/contact/ContactOurLocationSection";
 import CompanyHero from "@/components/company/CompanyHero";
+import PagePanelReveal from "@/components/ui/PagePanelReveal";
+import { SECTION_SUBTITLE_CLASS } from "@/components/ui/SectionHeading";
 import { COMPANY_SHELL } from "@/components/company/companyLayoutShared";
 import { fallbackHomeData } from "@/lib/fallbackData";
 
@@ -36,18 +37,13 @@ export default function ContactPageContent() {
         sectionClassName="!pb-0"
         fadeClassName="!mb-0"
         headingClassName="!min-h-0 !pb-4 !pt-7 sm:!min-h-0 sm:!pt-9 sm:!pb-4 md:!min-h-0 md:!pt-11 md:!pb-5"
-        subtitleClassName="font-outfit mx-auto mt-3 max-w-[68rem] break-words px-2 text-[clamp(0.75rem,2vw,1.25rem)] font-normal uppercase tracking-[0.14em] text-[#cf5374] sm:mt-4 md:mt-5 sm:tracking-[0.28em]"
+        subtitleClassName={`${SECTION_SUBTITLE_CLASS} !mt-3 sm:!mt-4 md:!mt-5`}
       />
 
       <section className={`${COMPANY_SHELL} mt-3 pb-0 sm:mt-4 md:mt-5`}>
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
+        <PagePanelReveal trigger="mount" delay={0.12}>
           <ContactFormPanel images={images} purpose="contact" />
-        </motion.div>
+        </PagePanelReveal>
       </section>
 
       <ContactOurLocationSection />

@@ -3,6 +3,7 @@ import path from "path";
 import createNextIntlPlugin from "next-intl/plugin";
 import { locales } from "./lib/i18n/routing";
 import { allLegacyInteriorNumericRedirects } from "./lib/interiorRoutes";
+import { getImageRemotePatterns } from "./lib/publicEnv";
 
 const withNextIntl = createNextIntlPlugin("./lib/i18n/request.ts");
 
@@ -37,12 +38,7 @@ const nextConfig: NextConfig = {
     root: path.join(__dirname),
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-    ],
+    remotePatterns: getImageRemotePatterns(),
   },
 };
 

@@ -7,7 +7,7 @@ import AboutProcessDesktopTimeline from "@/components/about/AboutProcessDesktopT
 import { aboutHeroGalleryImages, aboutStoryCollageImages } from "@/lib/companyData";
 import CompanySectionHeading from "@/components/company/CompanySectionHeading";
 import FadeInView from "@/components/company/FadeInView";
-import SectionHeading from "@/components/ui/SectionHeading";
+import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
 import FixedBackgroundImage from "@/components/ui/FixedBackgroundImage";
 import {
   COMPANY_BODY,
@@ -123,17 +123,16 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
   return (
     <div className="bg-[#f7f3f2] pt-[72px] pb-20 font-outfit md:pb-28">
       <section className={`${COMPANY_SHELL} ${COMPANY_HERO_SECTION_PAD}`}>
-        <FadeInView className="mb-6 md:mb-8">
-          <SectionHeading
-            title={t("heroTitle")}
-            subtitle={heroSubtitle || undefined}
-            titleAs="h1"
-            expanded
-            className={`w-full rounded-[6px] ${SECTION_HEADING_WIDE}`}
-          >
-            <p className={`mx-auto mt-8 max-w-4xl px-2 md:px-4 ${PAGE_BODY_LEAD_CLASS} !text-black`}>{intro}</p>
-          </SectionHeading>
-        </FadeInView>
+        <SectionHeadingReveal
+          trigger="mount"
+          title={t("heroTitle")}
+          subtitle={heroSubtitle || undefined}
+          titleAs="h1"
+          expanded
+          className={`mb-6 w-full rounded-[6px] md:mb-8 ${SECTION_HEADING_WIDE}`}
+        >
+          <p className={`mx-auto mt-8 max-w-4xl px-2 md:px-4 ${PAGE_BODY_LEAD_CLASS} !text-black`}>{intro}</p>
+        </SectionHeadingReveal>
 
         {/* y=0 keeps this wrapper transform-free so the fixed background keeps working */}
         <FadeInView delay={0.1} y={0}>

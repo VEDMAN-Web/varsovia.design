@@ -1,10 +1,11 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { COMPANY_SHELL, SECTION_HEADING_WIDE } from "@/components/company/companyLayoutShared";
 import { LogoWingSvg } from "@/components/preloader/preloaderLogo";
-import SectionHeading from "@/components/ui/SectionHeading";
+import PagePanelReveal from "@/components/ui/PagePanelReveal";
+import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
+import { SECTION_SUBTITLE_CLASS } from "@/components/ui/SectionHeading";
 import {
   CONTACT_LOCATION_BODY,
   CONTACT_LOCATION_CARD,
@@ -17,7 +18,6 @@ import {
   CONTACT_LOCATION_SECTION_PAD,
 } from "@/components/contact/contactLocationShared";
 import { CONTACT_MAP_EMBED_SRC } from "@/lib/contactLocation";
-import { VIEWPORT_ONCE } from "@/lib/motionPresets";
 
 function MapPinIcon() {
   return (
@@ -46,20 +46,14 @@ export default function ContactOurLocationSection() {
     <section
       className={`${COMPANY_SHELL} ${CONTACT_LOCATION_SECTION_GAP} ${CONTACT_LOCATION_SECTION_PAD}`.trim()}
     >
-      <motion.div
-        className={CONTACT_LOCATION_CARD}
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={VIEWPORT_ONCE}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <SectionHeading
+      <PagePanelReveal className={CONTACT_LOCATION_CARD}>
+        <SectionHeadingReveal
           title={t("ourLocationTitle")}
           subtitle={t("ourLocationSubtitle")}
           titleAs="h2"
           compact
           subtitleSentenceCase={false}
-          subtitleClassName="font-outfit mx-auto mt-3 max-w-[68rem] break-words px-1 text-[clamp(0.6875rem,2.8vw,1.25rem)] font-normal uppercase tracking-[0.1em] text-[#cf5374] sm:mt-4 sm:tracking-[0.2em] md:mt-[30px] md:tracking-[0.28em]"
+          subtitleClassName={`${SECTION_SUBTITLE_CLASS} !mt-3 sm:!mt-4 md:!mt-[30px]`}
           className={`${SECTION_HEADING_WIDE} ${CONTACT_LOCATION_HEADING_CLASS}`.trim()}
         />
 
@@ -90,7 +84,7 @@ export default function ContactOurLocationSection() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </PagePanelReveal>
     </section>
   );
 }

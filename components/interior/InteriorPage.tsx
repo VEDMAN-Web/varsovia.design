@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import FilterPanel from "@/components/interior/FilterPanel";
-import SectionHeading from "@/components/ui/SectionHeading";
+import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
 import PageShell from "@/components/ui/PageShell";
 import {
   INTERIOR_LISTING_GRID_MT,
@@ -312,7 +312,8 @@ export default function InteriorPage({ initialCategory = "All" }: Props) {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.22, ease: "easeOut" }}
             >
-              <SectionHeading
+              <SectionHeadingReveal
+                trigger="mount"
                 title={hero.title}
                 subtitle={hero.subtitle}
                 titleAs="h1"

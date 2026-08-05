@@ -10,7 +10,7 @@ export const TEAM_MAIN =
 export const TEAM_SHELL =
   "mx-auto w-full min-w-0 max-w-[min(100%,1060px)] px-[clamp(1rem,4vw,2.5rem)]";
 
-export const TEAM_HERO_SUBTITLE = `${SECTION_SUBTITLE_CLASS} !mt-2.5 max-w-[34rem] sm:!mt-3 sm:max-w-[42rem] md:max-w-[48rem]`;
+export const TEAM_HERO_SUBTITLE = `${SECTION_SUBTITLE_CLASS} !mt-2.5 sm:!mt-3`;
 
 export const TEAM_INTRO_CLASS =
   "mx-auto max-w-[min(100%,820px)] text-pretty px-0.5 text-center font-outfit text-[clamp(0.875rem,2.2vw,1rem)] font-normal leading-[1.8] text-[#6a414d]/90 min-[480px]:leading-[1.85] md:text-[16px] md:leading-[1.9]";

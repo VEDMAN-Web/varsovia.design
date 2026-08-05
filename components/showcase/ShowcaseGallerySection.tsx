@@ -1,14 +1,32 @@
 "use client";
 
+import { motion, useReducedMotion } from "framer-motion";
 import {
+  SHOWCASE_BENTO_BOARD_ASPECT,
+  SHOWCASE_BENTO_TILES,
+  showcaseBentoTileStyle,
+  type ShowcaseBentoTileKey,
+} from "@/components/showcase/showcaseBentoLayoutShared";
+import {
+  SHOWCASE_BENTO_MOBILE_MOTION,
+  SHOWCASE_BENTO_TILE_MOTION,
+  SHOWCASE_GALLERY_HERO_MOTION,
+  SHOWCASE_GALLERY_MOTION,
+  SHOWCASE_GALLERY_TITLE_MOTION,
+  SHOWCASE_GALLERY_VIEWPORT,
+} from "@/components/showcase/showcaseGalleryMotionShared";
+import {
+  SHOWCASE_GALLERY_FRAME_SHADOW,
   SHOWCASE_GALLERY_GAP,
   SHOWCASE_GALLERY_RADIUS,
+  SHOWCASE_GALLERY_SECTION_SPACING,
   SHOWCASE_GALLERY_SECTION_TITLE,
 } from "@/components/showcase/showcaseGalleryLayoutShared";
 
 const FALLBACK = "/Interior-kitchen/kitchen1.png";
 
-export type ShowcaseGalleryLayout = "stacked" | "collage";
+/** Figma Showcase Details — hero + 4-tile bento per room (Kitchen, then Bathroom). */
+export type ShowcaseGalleryLayout = "figma-room";
 
 type ShowcaseGallerySectionProps = {
   title: string;
@@ -47,65 +65,181 @@ function ImageFrame({
   src,
   alt,
   aspectClass,
+  className = "",
 }: {
   src: string;
   alt: string;
   aspectClass: string;
+  className?: string;
 }) {
   return (
     <div
-      className={`overflow-hidden ${SHOWCASE_GALLERY_RADIUS} bg-[#e8e2e0] shadow-[0_4px_24px_rgba(70,40,50,0.06)] ${aspectClass}`}
+      className={`overflow-hidden ${SHOWCASE_GALLERY_RADIUS} bg-[#e8e2e0] ${SHOWCASE_GALLERY_FRAME_SHADOW} ${aspectClass} ${className}`.trim()}
     >
       <GalleryImage src={src} alt={alt} />
     </div>
   );
 }
 
-/** Figma — Kitchen: full-width hero, then 2-up row (aligned edges, equal gutter) */
-function StackedGallery({ title, images }: { title: string; images: string[] }) {
-  const hero = images[0] ?? FALLBACK;
-  const left = images[1] ?? images[0] ?? FALLBACK;
-  const right = images[2] ?? images[1] ?? FALLBACK;
+type RevealProps = {
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+  x?: number;
+  y?: number;
+  scale?: number;
+  delay?: number;
+};
+
+function GalleryReveal({
+  children,
+  className = "",
+  style,
+  x = 0,
+  y = 24,
+  scale = 1,
+  delay = 0,
+}: RevealProps) {
+  const reduceMotion = useReducedMotion();
 
   return (
-    <section className="mb-14 md:mb-20">
-      <h2 className={SHOWCASE_GALLERY_SECTION_TITLE}>{title}</h2>
-
-      <div className={`flex flex-col ${SHOWCASE_GALLERY_GAP}`}>
-        <ImageFrame src={hero} alt={`${title} overview`} aspectClass="aspect-[2/1] w-full sm:aspect-[2.15/1]" />
-
-        <div className={`grid grid-cols-1 sm:grid-cols-2 ${SHOWCASE_GALLERY_GAP}`}>
-          <ImageFrame src={left} alt={`${title} detail left`} aspectClass="aspect-square w-full sm:aspect-[1/1]" />
-          <ImageFrame src={right} alt={`${title} detail right`} aspectClass="aspect-square w-full sm:aspect-[1/1]" />
-        </div>
-      </div>
-    </section>
+    <motion.div
+      className={className}
+      style={style}
+      initial={
+        reduceMotion
+          ? { opacity: 0 }
+          : { opacity: 0, x, y, scale }
+      }
+      whileInView={
+        reduceMotion
+          ? { opacity: 1 }
+          : { opacity: 1, x: 0, y: 0, scale: 1 }
+      }
+      viewport={SHOWCASE_GALLERY_VIEWPORT}
+      transition={{
+        duration: SHOWCASE_GALLERY_MOTION.duration,
+        ease: SHOWCASE_GALLERY_MOTION.ease,
+        delay,
+      }}
+    >
+      {children}
+    </motion.div>
   );
 }
 
-/** Figma — Bathroom: wide top band (left-weighted), staggered portrait + feature below */
-function CollageGallery({ title, images }: { title: string; images: string[] }) {
-  const top = images[0] ?? FALLBACK;
-  const left = images[1] ?? images[0] ?? FALLBACK;
-  const right = images[2] ?? images[1] ?? FALLBACK;
+const BENTO_ALT: Record<ShowcaseBentoTileKey, string> = {
+  topLeft: "wide detail",
+  topRight: "upper detail",
+  bottomLeft: "vertical detail",
+  bottomRight: "feature view",
+};
+
+/** Figma-positioned collage — scales with width; overlap is proportional to artboard. */
+function BentoFourCollage({
+  title,
+  tiles,
+}: {
+  title: string;
+  tiles: [string, string, string, string];
+}) {
+  const byKey: Record<ShowcaseBentoTileKey, string> = {
+    topLeft: tiles[0],
+    topRight: tiles[1],
+    bottomLeft: tiles[2],
+    bottomRight: tiles[3],
+  };
+
+  const mobileAspects = [
+    "aspect-[720/430] w-full",
+    "aspect-[490/368] w-full",
+    "aspect-[490/368] w-full",
+    "aspect-[720/430] w-full",
+  ] as const;
 
   return (
-    <section className="mb-14 md:mb-20">
-      <h2 className={SHOWCASE_GALLERY_SECTION_TITLE}>{title}</h2>
+    <>
+      <div className={`flex flex-col sm:hidden ${SHOWCASE_GALLERY_GAP}`}>
+        {tiles.map((src, index) => {
+          const motion = SHOWCASE_BENTO_MOBILE_MOTION[index] ?? SHOWCASE_BENTO_MOBILE_MOTION[0];
+          const labels = ["wide detail", "upper detail", "vertical detail", "feature view"];
+          return (
+            <GalleryReveal
+              key={labels[index]}
+              x={motion.x}
+              y={20}
+              scale={0.97}
+              delay={motion.delay}
+            >
+              <ImageFrame src={src} alt={`${title} ${labels[index]}`} aspectClass={mobileAspects[index]} />
+            </GalleryReveal>
+          );
+        })}
+      </div>
 
-      <div className={`flex flex-col ${SHOWCASE_GALLERY_GAP}`}>
-        <div className="mr-auto w-full max-w-[min(100%,960px)]">
-          <ImageFrame src={top} alt={`${title} panorama`} aspectClass="aspect-[2.05/1] w-full" />
-        </div>
+      <div
+        className="relative hidden w-full min-w-0 sm:block"
+        style={{ aspectRatio: SHOWCASE_BENTO_BOARD_ASPECT }}
+      >
+        {SHOWCASE_BENTO_TILES.map((rect) => {
+          const pos = showcaseBentoTileStyle(rect);
+          const src = byKey[rect.key];
+          const tileMotion = SHOWCASE_BENTO_TILE_MOTION[rect.key];
+          return (
+            <GalleryReveal
+              key={rect.key}
+              className={`absolute overflow-hidden ${SHOWCASE_GALLERY_RADIUS} bg-[#e8e2e0] ${SHOWCASE_GALLERY_FRAME_SHADOW}`}
+              style={{
+                left: pos.left,
+                top: pos.top,
+                width: pos.width,
+                height: pos.height,
+                zIndex: pos.zIndex,
+              }}
+              x={tileMotion.x}
+              y={tileMotion.y}
+              scale={tileMotion.scale}
+              delay={tileMotion.delay}
+            >
+              <GalleryImage src={src} alt={`${title} ${BENTO_ALT[rect.key]}`} />
+            </GalleryReveal>
+          );
+        })}
+      </div>
+    </>
+  );
+}
 
-        <div className={`grid grid-cols-1 items-start sm:grid-cols-12 ${SHOWCASE_GALLERY_GAP}`}>
-          <div className="sm:col-span-5 sm:translate-y-10 md:translate-y-14">
-            <ImageFrame src={left} alt={`${title} detail left`} aspectClass="aspect-[3/4] w-full" />
-          </div>
-          <div className="sm:col-span-7 sm:-translate-y-2 md:-translate-y-4">
-            <ImageFrame src={right} alt={`${title} feature`} aspectClass="aspect-[4/5] w-full sm:aspect-[5/6]" />
-          </div>
-        </div>
+/** Figma room block: heading → full-width hero → 4-image bento. */
+function FigmaRoomGallery({ title, images }: { title: string; images: string[] }) {
+  const hero = images[0] ?? FALLBACK;
+  const bento: [string, string, string, string] = [
+    images[1] ?? hero,
+    images[2] ?? hero,
+    images[3] ?? hero,
+    images[4] ?? hero,
+  ];
+
+  return (
+    <section className={SHOWCASE_GALLERY_SECTION_SPACING}>
+      <GalleryReveal
+        x={SHOWCASE_GALLERY_TITLE_MOTION.x}
+        y={0}
+        scale={1}
+        delay={SHOWCASE_GALLERY_TITLE_MOTION.delay}
+      >
+        <h2 className={SHOWCASE_GALLERY_SECTION_TITLE}>{title}</h2>
+      </GalleryReveal>
+
+      <div className={`flex w-full min-w-0 flex-col ${SHOWCASE_GALLERY_GAP}`}>
+        <GalleryReveal
+          y={SHOWCASE_GALLERY_HERO_MOTION.y}
+          scale={SHOWCASE_GALLERY_HERO_MOTION.scale}
+          delay={SHOWCASE_GALLERY_HERO_MOTION.delay}
+        >
+          <ImageFrame src={hero} alt={`${title} overview`} aspectClass="aspect-[16/9] w-full sm:aspect-[2.05/1]" />
+        </GalleryReveal>
+        <BentoFourCollage title={title} tiles={bento} />
       </div>
     </section>
   );
@@ -114,13 +248,25 @@ function CollageGallery({ title, images }: { title: string; images: string[] }) 
 export default function ShowcaseGallerySection({
   title,
   images,
-  layout = "stacked",
+  layout = "figma-room",
 }: ShowcaseGallerySectionProps) {
-  const list = images.length > 0 ? images : [FALLBACK, FALLBACK, FALLBACK];
+  const list =
+    images.length >= 5
+      ? images.slice(0, 5)
+      : padShowcaseRoomImages(images.length > 0 ? images : [FALLBACK]);
 
-  if (layout === "collage") {
-    return <CollageGallery title={title} images={list} />;
+  if (layout === "figma-room") {
+    return <FigmaRoomGallery title={title} images={list} />;
   }
 
-  return <StackedGallery title={title} images={list} />;
+  return <FigmaRoomGallery title={title} images={list} />;
+}
+
+function padShowcaseRoomImages(source: string[]): string[] {
+  const base = source.length > 0 ? source : [FALLBACK];
+  const out: string[] = [];
+  for (let i = 0; i < 5; i++) {
+    out.push(base[i % base.length] ?? FALLBACK);
+  }
+  return out;
 }

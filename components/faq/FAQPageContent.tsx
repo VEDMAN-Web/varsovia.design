@@ -38,7 +38,7 @@ import { SECTION_SUBTITLE_CLASS } from "@/components/ui/SectionHeading";
 const FAQ_HERO_TITLE =
   "font-display px-2 text-balance break-words text-[clamp(1.625rem,5.5vw,3.125rem)] font-normal uppercase tracking-[0.06em] text-[#6a414d] sm:px-1 sm:tracking-[0.1em]";
 
-const FAQ_HERO_SUBTITLE = `${SECTION_SUBTITLE_CLASS} !mt-2.5 max-w-[34rem] sm:!mt-3 sm:max-w-[42rem] md:max-w-[48rem]`;
+const FAQ_HERO_SUBTITLE = `${SECTION_SUBTITLE_CLASS} !mt-2.5 sm:!mt-3`;
 
 /** Figma topic row — flat list, no box borders */
 const FAQ_TOPIC_ROW =

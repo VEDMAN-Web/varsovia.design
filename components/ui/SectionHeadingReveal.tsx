@@ -32,6 +32,8 @@ type SectionHeadingRevealProps = {
   leading?: React.ReactNode;
   /** Scroll-driven title/subtitle reveal (default true) */
   reveal?: boolean;
+  /** Above-the-fold heroes: animate on mount instead of scroll */
+  trigger?: "inView" | "mount";
 };
 
 export default function SectionHeadingReveal({
@@ -48,7 +50,10 @@ export default function SectionHeadingReveal({
   noGradient = false,
   leading,
   reveal = true,
+  trigger = "inView",
 }: SectionHeadingRevealProps) {
+  const reduceMotion = useReducedMotion();
+
   if (!reveal) {
     return (
       <SectionHeading
@@ -69,7 +74,6 @@ export default function SectionHeadingReveal({
     );
   }
 
-  const reduceMotion = useReducedMotion();
   const TitleTag = titleAs;
   const blockClass = expanded
     ? SECTION_BLOCK_EXPANDED_CLASS
@@ -84,14 +88,21 @@ export default function SectionHeadingReveal({
   const titleVariant = reduceMotion ? reducedFadeUpItem : fadeUpBlurItem;
   const subtitleVariant = reduceMotion ? reducedFadeUpItem : fadeUpBlurItem;
 
+  const motionTrigger =
+    trigger === "mount"
+      ? { initial: "hidden" as const, animate: "visible" as const }
+      : {
+          initial: "hidden" as const,
+          whileInView: "visible" as const,
+          viewport: VIEWPORT_ONCE,
+        };
+
   return (
     <motion.div
       className={`${blockClass} ${leading ? "relative" : ""} ${className}`.trim()}
       style={noGradient ? undefined : { background: SECTION_BLOCK_GRADIENT }}
-      initial="hidden"
-      whileInView="visible"
-      viewport={VIEWPORT_ONCE}
-      variants={staggerContainer(0.12, 0.02)}
+      {...motionTrigger}
+      variants={staggerContainer(0.12, trigger === "mount" ? 0.08 : 0.02)}
     >
       {leading ? (
         <div className="absolute left-4 top-4 z-10 sm:left-5 sm:top-5 md:left-8 md:top-6">
@@ -106,7 +117,7 @@ export default function SectionHeadingReveal({
           {subtitle}
         </motion.p>
       ) : null}
-      {children}
+      {children ? <motion.div variants={subtitleVariant}>{children}</motion.div> : null}
     </motion.div>
   );
 }

@@ -14,7 +14,7 @@ import CatalogueNotebookCard from "@/components/catalogue/CatalogueNotebookCard"
 
 import DownloadCatalogueModal from "@/components/forms/DownloadCatalogueModal";
 
-import SectionHeading from "@/components/ui/SectionHeading";
+import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
 
 import ListingPagination from "@/components/ui/ListingPagination";
 
@@ -200,18 +200,13 @@ export default function CataloguePageClient() {
 
           <div className={CATALOGUE_CONTENT_WIDTH}>
 
-            <SectionHeading
-
+            <SectionHeadingReveal
+              trigger="mount"
               titleAs="h1"
-
               title="Free Catalogue"
-
               subtitle="Explore Our Interior Design Catalogue"
-
               subtitleSentenceCase
-
               className={`${SECTION_HEADING_WIDE} mb-8 sm:mb-10 md:mb-14`}
-
             />
 
 

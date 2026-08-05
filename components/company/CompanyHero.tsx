@@ -1,8 +1,12 @@
 "use client";
 
-import FadeInView from "@/components/company/FadeInView";
-import { COMPANY_SHELL, COMPANY_HERO_SECTION_PAD, PAGE_BODY_LEAD_CLASS, SECTION_HEADING_WIDE } from "@/components/company/companyLayoutShared";
-import SectionHeading from "@/components/ui/SectionHeading";
+import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
+import {
+  COMPANY_HERO_SECTION_PAD,
+  COMPANY_SHELL,
+  PAGE_BODY_LEAD_CLASS,
+  SECTION_HEADING_WIDE,
+} from "@/components/company/companyLayoutShared";
 
 type CompanyHeroProps = {
   title: string;
@@ -36,8 +40,9 @@ export default function CompanyHero({
 }: CompanyHeroProps) {
   return (
     <section className={`${COMPANY_SHELL} ${COMPANY_HERO_SECTION_PAD} ${sectionClassName}`.trim()}>
-      <FadeInView className={`mb-8 md:mb-12 ${fadeClassName}`.trim()}>
-        <SectionHeading
+      <div className={`mb-8 md:mb-12 ${fadeClassName}`.trim()}>
+        <SectionHeadingReveal
+          trigger="mount"
           title={title}
           subtitle={subtitle}
           titleAs="h1"
@@ -52,8 +57,8 @@ export default function CompanyHero({
           {children && (
             <div className={`mx-auto mt-8 max-w-4xl px-2 md:px-4 ${PAGE_BODY_LEAD_CLASS}`}>{children}</div>
           )}
-        </SectionHeading>
-      </FadeInView>
+        </SectionHeadingReveal>
+      </div>
     </section>
   );
 }

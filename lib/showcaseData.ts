@@ -1,3 +1,7 @@
+import { pickLocalized } from "@/lib/i18n/pickLocalized";
+import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
+import type { Locale } from "@/lib/i18n/routing";
+
 export const SHOWCASE_TABS = [
   "All",
   "Home case",
@@ -149,13 +153,9 @@ function buildProjectsForTab(tab: ShowcaseTab): ShowcaseProject[] {
     }
 
     const image = FALLBACK_IMAGES[i % FALLBACK_IMAGES.length];
-    const gallery = [
-      image,
-      FALLBACK_IMAGES[(i + 1) % FALLBACK_IMAGES.length],
-      FALLBACK_IMAGES[(i + 2) % FALLBACK_IMAGES.length],
-      FALLBACK_IMAGES[(i + 3) % FALLBACK_IMAGES.length],
-      FALLBACK_IMAGES[(i + 4) % FALLBACK_IMAGES.length],
-    ];
+    const gallery = Array.from({ length: 10 }, (_, j) =>
+      j === 0 ? image : FALLBACK_IMAGES[(i + j) % FALLBACK_IMAGES.length],
+    );
 
     return {
       id,
@@ -169,6 +169,41 @@ function buildProjectsForTab(tab: ShowcaseTab): ShowcaseProject[] {
       gallery,
     };
   });
+}
+
+/** Map CMS showcase row → detail/listing shape. */
+export function mapApiShowcaseToProject(
+  row: Record<string, unknown>,
+  locale: Locale,
+): ShowcaseProject {
+  const loc = locale === "pl" || locale === "th" ? locale : "en";
+  const id = String(row._id ?? row.id ?? "");
+  const categoryRaw = typeof row.category === "string" ? row.category : pickLocalized(row.category, loc);
+  const category = (SHOWCASE_TABS.includes(categoryRaw as ShowcaseTab)
+    ? categoryRaw
+    : "Home case") as ShowcaseTab;
+  const image = resolveMediaUrl(
+    typeof row.image === "string" ? row.image : undefined,
+    MEDIA.interior[0],
+  );
+  const galleryRaw = Array.isArray(row.gallery) ? row.gallery : [];
+  const gallery =
+    galleryRaw.length > 0
+      ? galleryRaw.map((url) => resolveMediaUrl(String(url), image))
+      : [image];
+
+  return {
+    id,
+    title: pickLocalized(row.title, loc) || (typeof row.title === "string" ? row.title : ""),
+    category,
+    image,
+    location: pickLocalized(row.location, loc) || (typeof row.location === "string" ? row.location : ""),
+    typeLabel: pickLocalized(row.typeLabel, loc) || (typeof row.typeLabel === "string" ? row.typeLabel : "Type"),
+    typeValue: pickLocalized(row.typeValue, loc) || (typeof row.typeValue === "string" ? row.typeValue : ""),
+    supplyArea:
+      pickLocalized(row.supplyArea, loc) || (typeof row.supplyArea === "string" ? row.supplyArea : ""),
+    gallery,
+  };
 }
 
 export function getShowcaseProjects(tab: ShowcaseTab): ShowcaseProject[] {

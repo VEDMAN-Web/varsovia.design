@@ -10,8 +10,9 @@ export const INTERIOR_LISTING_HERO_PAD = "pb-0 pt-10 md:pt-14";
 
 export const INTERIOR_LISTING_HEADING_CLASS = `${SITE_SECTION_HEADING_WIDE} !min-h-0 !pb-2 !pt-4 sm:!pt-5 md:!pb-3 md:!pt-8`;
 
-export const INTERIOR_LISTING_SUBTITLE_CLASS =
-  "font-outfit mx-auto mt-3 max-w-[68rem] break-words px-2 text-[clamp(0.8125rem,1.6vw,1.25rem)] font-normal normal-case tracking-normal text-[#cf5374] sm:mt-4";
+import { SECTION_SUBTITLE_SENTENCE_CLASS } from "@/components/ui/SectionHeading";
+
+export const INTERIOR_LISTING_SUBTITLE_CLASS = `${SECTION_SUBTITLE_SENTENCE_CLASS} !mt-3 sm:!mt-4`;
 
 export const INTERIOR_LISTING_TOOLBAR_MT = "mt-5 md:mt-6";
 

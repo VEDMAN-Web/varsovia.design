@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getContactApiBaseUrl } from "@/lib/publicEnv";
 
 /** Server-side proxy — avoids browser CORS to Render/other API hosts. */
 function backendContactUrl() {
-  const base = (
-    process.env.CONTACT_API_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:5000/api"
-  ).replace(/\/$/, "");
-  return `${base}/contact`;
+  return `${getContactApiBaseUrl()}/contact`;
 }
 
 export async function POST(request: NextRequest) {

@@ -29,6 +29,7 @@ import {
   QAS_SECTION_SPACING,
   QAS_SHELL,
 } from "@/components/company/qualitySaleLayoutShared";
+import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
 import SectionHeading, {
   SECTION_SUBTITLE_CLASS,
   SECTION_TITLE_CLASS,
@@ -170,7 +171,8 @@ export default function QualityAfterSalesPageClient() {
         <section className={`${QAS_SHELL} ${QAS_SECTION_SPACING}`}>
           <FadeInView>
             <div className={QAS_HERO_BAND}>
-              <SectionHeading
+              <SectionHeadingReveal
+                trigger="mount"
                 title={cms.heroTitle || t("heroTitle")}
                 subtitle={cms.heroSubtitle || t("heroSubtitle")}
                 titleAs="h1"
@@ -178,7 +180,7 @@ export default function QualityAfterSalesPageClient() {
                 noGradient
                 subtitleSentenceCase={false}
                 titleClassName={`${SECTION_TITLE_CLASS} px-0.5`}
-                subtitleClassName={`${SECTION_SUBTITLE_CLASS} mt-[clamp(1rem,3vw,1.875rem)] max-w-[min(100%,52rem)]`}
+                subtitleClassName={`${SECTION_SUBTITLE_CLASS} mt-[clamp(1rem,3vw,1.875rem)]`}
                 className="!p-0"
               />
               <p className={QAS_HERO_BODY}>{cms.heroBody || t("heroBody")}</p>

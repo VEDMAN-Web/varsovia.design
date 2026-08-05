@@ -30,7 +30,7 @@ import { SECTION_SUBTITLE_CLASS } from "@/components/ui/SectionHeading";
 const BLOG_HERO_TITLE =
   "font-display px-2 text-balance break-words text-[clamp(1.625rem,5.5vw,3.125rem)] font-normal uppercase tracking-[0.06em] text-[#6a414d] sm:px-1 sm:tracking-[0.1em]";
 
-const BLOG_HERO_SUBTITLE = `${SECTION_SUBTITLE_CLASS} !mt-2.5 max-w-[34rem] sm:!mt-3 sm:max-w-[42rem] md:max-w-[48rem]`;
+const BLOG_HERO_SUBTITLE = `${SECTION_SUBTITLE_CLASS} !mt-2.5 sm:!mt-3`;
 
 const TOOLBAR_PILL =
   "inline-flex h-9 items-center gap-1.5 rounded-[8px] border border-[#d4d4d4] bg-white px-3 font-outfit text-[14px] font-medium text-[#1f1f1f] outline-none transition hover:border-[#6a414d]/35 sm:h-10 sm:gap-2 sm:px-4 sm:text-[15px]";

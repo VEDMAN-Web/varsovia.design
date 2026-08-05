@@ -34,6 +34,9 @@ import {
   INTERIOR_DETAIL_TITLE_CLASS,
   INTERIOR_DETAIL_YOU_MAY_LIKE_TITLE,
 } from "@/components/interior/interiorDetailLayoutShared";
+import PagePanelReveal from "@/components/ui/PagePanelReveal";
+import ImageHeroBand from "@/components/ui/ImageHeroBand";
+import FadeInView from "@/components/company/FadeInView";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 
 const FALLBACK = MEDIA.interior[0];
@@ -270,14 +273,13 @@ export default function InteriorDetail({ project }: Props) {
   return (
     <div className="overflow-x-hidden" style={{ backgroundColor: INTERIOR_DETAIL_PAGE_BG }}>
       <div className={INTERIOR_DETAIL_HERO_OUTER}>
-        <section data-nav-backdrop="dark" className={INTERIOR_DETAIL_HERO_CLASS}>
-          <DetailImage
-            src={project.coverImage || FALLBACK}
-            alt={project.detailTitle}
-            className="absolute inset-0 h-full w-full object-cover object-center"
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-[#f9f6f4]/45" />
-        </section>
+        <ImageHeroBand
+          image={resolveMediaUrl(project.coverImage || FALLBACK, FALLBACK)}
+          alt={project.detailTitle}
+          sectionClassName={INTERIOR_DETAIL_HERO_CLASS}
+          overlayClassName="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-[#f9f6f4]/45"
+          navBackdrop="dark"
+        />
       </div>
 
       <div
@@ -285,17 +287,21 @@ export default function InteriorDetail({ project }: Props) {
         data-nav-backdrop="light"
       >
         <div className={INTERIOR_DETAIL_CONTENT}>
-          <div className={INTERIOR_DETAIL_MAIN_STACK}>
-            <Link href={backHref} className={INTERIOR_DETAIL_BACK_LINK}>
-              <ChevronLeft size={15} strokeWidth={2} aria-hidden />
-              Back to Interior
-            </Link>
+          <PagePanelReveal trigger="mount" delay={0.1}>
+            <div className={INTERIOR_DETAIL_MAIN_STACK}>
+              <Link href={backHref} className={INTERIOR_DETAIL_BACK_LINK}>
+                <ChevronLeft size={15} strokeWidth={2} aria-hidden />
+                Back to Interior
+              </Link>
 
-            <header className={INTERIOR_DETAIL_HEADER_BLOCK}>
-              <h1 className={INTERIOR_DETAIL_TITLE_CLASS}>{project.detailTitle}</h1>
-              <p className={INTERIOR_DETAIL_INTRO_CLASS}>{project.description}</p>
-            </header>
+              <header className={INTERIOR_DETAIL_HEADER_BLOCK}>
+                <h1 className={INTERIOR_DETAIL_TITLE_CLASS}>{project.detailTitle}</h1>
+                <p className={INTERIOR_DETAIL_INTRO_CLASS}>{project.description}</p>
+              </header>
+            </div>
+          </PagePanelReveal>
 
+          <FadeInView delay={0.2} y={20}>
             <div className={INTERIOR_DETAIL_HEADER_TO_SLIDER}>
               <InteriorDetailGallerySlider
                 images={sliderImages}
@@ -303,7 +309,7 @@ export default function InteriorDetail({ project }: Props) {
                 bodyText={detailBody}
               />
             </div>
-          </div>
+          </FadeInView>
         </div>
 
         <div className={INTERIOR_DETAIL_CONTENT}>

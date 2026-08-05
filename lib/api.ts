@@ -10,10 +10,11 @@ import {
   unwrapApiData,
   unwrapApiList,
 } from "./apiEnvelope";
+import { getPublicApiUrl } from "./publicEnv";
 
 export type { ApiProject, SiteContent, HomeData };
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+export const API_URL = getPublicApiUrl();
 
 const LIST_PAGE_SIZE = 100;
 
@@ -526,6 +527,37 @@ export async function fetchShowcases(locale?: Locale) {
   } catch {
     return null; // null = use hardcoded fallback
   }
+}
+
+export async function fetchShowcaseById(id: string, locale?: Locale) {
+  const { mapApiShowcaseToProject } = await import("./showcaseData");
+  const loc = getLocaleOrDefault(locale);
+
+  try {
+    const res = await fetch(withLocale(`${API_URL}/showcases/${encodeURIComponent(id)}`, locale), {
+      headers: localeHeaders(locale),
+      next: { revalidate: 30 },
+    });
+    if (res.ok) {
+      const body = await parseApiResponse(res);
+      const data = unwrapApiData<Record<string, unknown>>(body);
+      return mapApiShowcaseToProject(data, loc);
+    }
+  } catch {
+    /* list fallback */
+  }
+
+  try {
+    const list = await fetchShowcases(locale);
+    const found = list?.find((s) => String(s._id) === id);
+    if (found) {
+      return mapApiShowcaseToProject(found as unknown as Record<string, unknown>, loc);
+    }
+  } catch {
+    /* static fallback on page */
+  }
+
+  return null;
 }
 
 export async function fetchSearch(
