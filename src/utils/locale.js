@@ -17,7 +17,8 @@ function getRequestLocale(req) {
 }
 
 function isAdminRequest(req) {
-  return Boolean(req.headers["x-admin-key"]);
+  /** Admin / CMS clients: full multilingual documents (not public locale slice). */
+  return req.query?.cms === "1";
 }
 
 /** Resolve a plain string or { en, th, pl } object to a single locale string. */

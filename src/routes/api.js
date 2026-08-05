@@ -1,6 +1,6 @@
 const express = require("express");
-const adminAuth = require("../middleware/adminAuth");
-const { contactLimiter, adminLimiter, searchLimiter } = require("../middleware/rateLimiter");const { validate, schemas } = require("../middleware/validate");
+const { contactLimiter, adminLimiter, searchLimiter } = require("../middleware/rateLimiter");
+const { validate, schemas } = require("../middleware/validate");
 const { validateContactSubmission } = require("../middleware/validateContactSubmission");
 const validateProjectInteriorCatalog = require("../middleware/validateProjectInteriorCatalog");
 const ctrl = require("../controllers/apiController");
@@ -22,6 +22,7 @@ router.get("/catalogues",   ctrl.catalogues.list);
 router.get("/partners",     ctrl.partners.list);
 router.get("/showrooms",    ctrl.showrooms.list);
 router.get("/showcases",   ctrl.showcases.list);
+router.get("/showcases/:id", ctrl.getShowcaseById);
 router.get("/blogs",        ctrl.blogs.list);
 router.get("/blogs/:id",    ctrl.getBlogById);
 router.get("/team",         ctrl.teamMembers.list);
@@ -31,8 +32,7 @@ router.get("/core-strengths", ctrl.coreStrengths.list);
 
 router.get("/search", searchLimiter, searchSite);
 
-// ─── Admin routes (x-admin-key required) ──────────────────────────────────────
-router.use(adminAuth);
+// ─── CMS write routes (no shared secret — protect via CORS + rate limits; add auth in admin app later) ───
 router.use(adminLimiter);
 
 router.put("/site", validate(schemas.siteUpdate), ctrl.updateSite);

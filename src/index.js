@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const connectDB = require("./config/db");
+const { assertProductionConfig } = require("./config/assertProductionConfig");
 const { sendError } = require("./utils/apiResponse");
 const apiRoutes = require("./routes/api");
 const seedIfEmpty = require("./seed/seedIfEmpty");
@@ -60,6 +61,7 @@ let server;
 
 async function start() {
   try {
+    assertProductionConfig();
     await connectDB();
     await seedIfEmpty();
 

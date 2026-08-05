@@ -578,8 +578,6 @@ function cataloguesDocs() {
     { title: "Warm Neutrals", coverImage: L.catalogue4, downloadUrl: "/catalogue", order: 4 },
     { title: "Urban Kitchens", coverImage: L.catalogue5, downloadUrl: "/catalogue", order: 5 },
     { title: "Coastal Living", coverImage: L.catalogue3, downloadUrl: "/catalogue", order: 6 },
-    { title: "Luxury Suites", coverImage: L.catalogue4, downloadUrl: "/catalogue", order: 7 },
-    { title: "Compact Spaces", coverImage: L.catalogue2, downloadUrl: "/catalogue", order: 8 },
   ];
 }
 

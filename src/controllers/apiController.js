@@ -101,6 +101,9 @@ async function submitContact(req, res) {
 
 async function listContacts(req, res) {
   try {
+    if (!isAdminRequest(req)) {
+      return sendError(res, 404, { message: "Not found" });
+    }
     const { page, limit, skip } = parsePagination(req.query);
     const [contacts, total] = await Promise.all([
       Contact.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
@@ -114,6 +117,9 @@ async function listContacts(req, res) {
 
 async function updateContactStatus(req, res) {
   try {
+    if (!isAdminRequest(req)) {
+      return sendError(res, 404, { message: "Not found" });
+    }
     const contact = await Contact.findByIdAndUpdate(
       req.params.id,
       { status: req.body.status },
@@ -266,6 +272,20 @@ async function updateSite(req, res) {
   }
 }
 
+async function getShowcaseById(req, res) {
+  try {
+    const { id } = req.params;
+    const showcase = await Showcase.findById(id).catch(() => null);
+    if (!showcase) return sendError(res, 404, { message: "Showcase not found" });
+    const payload = isAdminRequest(req)
+      ? showcase
+      : localizeModelDoc("Showcase", showcase, getRequestLocale(req));
+    return sendSuccess(res, payload, { req });
+  } catch (error) {
+    return sendError(res, 500, { message: error.message });
+  }
+}
+
 async function getBlogById(req, res) {
   try {
     const blog = await Blog.findById(req.params.id).catch(() => null);
@@ -301,6 +321,7 @@ module.exports = {
   getSite,
   updateSite,
   getBlogById,
+  getShowcaseById,
   getProjectById,
   getInteriorCatalogFieldSpec: getInteriorCatalogFieldSpecHandler,
   getInquiryFormSpec,
