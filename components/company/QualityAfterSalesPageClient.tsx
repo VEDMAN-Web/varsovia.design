@@ -35,7 +35,6 @@ import SectionHeading, {
   SECTION_TITLE_CLASS,
 } from "@/components/ui/SectionHeading";
 import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
-import { qualityGalleryImages } from "@/lib/companyData";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 
 const FEATURE_ICONS: LucideIcon[] = [Atom, Droplets, ShieldCheck, Wind];
@@ -142,8 +141,9 @@ export default function QualityAfterSalesPageClient() {
         title: cms[`${key}Title`] || t(`${key}Title`),
         image: cms[`${key}Image`]
           ? resolveMediaUrl(cms[`${key}Image`])
-          : (qualityGalleryImages[index]?.src ?? MEDIA.featured[index]),
-        imageAlt: qualityGalleryImages[index]?.alt ?? "",
+          : resolveMediaUrl("", MEDIA.featured[index] ?? MEDIA.featured[0]),
+        imageAlt:
+          cms[`${key}ImageAlt`]?.trim() || cms[`${key}Title`]?.trim() || t(`${key}Title`),
         Icon: FEATURE_ICONS[index] ?? Atom,
       })),
     [t, cms],

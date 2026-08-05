@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { COMPANY_SHELL, SECTION_HEADING_WIDE } from "@/components/company/companyLayoutShared";
-import { LogoWingSvg } from "@/components/preloader/preloaderLogo";
+import BrandLogo from "@/components/layout/BrandLogo";
 import PagePanelReveal from "@/components/ui/PagePanelReveal";
 import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
 import { SECTION_SUBTITLE_CLASS } from "@/components/ui/SectionHeading";
@@ -74,7 +74,7 @@ export default function ContactOurLocationSection() {
               >
                 <div className="flex flex-col items-center translate-y-[-4%] sm:translate-y-[-6%]">
                   <div className={CONTACT_LOCATION_MARKER_BOX}>
-                    <LogoWingSvg className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8" fill="white" />
+                    <BrandLogo variant="mark" link={false} />
                   </div>
                   <div className="-mt-0.5">
                     <MapPinIcon />

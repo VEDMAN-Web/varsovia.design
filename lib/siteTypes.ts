@@ -1,6 +1,10 @@
-export type SiteBlock = { title: string; text: string };
+export type SiteBlock = { title: string; text: string; icon?: string };
 
-export type ProcessStep = { step: string; title: string; text: string };
+export type ProcessStep = { step: string; title: string; text: string; icon?: string };
+
+export type DesignTool = { name: string; image: string; order?: number };
+
+export type LocaleFlags = { en?: string; th?: string; pl?: string };
 
 export type Stat = { value: string; label: string };
 
@@ -40,6 +44,15 @@ export type SiteContent = {
   aboutStory?: string;
   aboutHeroSubtitle?: string;
   aboutImages?: string[];
+  aboutStoryImages?: string[];
+  brandLogoMark?: string;
+  brandLogoMarkOnDark?: string;
+  brandLogoLockup?: string;
+  brandLogoLockupOnDark?: string;
+  brandWordmarkLine1?: string;
+  brandWordmarkLine2?: string;
+  designTools?: DesignTool[];
+  localeFlags?: LocaleFlags;
   stats?: Stat[];
   statsImage?: string;
   contactImages?: string[];

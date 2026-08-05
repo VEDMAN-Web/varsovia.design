@@ -2,6 +2,7 @@
 
 import {
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -28,59 +29,53 @@ import {
   QAS_SUPPORT_WRAP,
 } from "@/components/company/qualitySupportLayoutShared";
 import { companyTransition } from "@/components/company/companyLayoutShared";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
+import { DEFAULT_SITE_IMAGE_PATHS } from "@/lib/defaultSiteImages";
+import { resolveMediaUrl } from "@/lib/mediaAssets";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-const SUPPORT_PNG = [
-  "/quality-sale/support-illustration-1.png",
-  "/quality-sale/support-illustration-2.png",
-  "/quality-sale/support-illustration-3.png",
-  "/quality-sale/support-illustration-4.png",
-] as const;
-
-/** JPG fallbacks (always in repo if PNG missing on deploy) */
-const SUPPORT_JPG = [
-  "/quality-sale/support-1.jpg",
-  "/quality-sale/support-2.jpg",
-  "/quality-sale/support-3.jpg",
-  "/quality-sale/support-4.jpg",
-] as const;
-
-type SpineLine = { top: number; height: number; left: number };
+const SUPPORT_KEYS = ["support1Image", "support2Image", "support3Image", "support4Image"] as const;
 
 function SupportStepArt({
-  index,
+  src,
+  jpgFallback,
   className,
   onLayout,
 }: {
-  index: number;
+  src: string;
+  jpgFallback: string;
   className?: string;
   onLayout?: () => void;
 }) {
-  const png = SUPPORT_PNG[index] ?? SUPPORT_PNG[0];
-  const jpg = SUPPORT_JPG[index] ?? SUPPORT_JPG[0];
-  const [src, setSrc] = useState<string>(png);
+  const [current, setCurrent] = useState<string>(src);
+
+  useEffect(() => {
+    setCurrent(src);
+  }, [src]);
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      key={src}
-      src={src}
+      key={current}
+      src={current}
       alt=""
       className={className}
       loading="lazy"
       decoding="async"
       onLoad={onLayout}
       onError={() => {
-        setSrc((current) => {
-          if (current.endsWith(".jpg")) return current;
-          if (current.endsWith(".png")) return jpg;
-          return png;
+        setCurrent((prev) => {
+          if (prev.endsWith(".jpg")) return prev;
+          if (prev !== jpgFallback) return jpgFallback;
+          return prev;
         });
       }}
     />
   );
 }
+
+type SpineLine = { top: number; height: number; left: number };
 
 type StepItem = {
   step: string;
@@ -88,6 +83,8 @@ type StepItem = {
   text: string;
   imageRight: boolean;
   artIndex: number;
+  src: string;
+  jpgFallback: string;
 };
 
 function SupportStepSpine({ dotRef }: { dotRef: RefCallback<HTMLDivElement> }) {
@@ -141,7 +138,12 @@ function SupportProcessStep({
       transition={{ duration: 0.55, ease: EASE, delay: 0.04 }}
       className={`${QAS_SUPPORT_ILLUSTRATION} mx-auto min-h-[120px] md:mx-0 ${item.imageRight ? "md:ml-auto" : "md:mr-auto"}`}
     >
-      <SupportStepArt index={item.artIndex} className="h-auto w-full object-contain" onLayout={onArtLayout} />
+      <SupportStepArt
+        src={item.src}
+        jpgFallback={item.jpgFallback}
+        className="h-auto w-full object-contain"
+        onLayout={onArtLayout}
+      />
     </motion.div>
   );
 
@@ -181,21 +183,28 @@ function SupportProcessStep({
 
 export default function QualitySupportProcessSection() {
   const t = useTranslations("qualitySale");
+  const site = useSiteSettings();
   const listRef = useRef<HTMLDivElement>(null);
   const dotEls = useRef<(HTMLDivElement | null)[]>([]);
   const [spineLine, setSpineLine] = useState<SpineLine | null>(null);
 
-  const supportSteps = useMemo(
-    () =>
-      (["step1", "step2", "step3", "step4"] as const).map((key, index) => ({
+  const supportSteps = useMemo(() => {
+    const cms = (site?.qualitySale || {}) as Record<string, string>;
+    return (["step1", "step2", "step3", "step4"] as const).map((key, index) => {
+      const cmsKey = SUPPORT_KEYS[index];
+      const defaultPng = DEFAULT_SITE_IMAGE_PATHS.qualitySupportImages[index];
+      const defaultJpg = DEFAULT_SITE_IMAGE_PATHS.qualitySupportJpgFallbacks[index];
+      return {
         step: String(index + 1).padStart(2, "0"),
         title: t(`${key}Title`),
         text: t(`${key}Desc`),
         imageRight: index % 2 === 1,
         artIndex: index,
-      })),
-    [t],
-  );
+        src: resolveMediaUrl(cms[cmsKey], defaultPng),
+        jpgFallback: defaultJpg,
+      };
+    });
+  }, [t, site?.qualitySale]);
 
   const measureSpine = useCallback(() => {
     const list = listRef.current;

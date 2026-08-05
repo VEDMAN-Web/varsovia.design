@@ -4,11 +4,14 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import AboutProcessDesktopTimeline from "@/components/about/AboutProcessDesktopTimeline";
-import { aboutHeroGalleryImages, aboutStoryCollageImages } from "@/lib/companyData";
 import CompanySectionHeading from "@/components/company/CompanySectionHeading";
 import FadeInView from "@/components/company/FadeInView";
 import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
 import FixedBackgroundImage from "@/components/ui/FixedBackgroundImage";
+import { galleryFromCms } from "@/lib/siteGalleryImages";
+import { MEDIA } from "@/lib/mediaAssets";
+import { DEFAULT_SITE_IMAGE_PATHS } from "@/lib/defaultSiteImages";
+import { resolveMediaUrl } from "@/lib/mediaAssets";
 import {
   COMPANY_BODY,
   COMPANY_HERO_SECTION_PAD,
@@ -19,8 +22,8 @@ import {
   SUBSECTION_TITLE_CLASS,
 } from "@/components/company/companyLayoutShared";
 
-type SiteBlock = { title?: string; text?: string };
-type ProcessStep = { step: string; title: string; text: string };
+type SiteBlock = { title?: string; text?: string; icon?: string };
+type ProcessStep = { step: string; title: string; text: string; icon?: string };
 
 export type AboutSite = {
   aboutIntro?: string;
@@ -28,6 +31,7 @@ export type AboutSite = {
   aboutText?: string;
   aboutHeroSubtitle?: string;
   aboutImages?: string[];
+  aboutStoryImages?: string[];
   vision?: SiteBlock;
   mission?: SiteBlock;
   values?: SiteBlock;
@@ -70,39 +74,44 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
   const storyText = site?.aboutStory || site?.aboutText || tSite("aboutStory");
   const heroSubtitle = site?.aboutHeroSubtitle || tSite("aboutHeroSubtitle");
 
-  const heroGallery =
-    site?.aboutImages && site.aboutImages.length >= 3
-      ? site.aboutImages.slice(0, 3)
-      : aboutHeroGalleryImages;
+  const heroGallery = galleryFromCms(site?.aboutImages, 3, MEDIA.about);
 
-  const storyImages =
-    site?.aboutImages && site.aboutImages.length >= 4
-      ? site.aboutImages.slice(0, 4)
-      : aboutStoryCollageImages;
+  const storyCollageFallback = [
+    MEDIA.featured[0],
+    MEDIA.featured[1],
+    MEDIA.about[2],
+    MEDIA.featured[3],
+  ] as const;
+  const storyImages = galleryFromCms(
+    site?.aboutStoryImages?.length ? site.aboutStoryImages : site?.aboutImages,
+    4,
+    storyCollageFallback,
+  );
 
+  const D = DEFAULT_SITE_IMAGE_PATHS;
   const valueBlocks = [
     {
       title: site?.vision?.title || t("visionTitle"),
       text: site?.vision?.text || tSite("visionText"),
-      iconPath: "/vision/visionIcon.png",
+      iconPath: resolveMediaUrl(site?.vision?.icon, D.visionIcon),
     },
     {
       title: site?.mission?.title || t("missionTitle"),
       text: site?.mission?.text || tSite("missionText"),
-      iconPath: "/vision/missionIcon.png",
+      iconPath: resolveMediaUrl(site?.mission?.icon, D.missionIcon),
     },
     {
       title: site?.values?.title || t("valuesBlockTitle"),
       text: site?.values?.text || tSite("valuesText"),
-      iconPath: "/vision/valuesIcon.png",
+      iconPath: resolveMediaUrl(site?.values?.icon, D.valuesIcon),
     },
   ];
 
   const defaultProcessSteps: ProcessStep[] = [
-    { step: "01", title: tSite("process1Title"), text: tSite("process1Text") },
-    { step: "02", title: tSite("process2Title"), text: tSite("process2Text") },
-    { step: "03", title: tSite("process3Title"), text: tSite("process3Text") },
-    { step: "04", title: tSite("process4Title"), text: tSite("process4Text") },
+    { step: "01", title: tSite("process1Title"), text: tSite("process1Text"), icon: D.processIcons[0] },
+    { step: "02", title: tSite("process2Title"), text: tSite("process2Text"), icon: D.processIcons[1] },
+    { step: "03", title: tSite("process3Title"), text: tSite("process3Text"), icon: D.processIcons[2] },
+    { step: "04", title: tSite("process4Title"), text: tSite("process4Text"), icon: D.processIcons[3] },
   ];
 
   const processStepSource =
@@ -110,14 +119,19 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
       ? defaultProcessSteps.map((fallback, i) => {
           const fromSite = site.processSteps![i];
           return fromSite
-            ? { step: fromSite.step || fallback.step, title: fromSite.title, text: fromSite.text }
+            ? {
+                step: fromSite.step || fallback.step,
+                title: fromSite.title,
+                text: fromSite.text,
+                icon: fromSite.icon || fallback.icon,
+              }
             : fallback;
         })
       : defaultProcessSteps;
 
   const processSteps = processStepSource.map((item, i) => ({
     ...item,
-    icon: `/ourprocess/ourprocessStep${i + 1}.png`,
+    icon: resolveMediaUrl(item.icon, D.processIcons[i] ?? D.processIcons[0]),
   }));
 
   return (

@@ -36,8 +36,10 @@ import {
 } from "@/components/company/teamLayoutShared";
 import { fetchTeamMembers } from "@/lib/api";
 import type { Locale } from "@/lib/i18n/routing";
-import { resolveTeamMembers, designTools, type TeamMember } from "@/lib/companyData";
+import { resolveTeamMembers, type TeamMember } from "@/lib/companyData";
 import { resolveMediaUrl, MEDIA } from "@/lib/mediaAssets";
+import { DEFAULT_SITE_IMAGE_PATHS } from "@/lib/defaultSiteImages";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import ListingPagination from "@/components/ui/ListingPagination";
 import { SkeletonPagination, SkeletonTeamMemberGrid } from "@/components/ui/skeleton";
 import { LISTING_PAGE_SIZE, paginateItems } from "@/lib/pagination";
@@ -151,12 +153,30 @@ function TeamBlock({
 export default function TeamPageClient() {
   const locale = useLocale();
   const t = useTranslations("teamPage");
+  const site = useSiteSettings();
   const [designTeam, setDesignTeam] = useState<TeamMember[]>([]);
   const [architectTeam, setArchitectTeam] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [toolHover, setToolHover] = useState<number | null>(null);
   const [designPage, setDesignPage] = useState(1);
   const [architectPage, setArchitectPage] = useState(1);
+
+  const designTools = useMemo(() => {
+    const fromCms = site?.designTools;
+    if (Array.isArray(fromCms) && fromCms.length > 0) {
+      return fromCms.map((tool, i) => ({
+        name: tool.name || DEFAULT_SITE_IMAGE_PATHS.designTools[i]?.name || `Tool ${i + 1}`,
+        image: resolveMediaUrl(
+          tool.image,
+          DEFAULT_SITE_IMAGE_PATHS.designTools[i]?.image ?? DEFAULT_SITE_IMAGE_PATHS.designTools[0].image,
+        ),
+      }));
+    }
+    return DEFAULT_SITE_IMAGE_PATHS.designTools.map((tool) => ({
+      name: tool.name,
+      image: tool.image,
+    }));
+  }, [site?.designTools]);
 
   useEffect(() => {
     fetchTeamMembers(locale as Locale)

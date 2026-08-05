@@ -24,6 +24,8 @@ import NavSearchResults from "@/components/layout/NavSearchResults";
 import { useSiteSearch } from "@/hooks/useSiteSearch";
 import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import { locales, type Locale } from "@/lib/i18n/routing";
+import { DEFAULT_SITE_IMAGE_PATHS } from "@/lib/defaultSiteImages";
+import { resolveMediaUrl } from "@/lib/mediaAssets";
 import type { SearchResultType } from "@/lib/searchTypes";
 import { useNavBackdropTone } from "@/hooks/useNavBackdropTone";
 import {
@@ -49,13 +51,6 @@ const SEARCH_TYPE_KEYS: Record<SearchResultType, "typePage" | "typeBlog" | "type
   faq: "typeFaq",
 };
 
-const LANGUAGE_META: Record<Locale, { flag: string }> = {
-  en: { flag: "/icon/flag-english.svg" },
-  th: { flag: "/icon/flag-thailand.svg" },
-  pl: { flag: "/icon/flag-polish.svg" },
-};
-
-/** Language switcher labels stay English regardless of active locale */
 const LANGUAGE_DROPDOWN_LABEL = "Language";
 const LANGUAGE_NAME_EN: Record<Locale, string> = {
   en: "English",
@@ -150,7 +145,22 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   const searchWrapRef = useRef<HTMLDivElement>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const currentLanguage = LANGUAGE_META[locale];
+  const languageMeta = useMemo(() => {
+    const flags = site?.localeFlags;
+    return {
+      en: {
+        flag: resolveMediaUrl(flags?.en, DEFAULT_SITE_IMAGE_PATHS.localeFlags.en),
+      },
+      th: {
+        flag: resolveMediaUrl(flags?.th, DEFAULT_SITE_IMAGE_PATHS.localeFlags.th),
+      },
+      pl: {
+        flag: resolveMediaUrl(flags?.pl, DEFAULT_SITE_IMAGE_PATHS.localeFlags.pl),
+      },
+    } satisfies Record<Locale, { flag: string }>;
+  }, [site?.localeFlags]);
+
+  const currentLanguage = languageMeta[locale];
 
   const navDropSubtitle = (href: string) => getNavDropdownSubtitle(href, tDrop);
 
@@ -532,7 +542,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
                   <NavDropdownSectionLabel>{LANGUAGE_DROPDOWN_LABEL}</NavDropdownSectionLabel>
                   <NavDropdownBody className="py-1">
                     {locales.map((code) => {
-                      const meta = LANGUAGE_META[code];
+                      const meta = languageMeta[code];
                       return (
                         <NavLanguageOption
                           key={code}
@@ -679,7 +689,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
 
           <div className="mt-4 flex items-center gap-2 border-t border-maroon/10 pt-4">
             {locales.map((code) => {
-              const meta = LANGUAGE_META[code];
+              const meta = languageMeta[code];
               return (
                 <button
                   key={code}

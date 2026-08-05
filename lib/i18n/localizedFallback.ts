@@ -1,4 +1,5 @@
 import { MEDIA } from "../mediaAssets";
+import { DEFAULT_SITE_IMAGE_PATHS } from "../defaultSiteImages";
 import { getAppMessages, getLocaleOrDefault } from "./messageCatalog";
 import type { Locale } from "./routing";
 import type { SiteContent } from "../siteTypes";
@@ -9,6 +10,7 @@ export function buildLocalizedSiteFallback(locale?: string): SiteContent {
   const m = getAppMessages(loc);
   const s = m.siteFallback;
   const h = m.home;
+  const D = DEFAULT_SITE_IMAGE_PATHS;
 
   return {
     heroEyebrow: h.heroEyebrow,
@@ -22,6 +24,7 @@ export function buildLocalizedSiteFallback(locale?: string): SiteContent {
     aboutTitle: h.aboutTitle,
     aboutText: s.aboutText,
     aboutImages: [...MEDIA.about, MEDIA.featured[4]],
+    aboutStoryImages: [...MEDIA.featured.slice(0, 3), MEDIA.about[2]],
     stats: [
       { value: "+12", label: h.statYears },
       { value: "+140", label: h.statProjects },
@@ -31,15 +34,23 @@ export function buildLocalizedSiteFallback(locale?: string): SiteContent {
     aboutIntro: s.aboutIntro,
     aboutStory: s.aboutStory,
     aboutHeroSubtitle: s.aboutHeroSubtitle,
-    vision: { title: m.aboutPage.visionTitle, text: s.visionText },
-    mission: { title: m.aboutPage.missionTitle, text: s.missionText },
-    values: { title: m.aboutPage.valuesBlockTitle, text: s.valuesText },
+    vision: { title: m.aboutPage.visionTitle, text: s.visionText, icon: D.visionIcon },
+    mission: { title: m.aboutPage.missionTitle, text: s.missionText, icon: D.missionIcon },
+    values: { title: m.aboutPage.valuesBlockTitle, text: s.valuesText, icon: D.valuesIcon },
     processSteps: [
-      { step: "01", title: s.process1Title, text: s.process1Text },
-      { step: "02", title: s.process2Title, text: s.process2Text },
-      { step: "03", title: s.process3Title, text: s.process3Text },
-      { step: "04", title: s.process4Title, text: s.process4Text },
+      { step: "01", title: s.process1Title, text: s.process1Text, icon: D.processIcons[0] },
+      { step: "02", title: s.process2Title, text: s.process2Text, icon: D.processIcons[1] },
+      { step: "03", title: s.process3Title, text: s.process3Text, icon: D.processIcons[2] },
+      { step: "04", title: s.process4Title, text: s.process4Text, icon: D.processIcons[3] },
     ],
+    designTools: D.designTools.map((tool) => ({ ...tool })),
+    localeFlags: { ...D.localeFlags },
+    qualitySale: {
+      support1Image: D.qualitySupportImages[0],
+      support2Image: D.qualitySupportImages[1],
+      support3Image: D.qualitySupportImages[2],
+      support4Image: D.qualitySupportImages[3],
+    },
     contactImages: [...MEDIA.contact],
     footerBio: s.footerBio,
     phone: "+66 64 683 9777",

@@ -71,6 +71,10 @@ function pickBlock(value: unknown, fallback: SiteBlock, locale?: Locale): SiteBl
     return {
       title: pickSiteCopy(block.title, loc, String(fallback.title ?? "")),
       text: pickSiteCopy(block.text, loc, String(fallback.text ?? "")),
+      icon: resolveMediaUrl(
+        pickString(block.icon, fallback.icon ?? "") as string,
+        fallback.icon ?? "",
+      ),
     };
   }
   return fallback;
@@ -81,7 +85,7 @@ function pickLocalizedString(value: unknown, locale: Locale | undefined, fallbac
   return pickSiteCopy(value, loc, fallback && fallback.trim() ? fallback : "");
 }
 
-type ProcessStep = { step: string; title: string; text: string };
+type ProcessStep = { step: string; title: string; text: string; icon?: string };
 
 function mergeProcessSteps(
   raw: unknown,
@@ -106,6 +110,10 @@ function mergeProcessSteps(
       step: String(item.step ?? fallback?.step ?? "01"),
       title: pickSiteCopy(item.title, loc, fallback?.title ?? ""),
       text: pickSiteCopy(item.text, loc, fallback?.text ?? ""),
+      icon: resolveMediaUrl(
+        pickString(item.icon, fallback?.icon ?? "") as string,
+        fallback?.icon ?? "",
+      ),
     };
   });
 }
@@ -113,6 +121,8 @@ function mergeProcessSteps(
 async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale): Promise<SiteContent> {
   const { getLocalizedSiteFallback } = await import("./i18n/localizedFallback");
   const fb = getLocalizedSiteFallback(locale);
+  const brandLine1Default = "VARSOVIA";
+  const brandLine2Default = "DESIGN";
   return {
     ...fb,
     ...(data as SiteContent),
@@ -130,6 +140,16 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
       (data.aboutImages as string[])?.length ? (data.aboutImages as string[]) : undefined,
       MEDIA.about,
     ),
+    aboutStoryImages: resolveMediaUrls(
+      (data.aboutStoryImages as string[])?.length ? (data.aboutStoryImages as string[]) : undefined,
+      [...MEDIA.about, MEDIA.featured[0]],
+    ),
+    brandLogoMark: resolveMediaUrl(pickString(data.brandLogoMark, "") as string, ""),
+    brandLogoMarkOnDark: resolveMediaUrl(pickString(data.brandLogoMarkOnDark, "") as string, ""),
+    brandLogoLockup: resolveMediaUrl(pickString(data.brandLogoLockup, "") as string, ""),
+    brandLogoLockupOnDark: resolveMediaUrl(pickString(data.brandLogoLockupOnDark, "") as string, ""),
+    brandWordmarkLine1: pickLocalizedString(data.brandWordmarkLine1, locale, brandLine1Default),
+    brandWordmarkLine2: pickLocalizedString(data.brandWordmarkLine2, locale, brandLine2Default),
     contactImages: resolveMediaUrls(
       (data.contactImages as string[])?.length ? (data.contactImages as string[]) : undefined,
       MEDIA.contact,
@@ -168,6 +188,14 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
     mainNavigation: (data.mainNavigation as SiteContent["mainNavigation"]) || fb.mainNavigation,
     footerNavigation: (data.footerNavigation as SiteContent["footerNavigation"]) || fb.footerNavigation,
     qualitySale: (data.qualitySale as SiteContent["qualitySale"]) || fb.qualitySale,
+    designTools:
+      Array.isArray(data.designTools) && data.designTools.length > 0
+        ? (data.designTools as SiteContent["designTools"])
+        : fb.designTools,
+    localeFlags: {
+      ...(fb.localeFlags || {}),
+      ...((data.localeFlags as SiteContent["localeFlags"]) || {}),
+    },
     interiorCatalogMode: (data.interiorCatalogMode as SiteContent["interiorCatalogMode"]) || fb.interiorCatalogMode,
     inquiryForm: (data.inquiryForm as SiteContent["inquiryForm"]) || fb.inquiryForm,
   };

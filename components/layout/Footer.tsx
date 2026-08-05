@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/lib/i18n/navigation";
 import type { ReactNode } from "react";
+import BrandLogo from "@/components/layout/BrandLogo";
 import {
   IconEmailContact,
   IconFacebook,
@@ -12,7 +13,6 @@ import {
   IconPhoneContact,
   IconWhatsApp,
   IconX,
-  LogoWingSvg,
 } from "@/components/layout/FooterIcons";
 import type { SiteContent } from "@/lib/siteTypes";
 import { FOOTER_CONTACT, telHref } from "@/lib/footerContact";
@@ -217,17 +217,7 @@ export default function Footer({ bio, site }: FooterProps) {
         <div className="flex flex-col gap-10 sm:gap-12 lg:flex-row lg:items-start lg:justify-between lg:gap-12 xl:gap-[80px]">
           {/* Brand — centered on mobile, Figma left column on lg+ */}
           <div className="flex w-full max-w-none flex-col items-center gap-5 text-center sm:max-w-[319px] sm:items-start sm:gap-5 sm:text-left lg:shrink-0 lg:gap-6">
-            <div className="flex shrink-0 flex-col items-center gap-2 sm:w-[155.773px] sm:items-start sm:gap-[7.534px]">
-              <LogoWingSvg className="mx-auto h-[56px] w-[36px] sm:mx-0 sm:h-[68px] sm:w-[43px] lg:h-[82.169px] lg:w-[52.396px]" />
-              <div className="w-full text-center text-white sm:text-left">
-                <p className="font-display text-[1.5rem] font-bold leading-tight sm:text-[26px] sm:leading-[34px] lg:text-[31.413px] lg:leading-[42.835px]">
-                  VARSOVIA
-                </p>
-                <p className="font-outfit text-[11px] font-normal tracking-[0.38em] sm:text-[12.138px] sm:tracking-[16.9934px]">
-                  DESIGN
-                </p>
-              </div>
-            </div>
+            <BrandLogo variant="footer" className="flex w-full justify-center sm:w-auto sm:justify-start" />
 
             <p className="max-w-[22rem] font-outfit text-[15px] font-normal leading-relaxed text-white/90 sm:max-w-none sm:text-[16px] sm:leading-snug lg:text-[18px] lg:leading-normal">
               {bio || t("defaultBio")}
