@@ -101,9 +101,7 @@ async function submitContact(req, res) {
 
 async function listContacts(req, res) {
   try {
-    if (!isAdminRequest(req)) {
-      return sendError(res, 404, { message: "Not found" });
-    }
+    // Route is behind adminAuth; isAdminRequest also true via req.varsoviaAdmin
     const { page, limit, skip } = parsePagination(req.query);
     const [contacts, total] = await Promise.all([
       Contact.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
@@ -117,9 +115,6 @@ async function listContacts(req, res) {
 
 async function updateContactStatus(req, res) {
   try {
-    if (!isAdminRequest(req)) {
-      return sendError(res, 404, { message: "Not found" });
-    }
     const contact = await Contact.findByIdAndUpdate(
       req.params.id,
       { status: req.body.status },

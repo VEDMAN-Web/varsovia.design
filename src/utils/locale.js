@@ -18,7 +18,7 @@ function getRequestLocale(req) {
 
 function isAdminRequest(req) {
   /** Admin / CMS clients: full multilingual documents (not public locale slice). */
-  return req.query?.cms === "1";
+  return req.varsoviaAdmin === true || String(req.query?.cms || "") === "1";
 }
 
 /** Resolve a plain string or { en, th, pl } object to a single locale string. */

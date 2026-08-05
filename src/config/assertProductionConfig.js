@@ -30,6 +30,13 @@ function assertProductionConfig() {
     errors.push("MONGODB_URI is required in production.");
   }
 
+  const adminKey = process.env.ADMIN_KEY?.trim() || "";
+  if (!adminKey || adminKey.length < 32) {
+    errors.push(
+      "ADMIN_KEY is required in production (min 32 chars). Generate with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
+    );
+  }
+
   const clientOrigins = splitList("CLIENT_URL");
   const hasPublicOrigin = clientOrigins.some((o) => !isLocalOrigin(o));
   if (!hasPublicOrigin) {
