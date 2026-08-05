@@ -66,6 +66,8 @@ function localizeSiteContent(doc, locale) {
     "aboutHeroSubtitle",
     "footerBio",
     "address",
+    "brandWordmarkLine1",
+    "brandWordmarkLine2",
   ];
 
   for (const field of simpleFields) {
@@ -85,6 +87,7 @@ function localizeSiteContent(doc, locale) {
       out[block] = {
         title: resolveLocalized(out[block].title, locale),
         text: resolveLocalized(out[block].text, locale),
+        icon: typeof out[block].icon === "string" ? out[block].icon : "",
       };
     }
   }
@@ -94,7 +97,19 @@ function localizeSiteContent(doc, locale) {
       ...item,
       title: resolveLocalized(item.title, locale),
       text: resolveLocalized(item.text, locale),
+      icon: typeof item.icon === "string" ? item.icon : "",
     }));
+  }
+
+  if (Array.isArray(out.designTools)) {
+    out.designTools = out.designTools
+      .map((item) => ({
+        ...item,
+        name: resolveLocalized(item.name, locale),
+        image: typeof item.image === "string" ? item.image : "",
+        order: item.order ?? 0,
+      }))
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
 
   if (Array.isArray(out.footerOffices)) {

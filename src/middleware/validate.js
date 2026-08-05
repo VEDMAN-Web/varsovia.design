@@ -22,6 +22,7 @@ const localizedRequired = z.union([
 const localizedBlock = z.object({
   title: localizedString.optional(),
   text: localizedString.optional(),
+  icon: z.string().max(500).trim().optional(),
 });
 
 const localizedStat = z.object({
@@ -33,6 +34,19 @@ const localizedProcessStep = z.object({
   step: z.string().max(20).optional(),
   title: localizedString.optional(),
   text: localizedString.optional(),
+  icon: z.string().max(500).trim().optional(),
+});
+
+const designToolSchema = z.object({
+  name: localizedString.optional(),
+  image: z.string().max(500).trim().optional(),
+  order: z.number().int().min(0).optional(),
+});
+
+const localeFlagsSchema = z.object({
+  en: z.string().max(500).trim().optional(),
+  th: z.string().max(500).trim().optional(),
+  pl: z.string().max(500).trim().optional(),
 });
 
 /**
@@ -332,12 +346,21 @@ const siteUpdateSchema = z.object({
   aboutStory:             localizedString.optional(),
   aboutHeroSubtitle:      localizedString.optional(),
   aboutImages:            z.array(z.string().max(500)).optional(),
+  aboutStoryImages:       z.array(z.string().max(500)).optional(),
+  brandLogoMark:          z.string().max(500).trim().optional(),
+  brandLogoMarkOnDark:    z.string().max(500).trim().optional(),
+  brandLogoLockup:        z.string().max(500).trim().optional(),
+  brandLogoLockupOnDark:  z.string().max(500).trim().optional(),
+  brandWordmarkLine1:     localizedString.optional(),
+  brandWordmarkLine2:     localizedString.optional(),
   stats:                  z.array(localizedStat).optional(),
   statsImage:             z.string().max(500).trim().optional(),
   vision:                 localizedBlock.optional(),
   mission:                localizedBlock.optional(),
   values:                 localizedBlock.optional(),
   processSteps:           z.array(localizedProcessStep).optional(),
+  designTools:            z.array(designToolSchema).optional(),
+  localeFlags:            localeFlagsSchema.optional(),
   contactImages:          z.array(z.string().max(500)).optional(),
   footerBio:              localizedString.optional(),
   phone:                  z.string().max(30).trim().optional(),

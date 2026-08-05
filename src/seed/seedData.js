@@ -59,6 +59,7 @@ function siteContentDoc() {
     aboutText:
       "Varsovia started in a rented one-room studio in Warsaw's Praga district, with a simple belief: a beautiful room only earns that word once someone has lived in it for a year and still loves it. We still work that way — measuring twice, drawing by hand before we draw on screen, and choosing materials that age instead of wear out.\n\nEvery project starts with how you move through a space, not how it will photograph. The result is interiors that feel inevitable, as if they couldn't have been arranged any other way.",
     aboutImages: [L.about1, L.about2, L.about3, L.project5],
+    aboutStoryImages: [L.project1, L.project2, L.about3, L.project4],
     stats: [
       { value: "+12", label: "Years Experience" },
       { value: "+140", label: "Projects Completed" },
@@ -73,21 +74,54 @@ function siteContentDoc() {
     vision: {
       title: "Our Vision",
       text: "To become a leading interior design brand known for creating inspiring spaces that enrich everyday living through innovation, quality, and timeless design.",
+      icon: "/vision/visionIcon.png",
     },
     mission: {
       title: "Our Mission",
       text: "To deliver personalized interior solutions with exceptional craftsmanship, premium materials, and a seamless customer experience from concept to completion.",
+      icon: "/vision/missionIcon.png",
     },
     values: {
       title: "Our Values",
       text: "Great interiors begin with quality, creativity, trust, and innovation. We design and craft spaces tailored to your lifestyle.",
+      icon: "/vision/valuesIcon.png",
     },
     processSteps: [
-      { step: "01", title: "Consultation", text: "Understanding your lifestyle, needs, and design preferences." },
-      { step: "02", title: "Planning & Design", text: "Creating layouts, concepts, material selections, and realistic 3D visualizations." },
-      { step: "03", title: "Develop", text: "Refining designs, coordinating production, and preparing for flawless execution." },
-      { step: "04", title: "Execution", text: "Expert craftsmanship, timely delivery, and professional installation." },
+      {
+        step: "01",
+        title: "Consultation",
+        text: "Understanding your lifestyle, needs, and design preferences.",
+        icon: "/ourprocess/ourprocessStep1.png",
+      },
+      {
+        step: "02",
+        title: "Planning & Design",
+        text: "Creating layouts, concepts, material selections, and realistic 3D visualizations.",
+        icon: "/ourprocess/ourprocessStep2.png",
+      },
+      {
+        step: "03",
+        title: "Develop",
+        text: "Refining designs, coordinating production, and preparing for flawless execution.",
+        icon: "/ourprocess/ourprocessStep3.png",
+      },
+      {
+        step: "04",
+        title: "Execution",
+        text: "Expert craftsmanship, timely delivery, and professional installation.",
+        icon: "/ourprocess/ourprocessStep4.png",
+      },
     ],
+    designTools: [
+      { name: "CAXA", image: "/team/design-tools/caxa.svg", order: 1 },
+      { name: "AUTO CAD", image: "/team/design-tools/autocad.svg", order: 2 },
+      { name: "3D MAX", image: "/team/design-tools/3dmax.svg", order: 3 },
+    ],
+    localeFlags: {
+      en: "/icon/flag-english.svg",
+      th: "/icon/flag-thailand.svg",
+      pl: "/icon/flag-polish.svg",
+    },
     contactImages: [L.contact1, L.contact2, L.contact3, L.contact4, L.project5, L.about2, L.project7],
     footerBio:
       "Varsovia Kitchen designs and builds premium modular kitchens with precision, warmth, and lasting quality.",
@@ -148,6 +182,18 @@ function siteContentDoc() {
       heroSubtitle: "Built to last — supported long after installation",
       heroBody:
         "From precision manufacturing to dedicated after-sales care, Varsovia stands behind every project with clear processes and responsive support.",
+      feature1Image: L.project1,
+      feature1ImageAlt: "Premium kitchen cabinetry detail",
+      feature2Image: L.project2,
+      feature2ImageAlt: "Living room finish and texture",
+      feature3Image: L.project3,
+      feature3ImageAlt: "Bedroom wardrobe craftsmanship",
+      feature4Image: L.project4,
+      feature4ImageAlt: "Bathroom vanity and stone surface",
+      support1Image: "/quality-sale/support-illustration-1.png",
+      support2Image: "/quality-sale/support-illustration-2.png",
+      support3Image: "/quality-sale/support-illustration-3.png",
+      support4Image: "/quality-sale/support-illustration-4.png",
     },
   };
 }

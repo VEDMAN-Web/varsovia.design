@@ -15,6 +15,13 @@ const siteContentSchema = new mongoose.Schema(
     aboutTitle: localizedField(),
     aboutText: localizedField(),
     aboutImages: [{ type: String }],
+    aboutStoryImages: [{ type: String }],
+    brandLogoMark: { type: String, default: "" },
+    brandLogoMarkOnDark: { type: String, default: "" },
+    brandLogoLockup: { type: String, default: "" },
+    brandLogoLockupOnDark: { type: String, default: "" },
+    brandWordmarkLine1: localizedField(),
+    brandWordmarkLine2: localizedField(),
     stats: [
       {
         label: mongoose.Schema.Types.Mixed,
@@ -28,22 +35,40 @@ const siteContentSchema = new mongoose.Schema(
     vision: {
       title: mongoose.Schema.Types.Mixed,
       text: mongoose.Schema.Types.Mixed,
+      icon: { type: String, default: "" },
     },
     mission: {
       title: mongoose.Schema.Types.Mixed,
       text: mongoose.Schema.Types.Mixed,
+      icon: { type: String, default: "" },
     },
     values: {
       title: mongoose.Schema.Types.Mixed,
       text: mongoose.Schema.Types.Mixed,
+      icon: { type: String, default: "" },
     },
     processSteps: [
       {
         step: String,
         title: mongoose.Schema.Types.Mixed,
         text: mongoose.Schema.Types.Mixed,
+        icon: { type: String, default: "" },
       },
     ],
+    /** Team page “design tools” strip */
+    designTools: [
+      {
+        name: mongoose.Schema.Types.Mixed,
+        image: { type: String, default: "" },
+        order: { type: Number, default: 0 },
+      },
+    ],
+    /** Navbar language flags (en / th / pl) */
+    localeFlags: {
+      en: { type: String, default: "" },
+      th: { type: String, default: "" },
+      pl: { type: String, default: "" },
+    },
     contactImages: [{ type: String }],
     footerBio: localizedField(),
     phone: { type: String, default: "" },
