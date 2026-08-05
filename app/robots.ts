@@ -1,12 +1,13 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL } from "@/lib/seo";
+import { getPublicSiteUrl } from "@/lib/publicEnv";
 
 export default function robots(): MetadataRoute.Robots {
+  const base = getPublicSiteUrl().replace(/\/$/, "");
   return {
     rules: {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: `${SITE_URL.replace(/\/$/, "")}/sitemap.xml`,
+    sitemap: `${base}/sitemap.xml`,
   };
 }

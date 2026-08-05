@@ -40,10 +40,31 @@ export function getContactApiBaseUrl(): string {
   return trimTrailingSlash(DEV_API_URL);
 }
 
-/** Canonical site origin for SEO, sitemap, robots. */
+function vercelSiteUrlFallback(): string {
+  const prod = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (prod) {
+    return trimTrailingSlash(prod.startsWith("http") ? prod : `https://${prod}`);
+  }
+  const preview = process.env.VERCEL_URL?.trim();
+  if (preview) {
+    return trimTrailingSlash(preview.startsWith("http") ? preview : `https://${preview}`);
+  }
+  return "";
+}
+
+/** Canonical site origin for SEO, sitemap, robots. Call at use-time (not module top-level). */
 export function getPublicSiteUrl(): string {
-  const fromEnv = requireEnv("NEXT_PUBLIC_SITE_URL", process.env.NEXT_PUBLIC_SITE_URL);
+  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (fromEnv) return trimTrailingSlash(fromEnv);
+
+  const vercel = vercelSiteUrlFallback();
+  if (vercel) return vercel;
+
+  if (isProduction()) {
+    throw new Error(
+      "[Varsovia] Missing required environment variable: NEXT_PUBLIC_SITE_URL. Set it in your hosting provider before deploying (or deploy on Vercel so VERCEL_URL is available).",
+    );
+  }
   return DEV_SITE_URL;
 }
 

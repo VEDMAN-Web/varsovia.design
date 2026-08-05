@@ -35,4 +35,7 @@ export function pageMetadata({
   };
 }
 
-export const SITE_URL = getPublicSiteUrl();
+/** Prefer `getPublicSiteUrl()` at call sites — avoids import-time throw during builds. */
+export function getSiteUrl() {
+  return getPublicSiteUrl();
+}

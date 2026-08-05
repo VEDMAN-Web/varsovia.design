@@ -1,14 +1,13 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL } from "@/lib/seo";
+import { getPublicSiteUrl } from "@/lib/publicEnv";
 import { fetchBlogs, fetchProjects, fetchShowcases } from "@/lib/api";
 import { interiorDetailPath } from "@/lib/interiorRoutes";
 import type { ApiProject } from "@/lib/siteTypes";
 import { getShowcaseProjects } from "@/lib/showcaseData";
 import { locales } from "@/lib/i18n/routing";
 
-const base = SITE_URL.replace(/\/$/, "");
-
 function localeEntries(
+  base: string,
   path: string,
   priority: number,
   changeFrequency: MetadataRoute.Sitemap[0]["changeFrequency"],
@@ -25,6 +24,8 @@ function localeEntries(
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const base = getPublicSiteUrl().replace(/\/$/, "");
+
   const staticPaths: {
     path: string;
     priority: number;
@@ -45,7 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   const staticRoutes = staticPaths.flatMap(({ path, priority, freq }) =>
-    localeEntries(path, priority, freq),
+    localeEntries(base, path, priority, freq),
   );
 
   const [projects, blogs, showcases] = await Promise.all([
@@ -58,11 +59,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const row = p as ApiProject;
     if (!row._id) return [];
     const title = typeof row.title === "string" ? row.title : undefined;
-    return localeEntries(interiorDetailPath({ slug: row.slug, _id: row._id, title }), 0.7, "weekly");
+    return localeEntries(
+      base,
+      interiorDetailPath({ slug: row.slug, _id: row._id, title }),
+      0.7,
+      "weekly",
+    );
   });
 
   const blogRoutes = (Array.isArray(blogs) ? blogs : []).flatMap((b: { _id?: string }) =>
-    b._id ? localeEntries(`/blog/${b._id}`, 0.6, "monthly") : [],
+    b._id ? localeEntries(base, `/blog/${b._id}`, 0.6, "monthly") : [],
   );
 
   const showcaseIds = new Set<string>();
@@ -77,7 +83,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const showcaseRoutes = [...showcaseIds].flatMap((id) =>
-    localeEntries(`/showcase/${id}`, 0.6, "monthly"),
+    localeEntries(base, `/showcase/${id}`, 0.6, "monthly"),
   );
 
   return [...staticRoutes, ...interiorRoutes, ...blogRoutes, ...showcaseRoutes];
