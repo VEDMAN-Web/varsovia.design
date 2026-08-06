@@ -63,6 +63,8 @@ const siteContentSchema = new mongoose.Schema(
         order: { type: Number, default: 0 },
       },
     ],
+    /** Team page copy, stats, and section titles (CMS) */
+    teamPage: { type: mongoose.Schema.Types.Mixed, default: undefined },
     /** Navbar language flags (en / th / pl) */
     localeFlags: {
       en: { type: String, default: "" },

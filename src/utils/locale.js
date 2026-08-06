@@ -112,6 +112,31 @@ function localizeSiteContent(doc, locale) {
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
 
+  if (out.teamPage && typeof out.teamPage === "object") {
+    const tp = out.teamPage;
+    out.teamPage = {
+      ...tp,
+      heroTitle: resolveLocalized(tp.heroTitle, locale),
+      heroSubtitle: resolveLocalized(tp.heroSubtitle, locale),
+      intro: resolveLocalized(tp.intro, locale),
+      designTitle: resolveLocalized(tp.designTitle, locale),
+      designEyebrow: resolveLocalized(tp.designEyebrow, locale),
+      designBody: resolveLocalized(tp.designBody, locale),
+      architectTitle: resolveLocalized(tp.architectTitle, locale),
+      architectEyebrow: resolveLocalized(tp.architectEyebrow, locale),
+      architectBody: resolveLocalized(tp.architectBody, locale),
+      toolsTitle: resolveLocalized(tp.toolsTitle, locale),
+      toolsBody: resolveLocalized(tp.toolsBody, locale),
+      stats: Array.isArray(tp.stats)
+        ? tp.stats.map((item) => ({
+            ...item,
+            value: resolveLocalized(item.value, locale),
+            label: resolveLocalized(item.label, locale),
+          }))
+        : [],
+    };
+  }
+
   if (Array.isArray(out.footerOffices)) {
     out.footerOffices = out.footerOffices.map((item) => ({
       ...item,

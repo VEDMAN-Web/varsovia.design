@@ -43,6 +43,23 @@ const designToolSchema = z.object({
   order: z.number().int().min(0).optional(),
 });
 
+const teamPageSchema = z
+  .object({
+    heroTitle: localizedString.optional(),
+    heroSubtitle: localizedString.optional(),
+    intro: localizedString.optional(),
+    designTitle: localizedString.optional(),
+    designEyebrow: localizedString.optional(),
+    designBody: localizedString.optional(),
+    architectTitle: localizedString.optional(),
+    architectEyebrow: localizedString.optional(),
+    architectBody: localizedString.optional(),
+    toolsTitle: localizedString.optional(),
+    toolsBody: localizedString.optional(),
+    stats: z.array(localizedStat).optional(),
+  })
+  .optional();
+
 const localeFlagsSchema = z.object({
   en: z.string().max(500).trim().optional(),
   th: z.string().max(500).trim().optional(),
@@ -360,6 +377,7 @@ const siteUpdateSchema = z.object({
   values:                 localizedBlock.optional(),
   processSteps:           z.array(localizedProcessStep).optional(),
   designTools:            z.array(designToolSchema).optional(),
+  teamPage:               teamPageSchema,
   localeFlags:            localeFlagsSchema.optional(),
   contactImages:          z.array(z.string().max(500)).optional(),
   footerBio:              localizedString.optional(),

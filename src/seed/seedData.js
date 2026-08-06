@@ -117,6 +117,27 @@ function siteContentDoc() {
       { name: "AUTO CAD", image: "/team/design-tools/autocad.svg", order: 2 },
       { name: "3D MAX", image: "/team/design-tools/3dmax.svg", order: 3 },
     ],
+    teamPage: {
+      heroTitle: "Our Team",
+      heroSubtitle: "THE CREATIVE MINDS BEHIND EVERY BEAUTIFUL SPACE",
+      intro:
+        "We have 3 sales teams respectively serving retail customers, commercial project contractors and franchisers. Inside each team, different sales representatives are responsible for different countries and regions. We are experts in our respective fields in order to meet different type customers' needs. 3 sales teams come together in a collaborative effort to provide an excellent experience for our customer.",
+      designTitle: "Professional Design Team",
+      designEyebrow: "Italian design team",
+      designBody:
+        "Varsovia Design collaborates with Italian designers and suppliers to enhance our global competency. We combine updated aesthetics with functionality to create exciting spaces tailored to our clients' wishes and bring lasting living pleasure.",
+      architectTitle: "Architect / Engineers",
+      architectEyebrow: "Technical & structural team",
+      architectBody:
+        "Our architect and engineering team ensures structural integrity, precise technical drawings, and seamless coordination between design intent and on-site execution.",
+      toolsTitle: "Professional design tool",
+      toolsBody:
+        "Professional design tools are adopted to assist for perfect art effect, including CAXA, CAD, 3D MAX, KD MAX, etc.",
+      stats: [
+        { value: "100+", label: "Successful Projects Completed" },
+        { value: "03", label: "Years of Excellence in Interior Solutions" },
+      ],
+    },
     localeFlags: {
       en: "/icon/flag-english.svg",
       th: "/icon/flag-thailand.svg",
