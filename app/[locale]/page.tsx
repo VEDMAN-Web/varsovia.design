@@ -9,7 +9,6 @@ import Testimonials from "@/components/sections/Testimonials";
 import CoreStrengths from "@/components/sections/CoreStrengths";
 import Partners from "@/components/sections/Partners";
 import Contact from "@/components/sections/Contact";
-import HomePageShell from "@/components/preloader/HomePageShell";
 import HomeScrollToTop from "@/components/home/HomeScrollToTop";
 import { fetchHomeData, fetchProducts, fetchProjects } from "@/lib/api";
 import { setRequestLocale } from "next-intl/server";
@@ -31,7 +30,7 @@ export default async function Home({ params }: Props) {
   const site = data.site || {};
 
   return (
-    <HomePageShell heroImage={site.heroImage}>
+    <>
       <Navbar />
       <main>
         <Hero
@@ -63,6 +62,6 @@ export default async function Home({ params }: Props) {
         <Contact images={site.contactImages || []} />
       </main>
       <HomeScrollToTop />
-    </HomePageShell>
+    </>
   );
 }

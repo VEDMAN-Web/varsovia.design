@@ -6,6 +6,7 @@ import SmoothScroll from "@/components/providers/SmoothScroll";
 import FooterWrapper from "@/components/layout/FooterWrapper";
 import { SiteSettingsProvider } from "@/components/providers/SiteSettingsProvider";
 import LocaleHtmlLang from "@/components/i18n/LocaleHtmlLang";
+import SiteIntroShell from "@/components/preloader/HomePageShell";
 import { fetchSite } from "@/lib/api";
 import { routing, type Locale } from "@/lib/i18n/routing";
 
@@ -53,8 +54,10 @@ export default async function LocaleLayout({ children, params }: Props) {
       <LocaleHtmlLang locale={locale} />
       <SmoothScroll>
         <SiteSettingsProvider site={site}>
-          {children}
-          <FooterWrapper site={site} />
+          <SiteIntroShell heroImage={site?.heroImage}>
+            {children}
+            <FooterWrapper site={site} />
+          </SiteIntroShell>
         </SiteSettingsProvider>
       </SmoothScroll>
     </NextIntlClientProvider>

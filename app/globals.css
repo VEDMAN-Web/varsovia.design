@@ -347,11 +347,21 @@ body {
   transform: scale(1.2);
 }
 
-/* Homepage intro — white backdrop while preloader runs (class set after hydration) */
+/* Site intro — white canvas from first paint through portal handoff */
 html.intro-pending,
 html.intro-pending body {
-  overflow: hidden;
-  background: #ffffff;
+  overflow: hidden !important;
+  background: #ffffff !important;
+}
+
+/* Page mounts under overlay; stay invisible until introComplete */
+html.intro-pending #app-page-content.intro-content-pending {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#app-page-content.intro-content-ready {
+  visibility: visible;
 }
 
 /* Hide Next.js dev badge / compiling UI during intro */

@@ -1,14 +1,12 @@
 "use client";
 
 import { useLayoutEffect, useState } from "react";
-import { usePathname } from "@/lib/i18n/navigation";
 import Footer from "@/components/layout/Footer";
 
 import type { SiteContent } from "@/lib/siteTypes";
 
 export default function FooterWrapper({ site }: { site?: SiteContent | null }) {
-  const pathname = usePathname();
-  const [introPending, setIntroPending] = useState(false);
+  const [introPending, setIntroPending] = useState(true);
 
   useLayoutEffect(() => {
     const sync = () => {
@@ -16,13 +14,15 @@ export default function FooterWrapper({ site }: { site?: SiteContent | null }) {
     };
     sync();
     const observer = new MutationObserver(sync);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
     return () => observer.disconnect();
   }, []);
 
-  if (pathname === "/" && introPending) return null;
+  // Avoid footer paint under / flashing through the portal
+  if (introPending) return null;
 
-  return (
-    <Footer bio={site?.footerBio} site={site} />
-  );
+  return <Footer bio={site?.footerBio} site={site} />;
 }

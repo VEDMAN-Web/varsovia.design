@@ -23,6 +23,8 @@ const FALLBACK_HERO = MEDIA.hero;
 type HomePreloaderProps = {
   show: boolean;
   onComplete: () => void;
+  /** Fired when portal zoom begins — mount page under overlay */
+  onPrepare?: () => void;
   heroImage?: string;
 };
 
@@ -123,16 +125,18 @@ function animateHeroKenBurns(
   });
 }
 
-export default function HomePreloader({ show, onComplete, heroImage }: HomePreloaderProps) {
+export default function HomePreloader({ show, onComplete, onPrepare, heroImage }: HomePreloaderProps) {
   const reducedMotion = useReducedMotion();
   const finishedRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
+  const onPrepareRef = useRef(onPrepare);
   const [viewport, setViewport] = useState({ w: 0, h: 0 });
   const [heroReady, setHeroReady] = useState(false);
   const portalRef = useRef<SVGGElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
 
   onCompleteRef.current = onComplete;
+  onPrepareRef.current = onPrepare;
   const imageSrc = resolveMediaUrl(heroImage, FALLBACK_HERO);
 
   useLayoutEffect(() => {
@@ -189,9 +193,27 @@ export default function HomePreloader({ show, onComplete, heroImage }: HomePrelo
 
     const run = async () => {
       try {
+        // Fonts ready avoids FOUT under the portal handoff
+        if (document.fonts?.ready) {
+          try {
+            await Promise.race([
+              document.fonts.ready,
+              new Promise<void>((resolve) => {
+                window.setTimeout(resolve, 800);
+              }),
+            ]);
+          } catch {
+            /* ignore */
+          }
+          if (abort.signal.aborted) return;
+        }
+
         if (!reducedMotion) {
           await wait(PRELOADER_HOLD * 1000, abort.signal);
         }
+
+        // Mount destination page under overlay while zoom runs
+        onPrepareRef.current?.();
 
         await Promise.all([
           animatePortalHole(portal, PRELOADER_INITIAL_SCALE, targetScale, zoomMs, abort.signal),
@@ -266,9 +288,14 @@ export default function HomePreloader({ show, onComplete, heroImage }: HomePrelo
 }
 
 export function HomePreloaderGate({ heroImage }: { heroImage?: string }) {
-  const { showPreloader, finishIntro } = useIntro();
+  const { showPreloader, finishIntro, prepareIntro } = useIntro();
 
   return (
-    <HomePreloader show={showPreloader} onComplete={finishIntro} heroImage={heroImage} />
+    <HomePreloader
+      show={showPreloader}
+      onComplete={finishIntro}
+      onPrepare={prepareIntro}
+      heroImage={heroImage}
+    />
   );
 }
