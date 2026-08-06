@@ -21,15 +21,28 @@ function isAdminRequest(req) {
   return req.varsoviaAdmin === true || String(req.query?.cms || "") === "1";
 }
 
+/** Prefer non-empty string; blank / whitespace does not count (so th/pl fall back to en). */
+function pickNonEmpty(...candidates) {
+  for (const candidate of candidates) {
+    if (candidate == null) continue;
+    const s = String(candidate);
+    if (s.trim()) return s;
+  }
+  return "";
+}
+
 /** Resolve a plain string or { en, th, pl } object to a single locale string. */
 function resolveLocalized(value, locale = DEFAULT_LOCALE, fallback = DEFAULT_LOCALE) {
   if (value == null) return "";
   if (typeof value === "string" || typeof value === "number") return String(value);
   if (typeof value === "object" && !Array.isArray(value)) {
     const obj = value;
-    const resolved =
-      obj[locale] ?? obj[fallback] ?? obj.en ?? Object.values(obj).find((v) => typeof v === "string" && v.trim());
-    return resolved != null ? String(resolved) : "";
+    return pickNonEmpty(
+      obj[locale],
+      obj[fallback],
+      obj.en,
+      Object.values(obj).find((v) => typeof v === "string" && v.trim())
+    );
   }
   return String(value);
 }
@@ -190,6 +203,67 @@ function localizeSiteContent(doc, locale) {
     out.footerNavigation = localizeFooterNavigation(DEFAULT_FOOTER_NAVIGATION, locale);
   }
 
+  if (out.qualitySale && typeof out.qualitySale === "object") {
+    const qs = { ...out.qualitySale };
+    const qualityTextKeys = [
+      "heroTitle",
+      "heroSubtitle",
+      "heroBody",
+      "feature1Title",
+      "feature1ImageAlt",
+      "feature2Title",
+      "feature2ImageAlt",
+      "feature3Title",
+      "feature3ImageAlt",
+      "feature4Title",
+      "feature4ImageAlt",
+      "supportTitle",
+      "supportSubtitle",
+      "faqTitle",
+      "faqSubtitle",
+      "step1Title",
+      "step1Desc",
+      "step2Title",
+      "step2Desc",
+      "step3Title",
+      "step3Desc",
+      "step4Title",
+      "step4Desc",
+      "faq1Q",
+      "faq1A",
+      "faq2Q",
+      "faq2A",
+      "faq3Q",
+      "faq3A",
+      "faq4Q",
+      "faq4A",
+    ];
+    for (const key of qualityTextKeys) {
+      if (key in qs) qs[key] = resolveLocalized(qs[key], locale);
+    }
+    if (Array.isArray(qs.faqItems)) {
+      qs.faqItems = qs.faqItems.map((item) => ({
+        ...item,
+        question: resolveLocalized(item.question, locale),
+        answer: resolveLocalized(item.answer, locale),
+      }));
+    }
+    out.qualitySale = qs;
+  }
+
+  if (Array.isArray(out.showcaseMeta)) {
+    out.showcaseMeta = out.showcaseMeta
+      .map((item, index) => ({
+        ...item,
+        tabKey: typeof item.tabKey === "string" ? item.tabKey : "",
+        title: resolveLocalized(item.title, locale),
+        subtitle: resolveLocalized(item.subtitle, locale),
+        order: item.order ?? index,
+      }))
+      .filter((item) => item.tabKey)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }
+
   return out;
 }
 
@@ -203,7 +277,7 @@ function localizeAuthor(author, locale) {
 
 function localizeBlog(doc, locale) {
   if (!doc) return doc;
-  const out = localizeDoc(doc, locale, ["title", "excerpt", "content", "readTime"]);
+  const out = localizeDoc(doc, locale, ["title", "excerpt", "content", "readTime", "category"]);
   if (out.author) out.author = localizeAuthor(out.author, locale);
   return out;
 }

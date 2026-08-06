@@ -66,6 +66,13 @@ const localeFlagsSchema = z.object({
   pl: z.string().max(500).trim().optional(),
 });
 
+const showcaseMetaItemSchema = z.object({
+  tabKey: z.string().min(1).max(80).trim(),
+  title: localizedString.optional(),
+  subtitle: localizedString.optional(),
+  order: z.number().int().min(0).max(999).optional(),
+});
+
 /**
  * validate(schema) — returns Express middleware that validates req.body
  * against a Zod schema. Returns 422 with structured errors on failure.
@@ -398,6 +405,7 @@ const siteUpdateSchema = z.object({
   searchPages:            z.array(searchPageSchema).optional(),
   navMenus:               z.array(z.record(z.string(), z.unknown())).optional(),
   qualitySale:            z.record(z.string(), z.unknown()).optional(),
+  showcaseMeta:           z.array(showcaseMetaItemSchema).max(30).optional(),
   interiorCatalogMode:    z.enum(["hybrid", "api"]).optional(),
   inquiryForm:            inquiryFormSchema.optional(),
   mainNavigation:         mainNavigationSchema.optional(),
