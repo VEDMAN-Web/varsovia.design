@@ -63,14 +63,32 @@ function fallbackFilterLabel(tab: ShowcaseTab, tShowcase: (key: string) => strin
   return tShowcase(`tabLabels.${showcaseTabMessageKey(tab)}`);
 }
 
+function metaFromCms(
+  site: SiteContent | null | undefined,
+): Map<ShowcaseTab, ShowcasePageTabMeta> {
+  const map = new Map<ShowcaseTab, ShowcasePageTabMeta>();
+  const rows = Array.isArray(site?.showcaseMeta) ? site.showcaseMeta : [];
+  for (const row of rows) {
+    const tabKey = String(row?.tabKey ?? "").trim();
+    if (!SHOWCASE_TABS.includes(tabKey as ShowcaseTab)) continue;
+    const title = String(row?.title ?? "").trim();
+    const subtitle = String(row?.subtitle ?? "").trim();
+    if (!title && !subtitle) continue;
+    map.set(tabKey as ShowcaseTab, { title, subtitle });
+  }
+  return map;
+}
+
 /**
- * Showcase listing hero + filter pills aligned with header mega menu (site.mainNavigation).
+ * Showcase listing hero + filter pills.
+ * Priority for headings: CMS showcaseMeta → mega menu → i18n fallbacks.
  */
 export function buildShowcasePageNav(
   site: SiteContent | null | undefined,
   tShowcase: (key: string) => string,
 ): ShowcasePageNav {
   const menu = getShowcaseMegaMenu(site);
+  const cmsMeta = metaFromCms(site);
   const metaMap = new Map<ShowcaseTab, ShowcasePageTabMeta>();
   const labelMap = new Map<ShowcaseTab, string>();
   const tabOrder: ShowcaseTab[] = [];
@@ -117,6 +135,16 @@ export function buildShowcasePageNav(
       metaMap.set(tab, fallbackMeta(tab, tShowcase));
       labelMap.set(tab, fallbackFilterLabel(tab, tShowcase));
     }
+  }
+
+  // CMS showcaseMeta overrides mega-menu / defaults for page headings
+  for (const [tab, meta] of cmsMeta) {
+    const prev = metaMap.get(tab);
+    metaMap.set(tab, {
+      title: meta.title || prev?.title || fallbackMeta(tab, tShowcase).title,
+      subtitle: meta.subtitle || prev?.subtitle || fallbackMeta(tab, tShowcase).subtitle,
+    });
+    if (!tabOrder.includes(tab)) tabOrder.push(tab);
   }
 
   return {

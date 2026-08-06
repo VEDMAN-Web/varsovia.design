@@ -91,6 +91,12 @@ export type SiteContent = {
   mainNavigation?: import("./mainNavigationTypes").MainNavigationConfig;
   footerNavigation?: import("./footerNavigationTypes").FooterNavigationConfig;
   qualitySale?: Record<string, unknown>;
+  showcaseMeta?: Array<{
+    tabKey: string;
+    title?: string;
+    subtitle?: string;
+    order?: number;
+  }>;
   interiorCatalogMode?: "hybrid" | "api";
   inquiryForm?: import("./inquiryFormTypes").InquiryFormConfig;
 };

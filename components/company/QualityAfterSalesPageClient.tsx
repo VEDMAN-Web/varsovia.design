@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import {
   Atom,
@@ -30,12 +30,15 @@ import {
   QAS_SHELL,
 } from "@/components/company/qualitySaleLayoutShared";
 import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
-import SectionHeading, {
+import {
   SECTION_SUBTITLE_CLASS,
   SECTION_TITLE_CLASS,
 } from "@/components/ui/SectionHeading";
 import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
+import { getLocaleOrDefault } from "@/lib/i18n/messageCatalog";
+import { pickSiteCopy } from "@/lib/i18n/pickLocalized";
+import type { Locale } from "@/lib/i18n/routing";
 
 const FEATURE_ICONS: LucideIcon[] = [Atom, Droplets, ShieldCheck, Wind];
 const FEATURE_KEYS = ["feature1", "feature2", "feature3", "feature4"] as const;
@@ -131,34 +134,45 @@ function QualityFeatureColumn({
 
 export default function QualityAfterSalesPageClient() {
   const t = useTranslations("qualitySale");
+  const locale = useLocale();
+  const loc = getLocaleOrDefault(locale as Locale);
   const site = useSiteSettings();
-  const cms = (site?.qualitySale || {}) as Record<string, string>;
+  const cms = (site?.qualitySale || {}) as Record<string, unknown>;
   const [openFaqIndex, setOpenFaqIndex] = useState(FAQ_DEFAULT_OPEN_INDEX);
+
+  const pick = (key: string, fallback: string) =>
+    pickSiteCopy(cms[key], loc, fallback) || fallback;
 
   const features = useMemo(
     () =>
       FEATURE_KEYS.map((key, index) => ({
-        title: cms[`${key}Title`] || t(`${key}Title`),
-        image: cms[`${key}Image`]
-          ? resolveMediaUrl(cms[`${key}Image`])
+        title: pick(`${key}Title`, t(`${key}Title`)),
+        image: typeof cms[`${key}Image`] === "string" && String(cms[`${key}Image`]).trim()
+          ? resolveMediaUrl(String(cms[`${key}Image`]))
           : resolveMediaUrl("", MEDIA.featured[index] ?? MEDIA.featured[0]),
         imageAlt:
-          cms[`${key}ImageAlt`]?.trim() || cms[`${key}Title`]?.trim() || t(`${key}Title`),
+          pick(`${key}ImageAlt`, "") ||
+          pick(`${key}Title`, t(`${key}Title`)),
         Icon: FEATURE_ICONS[index] ?? Atom,
       })),
-    [t, cms],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t, cms, loc],
   );
 
   const faqItems = useMemo(() => {
     const fromCms = cms.faqItems;
     if (Array.isArray(fromCms) && fromCms.length > 0) {
-      return fromCms.map((row: { question?: string; answer?: string }) => ({
-        question: String(row.question || ""),
-        answer: String(row.answer || ""),
+      return fromCms.map((row: { question?: unknown; answer?: unknown }) => ({
+        question: pickSiteCopy(row.question, loc, "") || String(row.question || ""),
+        answer: pickSiteCopy(row.answer, loc, "") || String(row.answer || ""),
       }));
     }
-    return FAQ_KEYS.map((key) => ({ question: t(`${key}Q`), answer: t(`${key}A`) }));
-  }, [t, cms.faqItems]);
+    return FAQ_KEYS.map((key) => ({
+      question: pick(`${key}Q`, t(`${key}Q`)),
+      answer: pick(`${key}A`, t(`${key}A`)),
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [t, cms, loc]);
 
   function toggleFAQ(index: number) {
     setOpenFaqIndex((prev) => (prev === index ? -1 : index));
@@ -173,8 +187,8 @@ export default function QualityAfterSalesPageClient() {
             <div className={QAS_HERO_BAND}>
               <SectionHeadingReveal
                 trigger="mount"
-                title={cms.heroTitle || t("heroTitle")}
-                subtitle={cms.heroSubtitle || t("heroSubtitle")}
+                title={pick("heroTitle", t("heroTitle"))}
+                subtitle={pick("heroSubtitle", t("heroSubtitle"))}
                 titleAs="h1"
                 expanded
                 noGradient
@@ -183,7 +197,7 @@ export default function QualityAfterSalesPageClient() {
                 subtitleClassName={`${SECTION_SUBTITLE_CLASS} mt-[clamp(1rem,3vw,1.875rem)]`}
                 className="!p-0"
               />
-              <p className={QAS_HERO_BODY}>{cms.heroBody || t("heroBody")}</p>
+              <p className={QAS_HERO_BODY}>{pick("heroBody", t("heroBody"))}</p>
             </div>
           </FadeInView>
         </section>
@@ -210,8 +224,8 @@ export default function QualityAfterSalesPageClient() {
         <section className={QAS_FAQ_BAND}>
           <div className={QAS_SHELL}>
             <CompanySectionHeading
-              title={t("faqTitle")}
-              subtitle={t("faqSubtitle")}
+              title={pick("faqTitle", t("faqTitle"))}
+              subtitle={pick("faqSubtitle", t("faqSubtitle"))}
               subtitleSentenceCase={false}
               className="mb-[clamp(1.5rem,4vw,2.5rem)]"
             />

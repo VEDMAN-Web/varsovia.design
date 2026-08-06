@@ -9,7 +9,7 @@ import {
   useState,
   type RefCallback,
 } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { motion } from "framer-motion";
 import FadeInView from "@/components/company/FadeInView";
 import CompanySectionHeading from "@/components/company/CompanySectionHeading";
@@ -32,6 +32,9 @@ import { companyTransition } from "@/components/company/companyLayoutShared";
 import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import { DEFAULT_SITE_IMAGE_PATHS } from "@/lib/defaultSiteImages";
 import { resolveMediaUrl } from "@/lib/mediaAssets";
+import { getLocaleOrDefault } from "@/lib/i18n/messageCatalog";
+import { pickSiteCopy } from "@/lib/i18n/pickLocalized";
+import type { Locale } from "@/lib/i18n/routing";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -183,28 +186,45 @@ function SupportProcessStep({
 
 export default function QualitySupportProcessSection() {
   const t = useTranslations("qualitySale");
+  const locale = useLocale();
+  const loc = getLocaleOrDefault(locale as Locale);
   const site = useSiteSettings();
   const listRef = useRef<HTMLDivElement>(null);
   const dotEls = useRef<(HTMLDivElement | null)[]>([]);
   const [spineLine, setSpineLine] = useState<SpineLine | null>(null);
 
   const supportSteps = useMemo(() => {
-    const cms = (site?.qualitySale || {}) as Record<string, string>;
+    const cms = (site?.qualitySale || {}) as Record<string, unknown>;
+    const pick = (key: string, fallback: string) =>
+      pickSiteCopy(cms[key], loc, fallback) || fallback;
     return (["step1", "step2", "step3", "step4"] as const).map((key, index) => {
       const cmsKey = SUPPORT_KEYS[index];
       const defaultPng = DEFAULT_SITE_IMAGE_PATHS.qualitySupportImages[index];
       const defaultJpg = DEFAULT_SITE_IMAGE_PATHS.qualitySupportJpgFallbacks[index];
+      const imageRaw = cms[cmsKey];
       return {
         step: String(index + 1).padStart(2, "0"),
-        title: t(`${key}Title`),
-        text: t(`${key}Desc`),
+        title: pick(`${key}Title`, t(`${key}Title`)),
+        text: pick(`${key}Desc`, t(`${key}Desc`)),
         imageRight: index % 2 === 1,
         artIndex: index,
-        src: resolveMediaUrl(cms[cmsKey], defaultPng),
+        src: resolveMediaUrl(
+          typeof imageRaw === "string" ? imageRaw : "",
+          defaultPng,
+        ),
         jpgFallback: defaultJpg,
       };
     });
-  }, [t, site?.qualitySale]);
+  }, [t, site?.qualitySale, loc]);
+
+  const sectionTitle = useMemo(() => {
+    const cms = (site?.qualitySale || {}) as Record<string, unknown>;
+    return {
+      title: pickSiteCopy(cms.supportTitle, loc, t("supportTitle")) || t("supportTitle"),
+      subtitle:
+        pickSiteCopy(cms.supportSubtitle, loc, t("supportSubtitle")) || t("supportSubtitle"),
+    };
+  }, [site?.qualitySale, loc, t]);
 
   const measureSpine = useCallback(() => {
     const list = listRef.current;
@@ -255,8 +275,8 @@ export default function QualitySupportProcessSection() {
   return (
     <section className="pt-2 md:pt-4">
       <CompanySectionHeading
-        title={t("supportTitle")}
-        subtitle={t("supportSubtitle")}
+        title={sectionTitle.title}
+        subtitle={sectionTitle.subtitle}
         subtitleSentenceCase={false}
         className="mb-[clamp(1.5rem,4vw,2.5rem)]"
       />

@@ -179,7 +179,25 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
       Array.isArray(data.footerOffices) && data.footerOffices.length > 0
         ? (data.footerOffices as SiteContent["footerOffices"])
         : fb.footerOffices,
-    sectionCopy: (data.sectionCopy as SiteContent["sectionCopy"]) || fb.sectionCopy,
+    sectionCopy: (() => {
+      const src =
+        (data.sectionCopy as Record<string, { title?: unknown; subtitle?: unknown }> | undefined) ||
+        {};
+      const fbCopy = (fb.sectionCopy || {}) as Record<
+        string,
+        { title?: string; subtitle?: string }
+      >;
+      const loc = getLocaleOrDefault(locale);
+      const keys = new Set([...Object.keys(src), ...Object.keys(fbCopy)]);
+      const out: NonNullable<SiteContent["sectionCopy"]> = {};
+      for (const key of keys) {
+        out[key] = {
+          title: pickSiteCopy(src[key]?.title, loc, fbCopy[key]?.title ?? ""),
+          subtitle: pickSiteCopy(src[key]?.subtitle, loc, fbCopy[key]?.subtitle ?? ""),
+        };
+      }
+      return out;
+    })(),
     searchPages:
       Array.isArray(data.searchPages) && data.searchPages.length > 0
         ? (data.searchPages as SiteContent["searchPages"])
@@ -187,7 +205,85 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
     navMenus: (data.navMenus as SiteContent["navMenus"]) || fb.navMenus,
     mainNavigation: (data.mainNavigation as SiteContent["mainNavigation"]) || fb.mainNavigation,
     footerNavigation: (data.footerNavigation as SiteContent["footerNavigation"]) || fb.footerNavigation,
-    qualitySale: (data.qualitySale as SiteContent["qualitySale"]) || fb.qualitySale,
+    qualitySale: (() => {
+      const src = (data.qualitySale as Record<string, unknown> | undefined) || {};
+      const fbQs = (fb.qualitySale || {}) as Record<string, unknown>;
+      const loc = getLocaleOrDefault(locale);
+      const out: Record<string, unknown> = { ...fbQs, ...src };
+      const textKeys = [
+        "heroTitle",
+        "heroSubtitle",
+        "heroBody",
+        "feature1Title",
+        "feature1ImageAlt",
+        "feature2Title",
+        "feature2ImageAlt",
+        "feature3Title",
+        "feature3ImageAlt",
+        "feature4Title",
+        "feature4ImageAlt",
+        "supportTitle",
+        "supportSubtitle",
+        "faqTitle",
+        "faqSubtitle",
+        "step1Title",
+        "step1Desc",
+        "step2Title",
+        "step2Desc",
+        "step3Title",
+        "step3Desc",
+        "step4Title",
+        "step4Desc",
+        "faq1Q",
+        "faq1A",
+        "faq2Q",
+        "faq2A",
+        "faq3Q",
+        "faq3A",
+        "faq4Q",
+        "faq4A",
+      ];
+      for (const key of textKeys) {
+        out[key] = pickSiteCopy(src[key], loc, String(fbQs[key] ?? ""));
+      }
+      if (Array.isArray(src.faqItems) && src.faqItems.length > 0) {
+        out.faqItems = (src.faqItems as Array<Record<string, unknown>>).map((row) => ({
+          ...row,
+          question: pickSiteCopy(row.question, loc, ""),
+          answer: pickSiteCopy(row.answer, loc, ""),
+        }));
+      }
+      return out as SiteContent["qualitySale"];
+    })(),
+    showcaseMeta: (() => {
+      const rows = Array.isArray(data.showcaseMeta)
+        ? (data.showcaseMeta as Array<Record<string, unknown>>)
+        : [];
+      const fbRows = Array.isArray(fb.showcaseMeta) ? fb.showcaseMeta : [];
+      const loc = getLocaleOrDefault(locale);
+      if (rows.length === 0 && fbRows.length === 0) return fb.showcaseMeta;
+      const byKey = new Map<string, { tabKey: string; title?: string; subtitle?: string; order?: number }>();
+      for (const row of fbRows) {
+        byKey.set(row.tabKey, {
+          tabKey: row.tabKey,
+          title: row.title,
+          subtitle: row.subtitle,
+          order: row.order,
+        });
+      }
+      for (const row of rows) {
+        const tabKey = String(row.tabKey ?? "").trim();
+        if (!tabKey) continue;
+        const prev = byKey.get(tabKey);
+        byKey.set(tabKey, {
+          tabKey,
+          title: pickSiteCopy(row.title, loc, prev?.title ?? ""),
+          subtitle: pickSiteCopy(row.subtitle, loc, prev?.subtitle ?? ""),
+          order: typeof row.order === "number" ? row.order : prev?.order,
+        });
+      }
+      return Array.from(byKey.values()).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    })(),
     designTools:
       Array.isArray(data.designTools) && data.designTools.length > 0
         ? (data.designTools as NonNullable<SiteContent["designTools"]>).map((tool, i) => {
