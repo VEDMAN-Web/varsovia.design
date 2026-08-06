@@ -52,6 +52,20 @@ export type SiteContent = {
   brandWordmarkLine1?: string;
   brandWordmarkLine2?: string;
   designTools?: DesignTool[];
+  teamPage?: {
+    heroTitle?: string;
+    heroSubtitle?: string;
+    intro?: string;
+    designTitle?: string;
+    designEyebrow?: string;
+    designBody?: string;
+    architectTitle?: string;
+    architectEyebrow?: string;
+    architectBody?: string;
+    toolsTitle?: string;
+    toolsBody?: string;
+    stats?: Stat[];
+  };
   localeFlags?: LocaleFlags;
   stats?: Stat[];
   statsImage?: string;

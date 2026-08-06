@@ -69,7 +69,7 @@ function buildDisplayProjects(projects?: Project[]) {
 export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
   const t = useTranslations("home");
   const site = useSiteSettings();
-  const section = site?.sectionCopy?.products;
+  const section = site?.sectionCopy?.featured;
   const reduceMotion = useReducedMotion();
   const [active, setActive] = useState(0);
   const [hovered, setHovered] = useState<number | null>(null);
@@ -107,8 +107,8 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
     <section id="projects" className={`bg-transparent ${SITE_SECTION_PADDING_Y} !pb-6 sm:!pb-8 md:!pb-10`}>
       <SectionShell>
         <SectionHeadingReveal
-          title={section?.title || t("productsTitle")}
-          subtitle={section?.subtitle || t("productsSubtitle")}
+          title={section?.title || t("featuredTitle")}
+          subtitle={section?.subtitle || t("featuredSubtitle")}
           className={SECTION_HEADING_WIDE}
         />
 

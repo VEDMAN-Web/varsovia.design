@@ -190,8 +190,45 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
     qualitySale: (data.qualitySale as SiteContent["qualitySale"]) || fb.qualitySale,
     designTools:
       Array.isArray(data.designTools) && data.designTools.length > 0
-        ? (data.designTools as SiteContent["designTools"])
+        ? (data.designTools as NonNullable<SiteContent["designTools"]>).map((tool, i) => {
+            const fbTool = fb.designTools?.[i] ?? fb.designTools?.[0];
+            return {
+              name: pickSiteCopy(tool.name, getLocaleOrDefault(locale), fbTool?.name ?? ""),
+              image: resolveMediaUrl(
+                pickString(tool.image, fbTool?.image ?? "") as string,
+                fbTool?.image ?? "",
+              ),
+              order: tool.order ?? i,
+            };
+          })
         : fb.designTools,
+    teamPage: (() => {
+      const tp = (data.teamPage as Record<string, unknown> | undefined) || {};
+      const fbTp = (fb.teamPage || {}) as NonNullable<SiteContent["teamPage"]>;
+      const loc = getLocaleOrDefault(locale);
+      const pick = (key: keyof NonNullable<SiteContent["teamPage"]>, fallback: string) =>
+        pickSiteCopy(tp[key], loc, fallback);
+      return {
+        heroTitle: pick("heroTitle", fbTp.heroTitle ?? ""),
+        heroSubtitle: pick("heroSubtitle", fbTp.heroSubtitle ?? ""),
+        intro: pick("intro", fbTp.intro ?? ""),
+        designTitle: pick("designTitle", fbTp.designTitle ?? ""),
+        designEyebrow: pick("designEyebrow", fbTp.designEyebrow ?? ""),
+        designBody: pick("designBody", fbTp.designBody ?? ""),
+        architectTitle: pick("architectTitle", fbTp.architectTitle ?? ""),
+        architectEyebrow: pick("architectEyebrow", fbTp.architectEyebrow ?? ""),
+        architectBody: pick("architectBody", fbTp.architectBody ?? ""),
+        toolsTitle: pick("toolsTitle", fbTp.toolsTitle ?? ""),
+        toolsBody: pick("toolsBody", fbTp.toolsBody ?? ""),
+        stats:
+          Array.isArray(tp.stats) && tp.stats.length > 0
+            ? (tp.stats as Array<Record<string, unknown>>).map((row, i) => ({
+                value: pickSiteCopy(row.value, loc, fbTp.stats?.[i]?.value ?? ""),
+                label: pickSiteCopy(row.label, loc, fbTp.stats?.[i]?.label ?? ""),
+              }))
+            : fbTp.stats,
+      };
+    })(),
     localeFlags: {
       ...(fb.localeFlags || {}),
       ...((data.localeFlags as SiteContent["localeFlags"]) || {}),

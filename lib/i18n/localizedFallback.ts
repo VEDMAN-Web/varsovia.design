@@ -44,6 +44,23 @@ export function buildLocalizedSiteFallback(locale?: string): SiteContent {
       { step: "04", title: s.process4Title, text: s.process4Text, icon: D.processIcons[3] },
     ],
     designTools: D.designTools.map((tool) => ({ ...tool })),
+    teamPage: {
+      heroTitle: m.teamPage.heroTitle,
+      heroSubtitle: m.teamPage.heroSubtitle,
+      intro: m.teamPage.intro,
+      designTitle: m.teamPage.designTitle,
+      designEyebrow: m.teamPage.designEyebrow,
+      designBody: m.teamPage.designBody,
+      architectTitle: m.teamPage.architectTitle,
+      architectEyebrow: m.teamPage.architectEyebrow,
+      architectBody: m.teamPage.architectBody,
+      toolsTitle: m.teamPage.toolsTitle,
+      toolsBody: m.teamPage.toolsBody,
+      stats: [
+        { value: m.teamPage.statProjectsValue, label: m.teamPage.statProjectsLabel },
+        { value: m.teamPage.statYearsValue, label: m.teamPage.statYearsLabel },
+      ],
+    },
     localeFlags: { ...D.localeFlags },
     qualitySale: {
       support1Image: D.qualitySupportImages[0],

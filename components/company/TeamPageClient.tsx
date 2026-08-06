@@ -39,6 +39,8 @@ import type { Locale } from "@/lib/i18n/routing";
 import { resolveTeamMembers, type TeamMember } from "@/lib/companyData";
 import { resolveMediaUrl, MEDIA } from "@/lib/mediaAssets";
 import { DEFAULT_SITE_IMAGE_PATHS } from "@/lib/defaultSiteImages";
+import { getLocaleOrDefault } from "@/lib/i18n/messageCatalog";
+import { pickSiteCopy } from "@/lib/i18n/pickLocalized";
 import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import ListingPagination from "@/components/ui/ListingPagination";
 import { SkeletonPagination, SkeletonTeamMemberGrid } from "@/components/ui/skeleton";
@@ -178,6 +180,26 @@ export default function TeamPageClient() {
     }));
   }, [site?.designTools]);
 
+  const copy = useMemo(() => {
+    const tp = site?.teamPage as Record<string, unknown> | undefined;
+    const loc = getLocaleOrDefault(locale as Locale);
+    const pick = (value: unknown, fallback: string) =>
+      pickSiteCopy(value, loc, fallback) || fallback;
+    return {
+      heroTitle: pick(tp?.heroTitle, t("heroTitle")),
+      heroSubtitle: pick(tp?.heroSubtitle, t("heroSubtitle")),
+      intro: pick(tp?.intro, t("intro")),
+      designTitle: pick(tp?.designTitle, t("designTitle")),
+      designEyebrow: pick(tp?.designEyebrow, t("designEyebrow")),
+      designBody: pick(tp?.designBody, t("designBody")),
+      architectTitle: pick(tp?.architectTitle, t("architectTitle")),
+      architectEyebrow: pick(tp?.architectEyebrow, t("architectEyebrow")),
+      architectBody: pick(tp?.architectBody, t("architectBody")),
+      toolsTitle: pick(tp?.toolsTitle, t("toolsTitle")),
+      toolsBody: pick(tp?.toolsBody, t("toolsBody")),
+    };
+  }, [site?.teamPage, t, locale]);
+
   useEffect(() => {
     fetchTeamMembers(locale as Locale)
       .then((data) => {
@@ -198,18 +220,36 @@ export default function TeamPageClient() {
     [architectTeam, architectPage],
   );
 
-  const stats = [
-    { value: t("statProjectsValue"), label: t("statProjectsLabel"), variant: "projects" as const },
-    { value: t("statYearsValue"), label: t("statYearsLabel"), variant: "years" as const },
-  ];
+  const stats = useMemo(() => {
+    const fromCms = site?.teamPage?.stats;
+    const loc = getLocaleOrDefault(locale as Locale);
+    if (Array.isArray(fromCms) && fromCms.length >= 2) {
+      return [
+        {
+          value: pickSiteCopy(fromCms[0]?.value, loc, t("statProjectsValue")) || t("statProjectsValue"),
+          label: pickSiteCopy(fromCms[0]?.label, loc, t("statProjectsLabel")) || t("statProjectsLabel"),
+          variant: "projects" as const,
+        },
+        {
+          value: pickSiteCopy(fromCms[1]?.value, loc, t("statYearsValue")) || t("statYearsValue"),
+          label: pickSiteCopy(fromCms[1]?.label, loc, t("statYearsLabel")) || t("statYearsLabel"),
+          variant: "years" as const,
+        },
+      ];
+    }
+    return [
+      { value: t("statProjectsValue"), label: t("statProjectsLabel"), variant: "projects" as const },
+      { value: t("statYearsValue"), label: t("statYearsLabel"), variant: "years" as const },
+    ];
+  }, [site?.teamPage?.stats, t, locale]);
 
   return (
     <>
       <Navbar />
       <main className={`${TEAM_MAIN} ${TEAM_PAGE_BG}`}>
         <CompanyHero
-          title={t("heroTitle")}
-          subtitle={t("heroSubtitle")}
+          title={copy.heroTitle}
+          subtitle={copy.heroSubtitle}
           compact
           subtitleSentenceCase={false}
           titleClassName={TEAM_HERO_TITLE}
@@ -219,7 +259,7 @@ export default function TeamPageClient() {
 
         <section className={`${TEAM_SHELL} mb-[clamp(2rem,6vw,5rem)]`}>
           <FadeInView delay={0.05}>
-            <p className={TEAM_INTRO_CLASS}>{t("intro")}</p>
+            <p className={TEAM_INTRO_CLASS}>{copy.intro}</p>
           </FadeInView>
         </section>
 
@@ -238,7 +278,7 @@ export default function TeamPageClient() {
         </section>
 
         <div className={TEAM_SHELL}>
-          <TeamBlock title={t("designTitle")} eyebrow={t("designEyebrow")} body={t("designBody")}>
+          <TeamBlock title={copy.designTitle} eyebrow={copy.designEyebrow} body={copy.designBody}>
             <div className={TEAM_MEMBER_GRID}>
               {loading ? (
                 <SkeletonTeamMemberGrid count={3} />
@@ -260,7 +300,7 @@ export default function TeamPageClient() {
             )}
           </TeamBlock>
 
-          <TeamBlock title={t("architectTitle")} eyebrow={t("architectEyebrow")} body={t("architectBody")}>
+          <TeamBlock title={copy.architectTitle} eyebrow={copy.architectEyebrow} body={copy.architectBody}>
             <div className={TEAM_MEMBER_GRID}>
               {loading ? (
                 <SkeletonTeamMemberGrid count={3} />
@@ -284,8 +324,8 @@ export default function TeamPageClient() {
 
           <section className="pb-[clamp(0.5rem,2vw,1rem)]">
             <FadeInView>
-              <h2 className={TEAM_TOOLS_TITLE}>{t("toolsTitle")}</h2>
-              <p className={TEAM_TOOLS_BODY}>{t("toolsBody")}</p>
+              <h2 className={TEAM_TOOLS_TITLE}>{copy.toolsTitle}</h2>
+              <p className={TEAM_TOOLS_BODY}>{copy.toolsBody}</p>
             </FadeInView>
             <div className={TEAM_TOOLS_GRID}>
               {designTools.map((tool, i) => (
