@@ -86,11 +86,11 @@ export const FALLBACK_INQUIRY_FORM_EN: InquiryFormConfig = {
       width: "half",
       order: 8,
       options: [
-        { value: "under_5l", label: "Under ₹5 Lakh" },
-        { value: "5l_10l", label: "₹5L – ₹10L" },
-        { value: "10l_20l", label: "₹10L – ₹20L" },
-        { value: "20l_50l", label: "₹20L – ₹50L" },
-        { value: "above_50l", label: "Above ₹50 Lakh" },
+        { value: "under_5k", label: "Under $5,000" },
+        { value: "5k_15k", label: "$5,000 – $15,000" },
+        { value: "15k_30k", label: "$15,000 – $30,000" },
+        { value: "30k_75k", label: "$30,000 – $75,000" },
+        { value: "above_75k", label: "Above $75,000" },
       ],
     },
     {
