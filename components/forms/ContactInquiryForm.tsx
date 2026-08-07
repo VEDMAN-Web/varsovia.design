@@ -44,7 +44,10 @@ export default function ContactInquiryForm({
   const locale = useLocale() as Locale;
   const site = useSiteSettings();
   const inquiryForm = useMemo(() => resolveInquiryForm(site), [site]);
-  const phoneConfig = PHONE_CONFIG[locale] ?? PHONE_CONFIG.en;
+  const DIAL_CODE_LOCALES: Locale[] = ["th", "en", "pl"];
+  const [phoneLocale, setPhoneLocale] = useState<Locale>("th");
+  const [dialOpen, setDialOpen] = useState(false);
+  const phoneConfig = PHONE_CONFIG[phoneLocale] ?? PHONE_CONFIG.th;
   const rows = useMemo(() => groupInquiryFields(inquiryForm.fields), [inquiryForm.fields]);
 
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -153,8 +156,35 @@ export default function ContactInquiryForm({
             {field.label}
           </label>
           <div className={`${fieldClassSized} flex min-w-0 items-center gap-2 px-3 ${err ? "ring-2 ring-red-500/60" : ""}`}>
-            <img src={phoneConfig.flag} alt="" className="h-[18px] w-[22px] shrink-0 rounded-[2px] object-cover" />
-            <span className="shrink-0 text-[13px] font-medium text-[#251b1e] sm:text-[14px]">{phoneConfig.dialCode}</span>
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setDialOpen((o) => !o)}
+                className="flex shrink-0 items-center gap-1"
+              >
+                <img src={phoneConfig.flag} alt="" className="h-[18px] w-[22px] shrink-0 rounded-[2px] object-cover" />
+                <span className="shrink-0 text-[13px] font-medium text-[#251b1e] sm:text-[14px]">{phoneConfig.dialCode}</span>
+                <ChevronDown size={12} className="shrink-0 text-[#6a414d]/60" />
+              </button>
+              {dialOpen ? (
+                <div className="absolute left-0 top-full z-20 mt-1 min-w-[130px] overflow-hidden rounded-[6px] border border-[#cfc4c6] bg-white py-1 shadow-lg">
+                  {DIAL_CODE_LOCALES.map((loc) => (
+                    <button
+                      key={loc}
+                      type="button"
+                      onClick={() => {
+                        setPhoneLocale(loc);
+                        setDialOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] hover:bg-[#f7f1f2]"
+                    >
+                      <img src={PHONE_CONFIG[loc].flag} alt="" className="h-[14px] w-[18px] rounded-[2px] object-cover" />
+                      <span>{PHONE_CONFIG[loc].dialCode}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
             <span className="h-4 w-px shrink-0 bg-[#6a414d]/20" aria-hidden />
             <input
               id={id}
@@ -188,7 +218,7 @@ export default function ContactInquiryForm({
               className={`${fieldClassSized} cursor-pointer appearance-none pr-10 ${err ? "ring-2 ring-red-500/60" : ""}`}
             >
               <option value="" disabled>
-                {field.placeholder || "—"}
+                {field.placeholder || "â"}
               </option>
               {(field.options ?? []).map((opt) => (
                 <option key={opt.value} value={opt.value}>
