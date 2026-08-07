@@ -34,7 +34,7 @@ app.use(
 );
 
 // ─── Body parser ──────────────────────────────────────────────────────────────
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "50mb" }));
 
 // ─── Health check (no rate limit) ─────────────────────────────────────────────
 app.get("/api/health", (_req, res) => {
@@ -111,4 +111,3 @@ process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 
 start();
-
