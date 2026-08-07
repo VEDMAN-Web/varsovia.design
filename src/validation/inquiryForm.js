@@ -109,11 +109,11 @@ const DEFAULT_INQUIRY_FORM = {
       order: 8,
       enabled: true,
       options: [
-        { value: "under_5l", label: { en: "Under ₹5 Lakh", th: "ต่ำกว่า ₹5 ลakh", pl: "Poniżej ₹5 lakh" } },
-        { value: "5l_10l", label: { en: "₹5L – ₹10L", th: "₹5L – ₹10L", pl: "₹5L – ₹10L" } },
-        { value: "10l_20l", label: { en: "₹10L – ₹20L", th: "₹10L – ₹20L", pl: "₹10L – ₹20L" } },
-        { value: "20l_50l", label: { en: "₹20L – ₹50L", th: "₹20L – ₹50L", pl: "₹20L – ₹50L" } },
-        { value: "above_50l", label: { en: "Above ₹50 Lakh", th: "มากกว่า ₹50 ลakh", pl: "Powyżej ₹50 lakh" } },
+        { value: "under_5k", label: { en: "Under $5,000", th: "ต่ำกว่า $5,000", pl: "Poniżej $5,000" } },
+        { value: "5k_15k", label: { en: "$5,000 – $15,000", th: "$5,000 – $15,000", pl: "$5,000 – $15,000" } },
+        { value: "15k_30k", label: { en: "$15,000 – $30,000", th: "$15,000 – $30,000", pl: "$15,000 – $30,000" } },
+        { value: "30k_75k", label: { en: "$30,000 – $75,000", th: "$30,000 – $75,000", pl: "$30,000 – $75,000" } },
+        { value: "above_75k", label: { en: "Above $75,000", th: "มากกว่า $75,000", pl: "Powyżej $75,000" } },
       ],
     },
     {
