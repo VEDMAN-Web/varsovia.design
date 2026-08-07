@@ -22,6 +22,7 @@ const {
   localizeFooterNavigation,
 } = require("../validation/footerNavigation");
 const { invalidateInquiryFormCache } = require("../middleware/validateContactSubmission");
+const { pushToGHL } = require("../utils/ghl");
 const { parsePagination, sendSuccess, sendList, sendError } = require("../utils/apiResponse");
 
 const Product = require("../models/Product");
@@ -85,6 +86,12 @@ async function submitContact(req, res) {
   try {
     const payload = req.contactPayload;
     const contact = await Contact.create(payload);
+    pushToGHL({
+      firstName: (payload && (payload.fullName || payload.name)) || undefined,
+      email: payload && payload.email,
+      phone: payload && (payload.phone || payload.whatsappNumber || payload.phoneNumber || payload.mobile),
+      sourceSite: "Varsovia",
+    }).catch(() => {});
     return sendSuccess(
       res,
       { contact },
