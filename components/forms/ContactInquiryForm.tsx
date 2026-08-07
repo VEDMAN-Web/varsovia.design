@@ -21,7 +21,7 @@ import {
   MODAL_LABEL,
   type InquiryPurpose,
 } from "@/components/forms/contactFormShared";
-import { PHONE_CONFIG } from "@/lib/contactFormValidation";
+import { COUNTRY_DIAL_CODES, flagEmoji } from "@/lib/countryDialCodes";
 import type { Locale } from "@/lib/i18n/routing";
 
 type ContactInquiryFormProps = {
@@ -44,10 +44,23 @@ export default function ContactInquiryForm({
   const locale = useLocale() as Locale;
   const site = useSiteSettings();
   const inquiryForm = useMemo(() => resolveInquiryForm(site), [site]);
-  const DIAL_CODE_LOCALES: Locale[] = ["th", "en", "pl"];
-  const [phoneLocale, setPhoneLocale] = useState<Locale>("th");
+  const [country, setCountry] = useState(
+    () => COUNTRY_DIAL_CODES.find((c) => c.iso2 === "TH") ?? COUNTRY_DIAL_CODES[0],
+  );
   const [dialOpen, setDialOpen] = useState(false);
-  const phoneConfig = PHONE_CONFIG[phoneLocale] ?? PHONE_CONFIG.th;
+  const [dialSearch, setDialSearch] = useState("");
+  const phoneConfig = {
+    flag: flagEmoji(country.iso:),
+    dialCode: country.dial,
+    minDigits: 4,
+    maxDigits: 14,
+    placeholder: "812345678",
+  };
+  const filteredCountries = COUNTRY_DIAL_CODES.filter(
+    (c) =>
+      c.name.toLowerCase().includes(dialSearch.trim().toLowerCase()) ||
+      c.dial.includes(dialSearch.trim()),
+  );
   const rows = useMemo(() => groupInquiryFields(inquiryForm.fields), [inquiryForm.fields]);
 
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -162,26 +175,43 @@ export default function ContactInquiryForm({
                 onClick={() => setDialOpen((o) => !o)}
                 className="flex shrink-0 items-center gap-1"
               >
-                <img src={phoneConfig.flag} alt="" className="h-[18px] w-[22px] shrink-0 rounded-[2px] object-cover" />
+                <span className="shrink-0 text-[16px] leading-none">{phoneConfig.flag}</span>
                 <span className="shrink-0 text-[13px] font-medium text-[#251b1e] sm:text-[14px]">{phoneConfig.dialCode}</span>
                 <ChevronDown size={12} className="shrink-0 text-[#6a414d]/60" />
               </button>
               {dialOpen ? (
-                <div className="absolute left-0 top-full z-20 mt-1 min-w-[130px] overflow-hidden rounded-[6px] border border-[#cfc4c6] bg-white py-1 shadow-lg">
-                  {DIAL_CODE_LOCALES.map((loc) => (
-                    <button
-                      key={loc}
-                      type="button"
-                      onClick={() => {
-                        setPhoneLocale(loc);
-                        setDialOpen(false);
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] hover:bg-[#f7f1f2]"
-                    >
-                      <img src={PHONE_CONFIG[loc].flag} alt="" className="h-[14px] w-[18px] rounded-[2px] object-cover" />
-                      <span>{PHONE_CONFIG[loc].dialCode}</span>
-                    </button>
-                  ))}
+                <div className="absolute left-0 top-full z-20 mt-1 w-[240px] overflow-hidden rounded-[6px] border border-[#cfc4c6] bg-white shadow-lg">
+                  <div className="border-b border-[#e5dcd3] p-2">
+                    <input
+                      autoFocus
+                      value={dialSearch}
+                      onChange={(e) => setDialSearch(e.target.value)}
+                      placeholder="Search country or code"
+                      className="w-full rounded-[4px] border border-[#cfc4c6] px-2 py-1 text-[13px] outline-none"
+                    />
+                  </div>
+                  <div className="max-h-[220px] overflow-y-auto py-1">
+                    {filteredCountries.length === 0 ? (
+                      <p className="px-3 py-2 text-[13px] text-[#6a414d]/60">No matches</p>
+                    ) : (
+                      filteredCountries.map((c) => (
+                        <button
+                          key={c.iso2}
+                          type="button"
+                          onClick={() => {
+                            setCountry(c);
+                            setDialOpen(false);
+                            setDialSearch("");
+                          }}
+                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] hover:bg-[#f7f1f2]"
+                        >
+                          <span className="text-[16px] leading-none">{flagEmoji(c.iso2)}</span>
+                          <span className="flex-1 truncate">{c.name}</span>
+                          <span className="shrink-0 text-[#6a414d]/70">{c.dial}</span>
+                        </button>
+                      ))
+                    )}
+                  </div>
                 </div>
               ) : null}
             </div>
