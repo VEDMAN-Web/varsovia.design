@@ -50,7 +50,7 @@ export default function ContactInquiryForm({
   const [dialOpen, setDialOpen] = useState(false);
   const [dialSearch, setDialSearch] = useState("");
   const phoneConfig = {
-    flag: flagEmoji(country.iso:),
+    flag: flagEmoji(country.iso2),
     dialCode: country.dial,
     minDigits: 4,
     maxDigits: 14,
