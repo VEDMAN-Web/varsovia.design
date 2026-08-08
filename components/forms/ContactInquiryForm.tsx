@@ -190,7 +190,7 @@ export default function ContactInquiryForm({
                       className="w-full rounded-[4px] border border-[#cfc4c6] px-2 py-1 text-[13px] outline-none"
                     />
                   </div>
-                  <div className="max-h-[220px] overflow-y-auto py-1">
+                  <div className="max-h-[220px] overflow-y-auto overscroll-contain py-1" data-lenis-prevent>
                     {filteredCountries.length === 0 ? (
                       <p className="px-3 py-2 text-[13px] text-[#6a414d]/60">No matches</p>
                     ) : (

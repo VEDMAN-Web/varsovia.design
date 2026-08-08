@@ -3,6 +3,9 @@ import CataloguePageClient from "@/components/catalogue/CataloguePageClient";
 import { pageMetadata } from "@/lib/seo";
 import { setRequestLocale } from "next-intl/server";
 
+export const revalidate = 0;
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = pageMetadata({
   title: "Free Catalogue",
   description: "Download Varsovia Design catalogues for kitchen and interior inspiration.",

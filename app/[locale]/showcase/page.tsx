@@ -1,6 +1,9 @@
 import ShowcaseListingPage from "@/components/showcase/ShowcaseListingPage";
 import { setRequestLocale } from "next-intl/server";
 
+export const revalidate = 0;
+export const dynamic = "force-dynamic";
+
 type Props = {
   params: Promise<{ locale: string }>;
 };

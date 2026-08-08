@@ -11,134 +11,72 @@ import {
 } from "@/components/preloader/preloaderLogo";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 
-/** Hold on white + wing window, then portal zoom */
-export const PRELOADER_HOLD = 1;
-export const PRELOADER_ZOOM = 1.35;
+// ─── Timings ─────────────────────────────────────────────────────────────────
+/** Logo hold before zoom starts — 0.7 seconds */
+export const PRELOADER_HOLD = 0.6;
+/** Portal zoom duration */
+export const PRELOADER_ZOOM = 0.85;
 
+// ─── Constants ───────────────────────────────────────────────────────────────
 const MASK_ID = "varsovia-wing-portal-mask";
 const OVERLAY = "#ffffff";
-const PORTAL_EASE = "cubic-bezier(0.76, 0, 0.2, 1)";
 const FALLBACK_HERO = MEDIA.hero;
 
+// ─── Types ───────────────────────────────────────────────────────────────────
 type HomePreloaderProps = {
   show: boolean;
   onComplete: () => void;
-  /** Fired when portal zoom begins — mount page under overlay */
   onPrepare?: () => void;
   heroImage?: string;
 };
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 function readViewport() {
   if (typeof window === "undefined") return { w: 0, h: 0 };
   return { w: window.innerWidth, h: window.innerHeight };
 }
 
-function preloadHero(src: string) {
+function preloadImage(src: string): Promise<void> {
   return new Promise<void>((resolve) => {
-    const link = document.createElement("link");
-    link.rel = "preload";
-    link.as = "image";
-    link.href = src;
-    document.head.appendChild(link);
+    // Preload hint
+    try {
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = src;
+      (link as any).fetchPriority = "high";
+      document.head.appendChild(link);
+    } catch { /* ignore */ }
 
     const img = new Image();
-    img.decoding = "async";
+    (img as any).fetchPriority = "high";
     img.src = src;
-    if (img.complete) {
-      resolve();
-      return;
-    }
+    if (img.complete) { resolve(); return; }
     img.onload = () => resolve();
     img.onerror = () => resolve();
+    window.setTimeout(resolve, 3000); // safety cap
   });
 }
 
-function wait(ms: number, signal: AbortSignal) {
+function wait(ms: number, signal: AbortSignal): Promise<void> {
   return new Promise<void>((resolve, reject) => {
-    const timer = window.setTimeout(resolve, ms);
-    signal.addEventListener("abort", () => {
-      window.clearTimeout(timer);
-      reject(new DOMException("Aborted", "AbortError"));
-    });
+    const t = window.setTimeout(resolve, ms);
+    signal.addEventListener("abort", () => { window.clearTimeout(t); reject(); });
   });
 }
 
-/** Smooth step for portal easing (matches PORTAL_EASE feel) */
-function easeOutCubic(t: number) {
-  return 1 - Math.pow(1 - t, 3);
-}
-
-/** Animate SVG portal hole — scale only, origin = parent translate(cx,cy) */
-function animatePortalHole(
-  portal: SVGGElement,
-  startScale: number,
-  targetScale: number,
-  durationMs: number,
-  signal: AbortSignal,
-) {
-  return new Promise<void>((resolve, reject) => {
-    const start = performance.now();
-    let frame = 0;
-
-    const tick = (now: number) => {
-      if (signal.aborted) {
-        reject(new DOMException("Aborted", "AbortError"));
-        return;
-      }
-      const t = Math.min(1, (now - start) / durationMs);
-      const scale = startScale + (targetScale - startScale) * easeOutCubic(t);
-      portal.setAttribute("transform", `scale(${scale})`);
-
-      if (t < 1) {
-        frame = requestAnimationFrame(tick);
-      } else {
-        resolve();
-      }
-    };
-
-    signal.addEventListener("abort", () => {
-      cancelAnimationFrame(frame);
-      reject(new DOMException("Aborted", "AbortError"));
-    });
-
-    portal.setAttribute("transform", `scale(${startScale})`);
-    frame = requestAnimationFrame(tick);
-  });
-}
-
-function animateHeroKenBurns(
-  hero: HTMLElement,
-  durationMs: number,
-  signal: AbortSignal,
-) {
-  return new Promise<void>((resolve, reject) => {
-    const animation = hero.animate(
-      [{ transform: "scale(1)" }, { transform: "scale(1.12)" }],
-      { duration: durationMs, easing: PORTAL_EASE, fill: "forwards" },
-    );
-    signal.addEventListener("abort", () => {
-      animation.cancel();
-      reject(new DOMException("Aborted", "AbortError"));
-    });
-    animation.onfinish = () => resolve();
-    animation.oncancel = () => reject(new DOMException("Aborted", "AbortError"));
-  });
-}
-
-export default function HomePreloader({ show, onComplete, onPrepare, heroImage }: HomePreloaderProps) {
+// ─── Component ───────────────────────────────────────────────────────────────
+export default function HomePreloader({
+  show,
+  onComplete,
+  onPrepare,
+  heroImage,
+}: HomePreloaderProps) {
   const reducedMotion = useReducedMotion();
-  const finishedRef = useRef(false);
-  const onCompleteRef = useRef(onComplete);
-  const onPrepareRef = useRef(onPrepare);
-  const [viewport, setViewport] = useState({ w: 0, h: 0 });
-  const [heroReady, setHeroReady] = useState(false);
-  const portalRef = useRef<SVGGElement>(null);
-  const heroRef = useRef<HTMLDivElement>(null);
-
-  onCompleteRef.current = onComplete;
-  onPrepareRef.current = onPrepare;
   const imageSrc = resolveMediaUrl(heroImage, FALLBACK_HERO);
 
+  // Viewport size
+  const [viewport, setViewport] = useState({ w: 0, h: 0 });
   useLayoutEffect(() => {
     const sync = () => setViewport(readViewport());
     sync();
@@ -146,118 +84,156 @@ export default function HomePreloader({ show, onComplete, onPrepare, heroImage }
     return () => window.removeEventListener("resize", sync);
   }, []);
 
+  // Hero image preload
+  const [heroReady, setHeroReady] = useState(false);
   useEffect(() => {
     let cancelled = false;
     setHeroReady(false);
-    preloadHero(imageSrc).then(() => {
-      if (!cancelled) setHeroReady(true);
-    });
-    return () => {
-      cancelled = true;
-    };
+    preloadImage(imageSrc).then(() => { if (!cancelled) setHeroReady(true); });
+    return () => { cancelled = true; };
   }, [imageSrc]);
 
-  useLayoutEffect(() => {
-    if (show) finishedRef.current = false;
-  }, [show]);
+  // Animation phase — false = logo at rest, true = portal zooming
+  const [animating, setAnimating] = useState(false);
 
-  const finishOnce = () => {
+  // Keep stable refs to callbacks
+  const onCompleteRef = useRef(onComplete);
+  const onPrepareRef = useRef(onPrepare);
+  onCompleteRef.current = onComplete;
+  onPrepareRef.current = onPrepare;
+
+  // Guard against double-fire
+  const finishedRef = useRef(false);
+  const finishOnce = useRef(() => {
     if (finishedRef.current) return;
     finishedRef.current = true;
     onCompleteRef.current();
-  };
+  });
 
-  const ready = viewport.w > 0 && viewport.h > 0;
-  const layout = ready ? wingPortalCenter(viewport.w, viewport.h) : null;
+  // ─── KEY FIX: use a run-counter so the effect re-fires every time show
+  //     flips to true, even when it was already true from a previous run.
+  const runCountRef = useRef(0);
+  const [runKey, setRunKey] = useState(0);
 
   useLayoutEffect(() => {
-    if (!show || !ready || !heroReady) return;
+    if (show) {
+      // Every time show becomes true, bump the key → forces effect re-run
+      runCountRef.current += 1;
+      setRunKey(runCountRef.current);
+      // Reset local animation state for a clean replay
+      finishedRef.current = false;
+      setAnimating(false);
+    }
+  }, [show]);
 
-    const portalLayout = wingPortalCenter(viewport.w, viewport.h);
-    const portal = portalRef.current;
-    const hero = heroRef.current;
-    if (!portal || !hero) return;
+  const ready = viewport.w > 0 && viewport.h > 0;
+
+  // ─── Main animation sequence — driven by runKey, not show ─────────────────
+  useLayoutEffect(() => {
+    // runKey === 0 is initial mount before show was ever true
+    if (runKey === 0 || !ready || !heroReady) return;
+    if (!show) return;
 
     const abort = new AbortController();
-    const targetScale = portalEndScale(
-      viewport.w,
-      viewport.h,
-      portalLayout.cx,
-      portalLayout.cy,
-    );
-    const zoomMs = reducedMotion ? 320 : PRELOADER_ZOOM * 1000;
-
-    hero.style.transformOrigin = "center center";
-    hero.style.transform = "scale(1)";
-    portal.setAttribute("transform", `scale(${PRELOADER_INITIAL_SCALE})`);
+    const holdMs  = reducedMotion ? 0   : PRELOADER_HOLD * 1000;
+    const zoomMs  = reducedMotion ? 180 : PRELOADER_ZOOM * 1000;
 
     const run = async () => {
       try {
-        // Fonts ready avoids FOUT under the portal handoff
+        // 1. Wait for fonts — capped at 300ms so we never block longer than hold
         if (document.fonts?.ready) {
-          try {
-            await Promise.race([
-              document.fonts.ready,
-              new Promise<void>((resolve) => {
-                window.setTimeout(resolve, 800);
-              }),
-            ]);
-          } catch {
-            /* ignore */
-          }
-          if (abort.signal.aborted) return;
+          await Promise.race([
+            document.fonts.ready,
+            wait(300, abort.signal),
+          ]).catch(() => {});
         }
+        if (abort.signal.aborted) return;
 
-        if (!reducedMotion) {
-          await wait(PRELOADER_HOLD * 1000, abort.signal);
-        }
+        // 2. HOLD — 1 full second: logo visible, white mask, hero below
+        await wait(holdMs, abort.signal);
+        if (abort.signal.aborted) return;
 
-        // Mount destination page under overlay while zoom runs
+        // 3. Mount page UNDER overlay right before zoom — so it's ready when
+        //    the overlay lifts. Doing this here (not before hold) prevents a
+        //    flash of the underlying page during the hold phase.
         onPrepareRef.current?.();
 
-        await Promise.all([
-          animatePortalHole(portal, PRELOADER_INITIAL_SCALE, targetScale, zoomMs, abort.signal),
-          animateHeroKenBurns(hero, zoomMs, abort.signal),
-        ]);
+        // 4. One rAF to let browser flush the mount before CSS transition starts
+        await new Promise<void>((res) => requestAnimationFrame(() => res()));
+        if (abort.signal.aborted) return;
 
-        if (!abort.signal.aborted) finishOnce();
-      } catch {
-        /* aborted */
-      }
+        // 5. Start GPU CSS zoom
+        setAnimating(true);
+
+        // 6. Wait for zoom + small tail
+        await wait(zoomMs + 100, abort.signal);
+        if (!abort.signal.aborted) finishOnce.current();
+      } catch { /* aborted */ }
     };
 
     void run();
     return () => abort.abort();
-  }, [show, ready, heroReady, viewport.w, viewport.h, reducedMotion]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runKey, ready, heroReady]);
 
+  // Fallback: listen for CSS transitionend so finish fires even if timing drifts
+  const portalGroupRef = useRef<SVGGElement>(null);
+  useEffect(() => {
+    const group = portalGroupRef.current;
+    if (!group || !animating) return;
+    const onEnd = () => finishOnce.current();
+    group.addEventListener("transitionend", onEnd, { once: true });
+    return () => group.removeEventListener("transitionend", onEnd);
+  }, [animating]);
+
+  // ─── Render ────────────────────────────────────────────────────────────────
   if (!show) return null;
 
-  if (!ready || !layout) {
+  if (!ready) {
     return (
-      <div className="fixed inset-0 z-[9999] bg-white" aria-hidden="true" role="presentation" />
+      <div
+        className="fixed inset-0 z-[9999] bg-white"
+        aria-hidden="true"
+        role="presentation"
+      />
     );
   }
+
+  const layout = wingPortalCenter(viewport.w, viewport.h);
+  const endScale = portalEndScale(viewport.w, viewport.h, layout.cx, layout.cy);
+  const zoomMs = reducedMotion ? 180 : PRELOADER_ZOOM * 1000;
+  const currentScale = animating ? endScale : PRELOADER_INITIAL_SCALE;
 
   return (
     <div
       className="fixed inset-0 z-[9999] overflow-hidden bg-white"
       aria-hidden={!show}
-      aria-label="Loading Varsovia Design"
       role="presentation"
+      aria-label="Loading Varsovia Design"
     >
-      {/* Hero — fixed full bleed; revealed through growing vector wing hole */}
-      <div ref={heroRef} className="absolute inset-0 will-change-transform">
+      {/* ── Hero image — GPU layer, subtle Ken Burns during zoom ── */}
+      <div
+        className="absolute inset-0"
+        style={{
+          willChange: animating ? "transform" : "auto",
+          transform: animating ? "scale(1.08)" : "scale(1)",
+          transition: animating
+            ? `transform ${zoomMs}ms cubic-bezier(0.25, 0, 0.15, 1)`
+            : "none",
+          transformOrigin: "center center",
+        }}
+      >
         <img
           src={imageSrc}
           alt=""
           className="h-full w-full object-cover object-center"
           aria-hidden="true"
           fetchPriority="high"
-          decoding="async"
+          decoding="sync"
         />
       </div>
 
-      {/* White overlay — fixed; only the SVG mask hole expands (vector portal) */}
+      {/* ── White overlay with SVG wing mask — grows via CSS transition ── */}
       <svg
         width={viewport.w}
         height={viewport.h}
@@ -273,20 +249,43 @@ export default function HomePreloader({ show, onComplete, onPrepare, heroImage }
             width={viewport.w}
             height={viewport.h}
           >
+            {/* White = visible overlay */}
             <rect width={viewport.w} height={viewport.h} fill="white" />
+            {/* Black = transparent hole — the wing that grows */}
             <g transform={layout.portalTranslate}>
-              <g ref={portalRef}>
-                <path d={WING_PATH} fill="black" transform={layout.wingInnerTransform} />
+              <g
+                ref={portalGroupRef}
+                style={{
+                  transform: `scale(${currentScale})`,
+                  transformOrigin: "0 0",
+                  willChange: animating ? "transform" : "auto",
+                  transition: animating
+                    ? `transform ${zoomMs}ms cubic-bezier(0.25, 0, 0.15, 1)`
+                    : "none",
+                }}
+              >
+                <path
+                  d={WING_PATH}
+                  fill="black"
+                  transform={layout.wingInnerTransform}
+                />
               </g>
             </g>
           </mask>
         </defs>
-        <rect width={viewport.w} height={viewport.h} fill={OVERLAY} mask={`url(#${MASK_ID})`} />
+        <rect
+          width={viewport.w}
+          height={viewport.h}
+          fill={OVERLAY}
+          mask={`url(#${MASK_ID})`}
+        />
       </svg>
+
     </div>
   );
 }
 
+// ─── Gate wired to IntroProvider ─────────────────────────────────────────────
 export function HomePreloaderGate({ heroImage }: { heroImage?: string }) {
   const { showPreloader, finishIntro, prepareIntro } = useIntro();
 

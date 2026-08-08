@@ -18,6 +18,7 @@ export async function generateStaticParams() {
   return interiorDetailStaticParams();
 }
 
+export const revalidate = 0;
 export const dynamicParams = true;
 
 const resolveInteriorProject = cache(async (locale: string, slug: string) => {

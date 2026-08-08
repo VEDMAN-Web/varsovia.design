@@ -1,7 +1,9 @@
 "use client";
 
-import { Link } from "@/lib/i18n/navigation";
+import { useCallback, useState } from "react";
+import { useRouter } from "@/lib/i18n/navigation";
 import { LogoWingSvg } from "@/components/preloader/preloaderLogo";
+import { useReplayIntro } from "@/components/preloader/IntroProvider";
 import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import { resolveMediaUrl } from "@/lib/mediaAssets";
 
@@ -18,6 +20,10 @@ const DEFAULT_LINE2 = "DESIGN";
 
 export default function BrandLogo({ variant = "header", className = "", link = true }: BrandLogoProps) {
   const site = useSiteSettings();
+  const router = useRouter();
+  const replayIntro = useReplayIntro();
+  const [replaying, setReplaying] = useState(false);
+
   const onDark = variant === "footer" || variant === "mark";
 
   const lockup = onDark
@@ -32,6 +38,28 @@ export default function BrandLogo({ variant = "header", className = "", link = t
 
   const line1 = site?.brandWordmarkLine1?.trim() || DEFAULT_LINE1;
   const line2 = site?.brandWordmarkLine2?.trim() || DEFAULT_LINE2;
+
+  const handleLogoClick = useCallback(
+    (e: React.MouseEvent) => {
+      // Only intercept plain left-clicks (no modifier keys = new tab etc.)
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+
+      // If already replaying, ignore extra clicks
+      if (replaying) return;
+
+      setReplaying(true);
+
+      // Navigate to home immediately (runs in background while animation plays)
+      // This ensures home page content is mounted under the overlay before zoom ends
+      router.push("/");
+
+      replayIntro().then(() => {
+        setReplaying(false);
+      });
+    },
+    [replayIntro, router, replaying],
+  );
 
   const inner = lockupResolved ? (
     // eslint-disable-next-line @next/next/no-img-element
@@ -109,13 +137,19 @@ export default function BrandLogo({ variant = "header", className = "", link = t
     </div>
   );
 
-  const wrapped = link ? (
-    <Link href="/" className={`shrink-0 ${className}`.trim()} aria-label={`${line1} ${line2} home`}>
-      {inner}
-    </Link>
-  ) : (
-    <div className={className}>{inner}</div>
-  );
+  if (!link) {
+    return <div className={className}>{inner}</div>;
+  }
 
-  return wrapped;
+  return (
+    <a
+      href="/"
+      aria-label={`${line1} ${line2} home`}
+      className={`shrink-0 ${className}`.trim()}
+      onClick={handleLogoClick}
+      style={{ cursor: replaying ? "default" : "pointer" }}
+    >
+      {inner}
+    </a>
+  );
 }

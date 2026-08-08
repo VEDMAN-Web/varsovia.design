@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import ContactPageContent from "@/components/contact/ContactPageContent";
 import { setRequestLocale } from "next-intl/server";
+import { fetchSite } from "@/lib/api";
+import type { Locale } from "@/lib/i18n/routing";
+
+export const revalidate = 0;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Contact Us | Varsovia Design",
@@ -17,11 +22,13 @@ export default async function ContactRoute({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const site = await fetchSite(locale as Locale).catch(() => null);
+
   return (
     <>
       <Navbar />
       <main>
-        <ContactPageContent />
+        <ContactPageContent site={site} />
       </main>
     </>
   );

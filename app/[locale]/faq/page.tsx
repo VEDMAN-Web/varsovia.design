@@ -3,6 +3,9 @@ import Navbar from "@/components/layout/Navbar";
 import FAQPageContent from "@/components/faq/FAQPageContent";
 import { setRequestLocale } from "next-intl/server";
 
+export const revalidate = 0;
+export const dynamic = "force-dynamic";
+
 type Props = {
   params: Promise<{ locale: string }>;
 };

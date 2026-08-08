@@ -70,7 +70,7 @@ function NavChevron({ className = "", size = 16 }: { className?: string; size?: 
 }
 
 const navLinkClass = (active: boolean) =>
-  `font-outfit flex shrink-0 items-center gap-[10px] whitespace-nowrap text-[18px] font-medium leading-[23px] transition-colors ${
+  `font-outfit flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[18px] font-medium leading-[23px] transition-colors ${
     active ? "text-maroon" : "text-[#2b2b2b] hover:text-maroon"
   }`;
 
@@ -346,12 +346,12 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
             : "border-b border-transparent bg-transparent shadow-none backdrop-blur-none"
       }`}
     >
-      <nav className="mx-auto flex h-[102.33px] w-full max-w-[1440px] items-center px-[clamp(1.25rem,7vw,100px)]">
+      <nav className="mx-auto flex h-[102.33px] w-full max-w-[1440px] items-center px-[clamp(1.25rem,4vw,100px)] transition-[padding] duration-300">
         <NavbarLogo />
 
         <ul
-          className={`ml-[71px] hidden min-w-0 shrink items-center transition-[gap] duration-300 xl:flex ${
-            searchExpanded ? "gap-3" : "gap-5"
+          className={`ml-[clamp(1.5rem,4vw,71px)] hidden min-w-0 shrink items-center transition-[gap] duration-300 xl:flex ${
+            searchExpanded ? "gap-3" : "gap-3 2xl:gap-5"
           }`}
         >
           {navItems.map((item) => {
@@ -429,7 +429,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
 
         <div className="min-w-0 flex-1" aria-hidden="true" />
 
-        <div className="flex shrink-0 items-center gap-5">
+        <div className="flex shrink-0 items-center justify-end gap-3 2xl:gap-5">
           <div
             ref={searchWrapRef}
             className="relative hidden sm:block"
@@ -441,7 +441,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
             <div
               className={`flex shrink-0 items-center overflow-hidden rounded-full transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 searchExpanded
-                  ? "h-11 w-[234px] border border-[#d8d5d0] bg-[#f7f5f2] pl-4 pr-1.5 shadow-[0_8px_22px_rgba(0,0,0,0.10)]"
+                  ? "h-11 w-[170px] 2xl:w-[234px] border border-[#d8d5d0] bg-[#f7f5f2] pl-4 pr-1.5 shadow-[0_8px_22px_rgba(0,0,0,0.10)]"
                   : "h-6 w-6 border border-transparent bg-transparent shadow-none"
               }`}
             >

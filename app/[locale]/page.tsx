@@ -14,6 +14,9 @@ import { fetchHomeData, fetchProducts, fetchProjects } from "@/lib/api";
 import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/i18n/routing";
 
+export const revalidate = 0;
+export const dynamic = "force-dynamic";
+
 type Props = {
   params: Promise<{ locale: string }>;
 };

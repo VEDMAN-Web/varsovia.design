@@ -353,7 +353,7 @@ export async function fetchSite(locale?: Locale): Promise<SiteContent> {
   try {
     const res = await fetch(withLocale(`${API_URL}/site`, locale), {
       headers: localeHeaders(locale),
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
     if (!res.ok) throw new Error("Failed to fetch site");
     const body = await res.json();
@@ -539,7 +539,7 @@ export async function fetchBlogById(id: string, locale?: Locale) {
 
 export async function fetchTeamMembers(locale?: Locale): Promise<Record<string, unknown>[]> {
   try {
-    return (await fetchAllListItems("/team", locale, { next: { revalidate: 10 } })) as Record<
+    return (await fetchAllListItems("/team", locale, { cache: "no-store" })) as Record<
       string,
       unknown
     >[];

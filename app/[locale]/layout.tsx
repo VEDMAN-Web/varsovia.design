@@ -19,8 +19,9 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-/** Refresh CMS-driven footer/site data within a minute on production. */
-export const revalidate = 60;
+/** Always fetch fresh CMS data — no stale cache */
+export const revalidate = 0;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Pick<Props, "params">): Promise<Metadata> {
   const { locale } = await params;

@@ -36,6 +36,7 @@ import {
 } from "@/components/company/teamLayoutShared";
 import { fetchTeamMembers } from "@/lib/api";
 import type { Locale } from "@/lib/i18n/routing";
+import type { SiteContent } from "@/lib/siteTypes";
 import { resolveTeamMembers, type TeamMember } from "@/lib/companyData";
 import { resolveMediaUrl, MEDIA } from "@/lib/mediaAssets";
 import { DEFAULT_SITE_IMAGE_PATHS } from "@/lib/defaultSiteImages";
@@ -152,16 +153,43 @@ function TeamBlock({
   );
 }
 
-export default function TeamPageClient() {
+export default function TeamPageClient({
+  site: siteProp,
+  initialTeamMembers,
+}: {
+  site?: SiteContent | null;
+  initialTeamMembers?: Record<string, unknown>[];
+}) {
   const locale = useLocale();
   const t = useTranslations("teamPage");
-  const site = useSiteSettings();
+  // Use SSR-passed site prop first, fall back to context for other pages
+  const siteCtx = useSiteSettings();
+  const site = siteProp ?? siteCtx;
   const [designTeam, setDesignTeam] = useState<TeamMember[]>([]);
   const [architectTeam, setArchitectTeam] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [toolHover, setToolHover] = useState<number | null>(null);
   const [designPage, setDesignPage] = useState(1);
   const [architectPage, setArchitectPage] = useState(1);
+
+  // Resolve initial SSR team members immediately — no loading flash
+  useEffect(() => {
+    if (initialTeamMembers && initialTeamMembers.length > 0) {
+      const resolved = resolveTeamMembers(initialTeamMembers, locale as Locale);
+      setDesignTeam(resolved.designTeam);
+      setArchitectTeam(resolved.architectTeam);
+      setLoading(false);
+      return;
+    }
+    // Fallback: client-side fetch if SSR data unavailable
+    fetchTeamMembers(locale as Locale)
+      .then((data) => {
+        const resolved = resolveTeamMembers(Array.isArray(data) ? data : [], locale as Locale);
+        setDesignTeam(resolved.designTeam);
+        setArchitectTeam(resolved.architectTeam);
+      })
+      .finally(() => setLoading(false));
+  }, [locale, initialTeamMembers]);
 
   const designTools = useMemo(() => {
     const fromCms = site?.designTools;
