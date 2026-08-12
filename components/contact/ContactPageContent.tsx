@@ -2,16 +2,31 @@
 
 import ContactFormPanel from "@/components/forms/ContactFormPanel";
 import ContactOurLocationSection from "@/components/contact/ContactOurLocationSection";
+import Showrooms from "@/components/sections/Showrooms";
 import CompanyHero from "@/components/company/CompanyHero";
 import PagePanelReveal from "@/components/ui/PagePanelReveal";
+import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
 import { SECTION_SUBTITLE_CLASS } from "@/components/ui/SectionHeading";
-import { COMPANY_SHELL } from "@/components/company/companyLayoutShared";
+import { COMPANY_SHELL, SECTION_HEADING_WIDE } from "@/components/company/companyLayoutShared";
 import { fallbackHomeData } from "@/lib/fallbackData";
 import type { SiteContent } from "@/lib/siteTypes";
 
 const FALLBACK_IMAGES = fallbackHomeData.site.contactImages;
 
-export default function ContactPageContent({ site }: { site?: SiteContent | null }) {
+type ShowroomRow = {
+  _id: string;
+  name: string;
+  location: string;
+  image: string;
+};
+
+export default function ContactPageContent({
+  site,
+  showrooms = [],
+}: {
+  site?: SiteContent | null;
+  showrooms?: ShowroomRow[];
+}) {
   const imgs = site?.contactImages;
   const images =
     Array.isArray(imgs) && imgs.length > 0 ? imgs : FALLBACK_IMAGES;
@@ -20,6 +35,12 @@ export default function ContactPageContent({ site }: { site?: SiteContent | null
   const subtitle =
     section?.subtitle?.trim() ||
     "Your dream space begins with a simple conversation";
+
+  const cp = site?.contactPage;
+  const showroomsTitle = cp?.showroomsTitle?.trim() || "Visit a showroom";
+  const showroomsSubtitle =
+    cp?.showroomsSubtitle?.trim() ||
+    "Experience materials, layouts, and finishes in person at our locations.";
 
   return (
     <div className="bg-[#f7f3f2] pt-[72px] font-outfit">
@@ -40,7 +61,26 @@ export default function ContactPageContent({ site }: { site?: SiteContent | null
         </PagePanelReveal>
       </section>
 
-      <ContactOurLocationSection />
+      <ContactOurLocationSection site={site} />
+
+      {showrooms.length > 0 && (
+        <section className={`${COMPANY_SHELL} pb-16 pt-10 sm:pb-20 sm:pt-12 md:pb-24`}>
+          <PagePanelReveal>
+            <SectionHeadingReveal
+              title={showroomsTitle}
+              subtitle={showroomsSubtitle}
+              titleAs="h2"
+              compact
+              subtitleSentenceCase={false}
+              subtitleClassName={`${SECTION_SUBTITLE_CLASS} !mt-3 sm:!mt-4`}
+              className={`${SECTION_HEADING_WIDE} text-center`}
+            />
+            <div className="mt-10">
+              <Showrooms showrooms={showrooms} embedded />
+            </div>
+          </PagePanelReveal>
+        </section>
+      )}
     </div>
   );
 }

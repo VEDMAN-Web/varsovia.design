@@ -10,17 +10,19 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const site = await fetchSite(locale as Locale);
-  const tp = site.teamPage || {};
+  const qs = (site.qualitySale || {}) as Record<string, unknown>;
   return pageMetadata({
-    title: tp.metaTitle || "Our Team",
-    description:
-      tp.metaDescription || "Meet the designers, architects, and craftspeople behind Varsovia Design.",
-    path: `/${locale}/team`,
+    title: String(qs.metaTitle || "Quality After Sales"),
+    description: String(
+      qs.metaDescription ||
+        "Varsovia quality standards, support process, and after-sales care.",
+    ),
+    path: `/${locale}/quality-sale`,
     locale,
-    indexable: tp.indexable === true,
+    indexable: qs.indexable === true,
   });
 }
 
-export default function TeamLayout({ children }: { children: React.ReactNode }) {
+export default function QualitySaleLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

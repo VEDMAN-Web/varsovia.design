@@ -1,44 +1,8 @@
-/** Frontend mirror of backend IA page defaults (localized strings already resolved on public GET). */
-
-function L(en: string) {
-  return en;
-}
-
-function hero(titleEn: string) {
-  return {
-    eyebrow: "",
-    title: titleEn,
-    subtitle: "",
-    image: "",
-    ctaLabel: "Get a consultation",
-    ctaHref: "/contact",
-  };
-}
-
-function child(slug: string, titleEn: string, order = 0) {
-  return {
-    slug,
-    title: titleEn,
-    metaTitle: "",
-    metaDescription: "",
-    hero: hero(titleEn),
-    body: "",
-    indexable: false,
-    order,
-  };
-}
-
-function hub(slug: string, titleEn: string, children: ReturnType<typeof child>[] = []) {
-  return {
-    slug,
-    indexable: false,
-    metaTitle: "",
-    metaDescription: "",
-    hero: hero(titleEn),
-    body: "",
-    children,
-  };
-}
+/**
+ * Frontend mirror of backend IA seed (EN slice for fallbacks).
+ * Source of truth: Varsovia-Backend/src/data/iaPagesSeedContent.js
+ */
+import seedRaw from "./iaPagesSeed.json";
 
 export const IA_HUB_PATHS: Record<string, string> = {
   furniture: "/furniture",
@@ -51,54 +15,92 @@ export const IA_HUB_PATHS: Record<string, string> = {
   aboutBrand: "/about",
 };
 
-export const DEFAULT_IA_PAGES = {
-  furniture: hub("furniture", "Furniture", [
-    child("kitchens", "Kitchens", 0),
-    child("wardrobes", "Wardrobes", 1),
-    child("living-room", "Living Room", 2),
-    child("bedrooms", "Bedrooms", 3),
-    child("bathroom", "Bathroom", 4),
-    child("dining", "Dining", 5),
-    child("doors", "Doors", 6),
-    child("whole-house", "Whole House", 7),
-  ]),
-  interiorDesign: hub("interior-design", "Interior Design", []),
-  completeInteriors: hub("complete-interiors", "Complete Interiors", [
-    child("villas", "Villas", 0),
-    child("condos", "Condos", 1),
-    child("hotels-resorts", "Hotels & Resorts", 2),
-    child("developers", "Developers", 3),
-  ]),
-  services: hub("services", "Services", [
-    child("custom-furniture", "Custom Furniture", 0),
-    child("interior-design", "Interior Design", 1),
-    child("furniture-packages", "Furniture Packages", 2),
-    child("installation", "Installation", 3),
-    child("renovation", "Renovation", 4),
-  ]),
-  locations: hub("locations", "Locations", [
-    child("koh-samui", "Koh Samui", 0),
-    child("phuket", "Phuket", 1),
-    child("bangkok", "Bangkok", 2),
-    child("pattaya", "Pattaya", 3),
-    child("hua-hin", "Hua Hin", 4),
-    child("chiang-mai", "Chiang Mai", 5),
-  ]),
-  forDevelopers: hub("for-developers", "For Developers", []),
-  journal: hub("journal", "Journal", [
-    child("kitchens", "Kitchens", 0),
-    child("furniture", "Furniture", 1),
-    child("materials", "Materials", 2),
-    child("interior-design", "Interior Design", 3),
-    child("villa-guides", "Villa Guides", 4),
-    child("thailand-living", "Thailand Living", 5),
-  ]),
-  aboutBrand: hub("about", "About", [
-    child("varsovia", "Varsovia", 0),
-    child("livo", "Livo", 1),
-    child("oppolia", "Oppolia", 2),
-  ]),
-};
+function pickLoc(value: unknown, locale = "en"): string {
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    const obj = value as Record<string, string>;
+    return String(obj[locale] || obj.en || "").trim();
+  }
+  return "";
+}
 
-// silence unused in some bundlers
-void L;
+function localizeHero(raw: unknown, locale = "en") {
+  if (!raw || typeof raw !== "object") return undefined;
+  const h = raw as Record<string, unknown>;
+  return {
+    eyebrow: pickLoc(h.eyebrow, locale),
+    title: pickLoc(h.title, locale),
+    subtitle: pickLoc(h.subtitle, locale),
+    image: typeof h.image === "string" ? h.image : "",
+    ctaLabel: pickLoc(h.ctaLabel, locale),
+    ctaHref: typeof h.ctaHref === "string" ? h.ctaHref : "/contact",
+  };
+}
+
+function localizeSections(raw: unknown, locale = "en") {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((s) => s && typeof s === "object")
+    .map((s) => {
+      const sec = s as Record<string, unknown>;
+      return {
+        heading: pickLoc(sec.heading, locale),
+        text: pickLoc(sec.text, locale),
+        image: typeof sec.image === "string" ? sec.image : "",
+        imagePosition:
+          sec.imagePosition === "right" || sec.imagePosition === "left"
+            ? sec.imagePosition
+            : undefined,
+        layout:
+          typeof sec.layout === "string" && sec.layout.trim()
+            ? sec.layout
+            : undefined,
+      };
+    });
+}
+
+function localizeChild(raw: unknown, locale = "en") {
+  const c = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  return {
+    slug: typeof c.slug === "string" ? c.slug : "",
+    title: pickLoc(c.title, locale),
+    metaTitle: pickLoc(c.metaTitle, locale),
+    metaDescription: pickLoc(c.metaDescription, locale),
+    body: pickLoc(c.body, locale),
+    relatedTitle: pickLoc(c.relatedTitle, locale),
+    hero: localizeHero(c.hero, locale),
+    sections: localizeSections(c.sections, locale),
+    indexable: c.indexable === true,
+    order: typeof c.order === "number" ? c.order : 0,
+    locationSlugs: Array.isArray(c.locationSlugs)
+      ? c.locationSlugs.map((s) => String(s || "").trim()).filter(Boolean)
+      : undefined,
+  };
+}
+
+function localizeHub(raw: unknown, locale = "en") {
+  const h = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const children = Array.isArray(h.children)
+    ? h.children.map((c) => localizeChild(c, locale))
+    : [];
+  return {
+    slug: typeof h.slug === "string" ? h.slug : "",
+    indexable: h.indexable === true,
+    metaTitle: pickLoc(h.metaTitle, locale),
+    metaDescription: pickLoc(h.metaDescription, locale),
+    body: pickLoc(h.body, locale),
+    exploreTitle: pickLoc(h.exploreTitle, locale),
+    exploreSubtitle: pickLoc(h.exploreSubtitle, locale),
+    servicesTitle: pickLoc(h.servicesTitle, locale),
+    servicesSubtitle: pickLoc(h.servicesSubtitle, locale),
+    hero: localizeHero(h.hero, locale),
+    sections: localizeSections(h.sections, locale),
+    children,
+  };
+}
+
+const seed = seedRaw as Record<string, unknown>;
+
+export const DEFAULT_IA_PAGES = Object.fromEntries(
+  Object.keys(IA_HUB_PATHS).map((key) => [key, localizeHub(seed[key], "en")]),
+);

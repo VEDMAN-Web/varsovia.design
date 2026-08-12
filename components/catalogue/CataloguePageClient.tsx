@@ -37,12 +37,13 @@ import { catalogueCoverPhoto } from "@/components/catalogue/catalogueMedia";
 import { notebookBrochureTheme } from "@/components/catalogue/catalogueBrochureThemes";
 
 import { fetchCatalogues } from "@/lib/api";
+import { LISTING_PAGE_SIZE, paginateItems } from "@/lib/pagination";
 
 import type { Locale } from "@/lib/i18n/routing";
 
 import { fallbackHomeData } from "@/lib/fallbackData";
 
-import { LISTING_PAGE_SIZE, paginateItems } from "@/lib/pagination";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 
 
 
@@ -77,7 +78,8 @@ const FALLBACK_ITEMS: CatalogueItem[] = fallbackHomeData.catalogues.map((c) => (
 export default function CataloguePageClient() {
 
   const locale = useLocale();
-
+  const site = useSiteSettings();
+  const cataloguePage = site?.cataloguePage;
   const reducedMotion = useReducedMotion();
 
   const [items, setItems] = useState<CatalogueItem[]>(FALLBACK_ITEMS);
@@ -203,8 +205,8 @@ export default function CataloguePageClient() {
             <SectionHeadingReveal
               trigger="mount"
               titleAs="h1"
-              title="Free Catalogue"
-              subtitle="Explore Our Interior Design Catalogue"
+              title={cataloguePage?.heroTitle || "Free Catalogue"}
+              subtitle={cataloguePage?.heroSubtitle || "Explore Our Interior Design Catalogue"}
               subtitleSentenceCase
               className={`${SECTION_HEADING_WIDE} mb-8 sm:mb-10 md:mb-14`}
             />

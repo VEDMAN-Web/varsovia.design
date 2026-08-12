@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import FAQPageContent from "@/components/faq/FAQPageContent";
+import { fetchSite } from "@/lib/api";
+import type { Locale } from "@/lib/i18n/routing";
+import { pageMetadata } from "@/lib/seo";
 import { setRequestLocale } from "next-intl/server";
 
 type Props = {
@@ -9,14 +12,15 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const messages = (await import(`../../../messages/${locale}.json`)).default as {
-    faq: { heroTitle: string; heroSubtitle: string };
-  };
-
-  return {
-    title: `${messages.faq.heroTitle} | Varsovia Design`,
-    description: messages.faq.heroSubtitle,
-  };
+  const site = await fetchSite(locale as Locale);
+  const fp = site.faqPage || {};
+  return pageMetadata({
+    title: fp.metaTitle || "FAQ",
+    description: fp.metaDescription || fp.heroSubtitle || "Frequently asked questions",
+    path: `/${locale}/faq`,
+    locale,
+    indexable: fp.indexable === true,
+  });
 }
 
 export default async function FAQPage({ params }: Props) {

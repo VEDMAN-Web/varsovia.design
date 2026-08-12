@@ -1,6 +1,5 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { COMPANY_SHELL, SECTION_HEADING_WIDE } from "@/components/company/companyLayoutShared";
 import BrandLogo from "@/components/layout/BrandLogo";
 import PagePanelReveal from "@/components/ui/PagePanelReveal";
@@ -18,6 +17,7 @@ import {
   CONTACT_LOCATION_SECTION_PAD,
 } from "@/components/contact/contactLocationShared";
 import { CONTACT_MAP_EMBED_SRC } from "@/lib/contactLocation";
+import type { SiteContent } from "@/lib/siteTypes";
 
 function MapPinIcon() {
   return (
@@ -39,8 +39,19 @@ function MapPinIcon() {
   );
 }
 
-export default function ContactOurLocationSection() {
-  const t = useTranslations("contact");
+export default function ContactOurLocationSection({
+  site,
+}: {
+  site?: SiteContent | null;
+}) {
+  const cp = site?.contactPage;
+  const title = cp?.locationTitle?.trim() || "Our Location";
+  const subtitle =
+    cp?.locationSubtitle?.trim() ||
+    "Visit our showroom or reach us online — we are here to help";
+  const mapSrc = cp?.mapEmbedUrl?.trim() || CONTACT_MAP_EMBED_SRC;
+  const mapAria =
+    cp?.mapAriaLabel?.trim() || "Varsovia Design office location map";
 
   return (
     <section
@@ -48,8 +59,8 @@ export default function ContactOurLocationSection() {
     >
       <PagePanelReveal className={CONTACT_LOCATION_CARD}>
         <SectionHeadingReveal
-          title={t("ourLocationTitle")}
-          subtitle={t("ourLocationSubtitle")}
+          title={title}
+          subtitle={subtitle}
           titleAs="h2"
           compact
           subtitleSentenceCase={false}
@@ -61,8 +72,8 @@ export default function ContactOurLocationSection() {
           <div className={CONTACT_LOCATION_MAP_WRAP}>
             <div className={CONTACT_LOCATION_MAP_SHELL}>
               <iframe
-                title={t("mapAriaLabel")}
-                src={CONTACT_MAP_EMBED_SRC}
+                title={mapAria}
+                src={mapSrc}
                 className={CONTACT_LOCATION_MAP_FRAME}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"

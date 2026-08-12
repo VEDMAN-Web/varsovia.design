@@ -13,11 +13,15 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
+  const site = await fetchSite(locale as Locale);
+  const seo = site.aboutPageSettings;
   const m = getAppMessages(locale);
   return pageMetadata({
-    title: m.pageMeta.aboutTitle,
-    description: m.pageMeta.aboutDescription,
+    title: seo?.metaTitle || m.pageMeta.aboutTitle,
+    description: seo?.metaDescription || m.pageMeta.aboutDescription,
     path: `/${locale}/about`,
+    locale,
+    indexable: seo?.indexable === true,
   });
 }
 

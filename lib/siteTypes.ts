@@ -20,6 +20,46 @@ export type SiteSearchPage = {
 export type SiteSectionCopy = {
   title?: string;
   subtitle?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+};
+
+export type PageSeoBlock = {
+  indexable?: boolean;
+  metaTitle?: string;
+  metaDescription?: string;
+};
+
+export type LegalDocumentBlock = {
+  heading: string;
+  text: string;
+};
+
+export type LegalDocumentContent = {
+  title: string;
+  subtitle: string;
+  updated: string;
+  metaDescription?: string;
+  blocks: LegalDocumentBlock[];
+};
+
+export type FaqPageContent = PageSeoBlock & {
+  heroTitle?: string;
+  heroSubtitle?: string;
+};
+
+export type CataloguePageContent = PageSeoBlock & {
+  heroTitle?: string;
+  heroSubtitle?: string;
+};
+
+export type ContactPageContent = PageSeoBlock & {
+  locationTitle?: string;
+  locationSubtitle?: string;
+  mapEmbedUrl?: string;
+  mapAriaLabel?: string;
+  showroomsTitle?: string;
+  showroomsSubtitle?: string;
 };
 
 export type SiteNavItem = {
@@ -65,6 +105,9 @@ export type SiteContent = {
     toolsTitle?: string;
     toolsBody?: string;
     stats?: Stat[];
+    metaTitle?: string;
+    metaDescription?: string;
+    indexable?: boolean;
   };
   localeFlags?: LocaleFlags;
   stats?: Stat[];
@@ -109,6 +152,14 @@ export type SiteContent = {
   inquiryForm?: import("./inquiryFormTypes").InquiryFormConfig;
   /** Group A SEO IA hubs */
   pages?: Record<string, unknown>;
+  aboutPageSettings?: PageSeoBlock;
+  faqPage?: FaqPageContent;
+  cataloguePage?: CataloguePageContent;
+  contactPage?: ContactPageContent;
+  legalPages?: {
+    privacy?: LegalDocumentContent & PageSeoBlock;
+    terms?: LegalDocumentContent & PageSeoBlock;
+  };
 };
 
 export type ApiCoreStrength = {

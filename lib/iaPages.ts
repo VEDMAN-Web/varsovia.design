@@ -54,7 +54,63 @@ export type IaHubKey = keyof typeof DEFAULT_IA_PAGES;
 
 export { DEFAULT_IA_PAGES, IA_HUB_PATHS };
 
-/** Merge CMS pages over defaults so missing/empty children still resolve known slugs. */
+function str(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function mergeStr(saved: unknown, def: unknown): string {
+  return str(saved) || str(def);
+}
+
+function mergeHero(saved: IaHero | undefined, def: IaHero | undefined): IaHero | undefined {
+  const d = def || {};
+  const s = saved || {};
+  return {
+    ...d,
+    ...s,
+    eyebrow: mergeStr(s.eyebrow, d.eyebrow),
+    title: mergeStr(s.title, d.title),
+    subtitle: mergeStr(s.subtitle, d.subtitle),
+    image: mergeStr(s.image, d.image),
+    ctaLabel: mergeStr(s.ctaLabel, d.ctaLabel),
+    ctaHref: mergeStr(s.ctaHref, d.ctaHref) || "/contact",
+  };
+}
+
+function sectionHasContent(section: IaContentSection): boolean {
+  return Boolean(str(section.heading) || str(section.text) || str(section.image));
+}
+
+function mergeSections(
+  saved: IaContentSection[] | undefined,
+  def: IaContentSection[] | undefined,
+): IaContentSection[] {
+  if (!saved?.length) return def || [];
+  if (!saved.some(sectionHasContent)) return def || [];
+  return saved;
+}
+
+function mergeChild(defChild: IaChildPage, savedChild: IaChildPage | undefined): IaChildPage {
+  const s: Partial<IaChildPage> = savedChild ?? {};
+  return {
+    ...defChild,
+    ...s,
+    slug: defChild.slug,
+    title: mergeStr(s.title, defChild.title),
+    metaTitle: mergeStr(s.metaTitle, defChild.metaTitle),
+    metaDescription: mergeStr(s.metaDescription, defChild.metaDescription),
+    body: mergeStr(s.body, defChild.body),
+    relatedTitle: mergeStr(s.relatedTitle, defChild.relatedTitle),
+    hero: mergeHero(s.hero, defChild.hero),
+    sections: mergeSections(s.sections, defChild.sections),
+    indexable: s.indexable === true,
+    order: s.order ?? defChild.order ?? 0,
+    locationSlugs:
+      s.locationSlugs && s.locationSlugs.length ? s.locationSlugs : defChild.locationSlugs,
+  };
+}
+
+/** Merge CMS pages over defaults; empty saved strings do not wipe seed copy. */
 export function getIaPages(site: { pages?: unknown } | null | undefined): Record<string, IaHubPage> {
   const raw =
     site?.pages && typeof site.pages === "object"
@@ -74,17 +130,9 @@ export function getIaPages(site: { pages?: unknown } | null | undefined): Record
         .filter((c) => c && typeof c.slug === "string" && c.slug)
         .map((c) => [c.slug, c]),
     );
-    const children = (def.children || []).map((defChild) => {
-      const s = bySlug.get(defChild.slug);
-      if (!s) return defChild;
-      return {
-        ...defChild,
-        ...s,
-        slug: defChild.slug,
-        hero: { ...(defChild.hero || {}), ...(s.hero || {}) },
-        sections: Array.isArray(s.sections) ? s.sections : defChild.sections || [],
-      };
-    });
+    const children = (def.children || []).map((defChild) =>
+      mergeChild(defChild, bySlug.get(defChild.slug)),
+    );
     for (const s of savedChildren) {
       if (s?.slug && !children.some((c) => c.slug === s.slug)) children.push(s);
     }
@@ -92,7 +140,16 @@ export function getIaPages(site: { pages?: unknown } | null | undefined): Record
       ...def,
       ...saved,
       slug: def.slug,
-      hero: { ...(def.hero || {}), ...(saved.hero || {}) },
+      metaTitle: mergeStr(saved.metaTitle, def.metaTitle),
+      metaDescription: mergeStr(saved.metaDescription, def.metaDescription),
+      body: mergeStr(saved.body, def.body),
+      exploreTitle: mergeStr(saved.exploreTitle, def.exploreTitle),
+      exploreSubtitle: mergeStr(saved.exploreSubtitle, def.exploreSubtitle),
+      servicesTitle: mergeStr(saved.servicesTitle, def.servicesTitle),
+      servicesSubtitle: mergeStr(saved.servicesSubtitle, def.servicesSubtitle),
+      hero: mergeHero(saved.hero, def.hero),
+      sections: mergeSections(saved.sections, def.sections),
+      indexable: saved.indexable === true,
       children,
     };
   }
@@ -123,7 +180,7 @@ export function childPath(hubKey: IaHubKey, slug: string): string {
   return `${hubPath(hubKey)}/${slug}`;
 }
 
-export function str(value: unknown, fallback = ""): string {
+export function strField(value: unknown, fallback = ""): string {
   if (typeof value === "string") return value;
   if (value && typeof value === "object" && "en" in (value as object)) {
     return String((value as { en?: string }).en || fallback);

@@ -1,5 +1,5 @@
 import { resolveMediaUrl, resolveMediaUrls, MEDIA } from "./mediaAssets";
-import { getLocaleOrDefault } from "./i18n/messageCatalog";
+import { getAppMessages, getLocaleOrDefault } from "./i18n/messageCatalog";
 import { hasLocalizedMap, pickLocalized, pickSiteCopy } from "./i18n/pickLocalized";
 import type { Locale } from "./i18n/routing";
 import type { ApiProject, HomeData, SiteBlock, SiteContent } from "./siteTypes";
@@ -11,12 +11,21 @@ import {
   unwrapApiList,
 } from "./apiEnvelope";
 import { getPublicApiUrl } from "./publicEnv";
+import pageCmsDefaults from "./pageCmsDefaults.json";
 
 export type { ApiProject, SiteContent, HomeData };
 
 export const API_URL = getPublicApiUrl();
 
 const LIST_PAGE_SIZE = 100;
+
+/** CMS site payload — fresh in dev; short ISR window in production. */
+function siteFetchInit(): RequestInit {
+  if (process.env.NODE_ENV !== "production") {
+    return { cache: "no-store" };
+  }
+  return { next: { revalidate: 15 } };
+}
 
 async function parseApiResponse(res: Response) {
   const body = await res.json().catch(() => ({}));
@@ -181,19 +190,38 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
         : fb.footerOffices,
     sectionCopy: (() => {
       const src =
-        (data.sectionCopy as Record<string, { title?: unknown; subtitle?: unknown }> | undefined) ||
+        (data.sectionCopy as Record<string, { title?: unknown; subtitle?: unknown; ctaLabel?: unknown; ctaHref?: unknown }> | undefined) ||
         {};
-      const fbCopy = (fb.sectionCopy || {}) as Record<
-        string,
-        { title?: string; subtitle?: string }
-      >;
       const loc = getLocaleOrDefault(locale);
+      const home = getAppMessages(loc).home as Record<string, string>;
+      const msgCopy: Record<string, { title?: string; subtitle?: string; ctaLabel?: string; ctaHref?: string }> = {
+        products: {
+          title: home.productsTitle,
+          subtitle: home.productsSubtitle,
+          ctaLabel: home.exploreMore || home.exploreInteriors,
+          ctaHref: "/interior-design",
+        },
+        featured: {
+          title: home.featuredTitle,
+          subtitle: home.featuredSubtitle,
+          ctaLabel: home.exploreMore,
+          ctaHref: "/projects",
+        },
+        partners: { title: home.partnersTitle, subtitle: home.partnersSubtitle },
+        coreStrengths: { title: home.strengthsTitle, subtitle: home.strengthsSubtitle },
+        catalogue: { title: home.catalogueTitle, subtitle: home.catalogueSubtitle },
+        testimonials: { title: home.testimonialsTitle, subtitle: home.testimonialsSubtitle },
+        contact: { title: home.contactTitle, subtitle: home.contactSubtitle },
+      };
+      const fbCopy = { ...msgCopy, ...((fb.sectionCopy || {}) as typeof msgCopy) };
       const keys = new Set([...Object.keys(src), ...Object.keys(fbCopy)]);
       const out: NonNullable<SiteContent["sectionCopy"]> = {};
       for (const key of keys) {
         out[key] = {
           title: pickSiteCopy(src[key]?.title, loc, fbCopy[key]?.title ?? ""),
           subtitle: pickSiteCopy(src[key]?.subtitle, loc, fbCopy[key]?.subtitle ?? ""),
+          ctaLabel: pickSiteCopy(src[key]?.ctaLabel, loc, fbCopy[key]?.ctaLabel ?? ""),
+          ctaHref: String(pickString(src[key]?.ctaHref, fbCopy[key]?.ctaHref) || ""),
         };
       }
       return out;
@@ -211,6 +239,8 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
       const loc = getLocaleOrDefault(locale);
       const out: Record<string, unknown> = { ...fbQs, ...src };
       const textKeys = [
+        "metaTitle",
+        "metaDescription",
         "heroTitle",
         "heroSubtitle",
         "heroBody",
@@ -246,6 +276,7 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
       for (const key of textKeys) {
         out[key] = pickSiteCopy(src[key], loc, String(fbQs[key] ?? ""));
       }
+      out.indexable = src.indexable === true;
       if (Array.isArray(src.faqItems) && src.faqItems.length > 0) {
         out.faqItems = (src.faqItems as Array<Record<string, unknown>>).map((row) => ({
           ...row,
@@ -332,6 +363,9 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
         architectBody: pick("architectBody", fbTp.architectBody ?? ""),
         toolsTitle: pick("toolsTitle", fbTp.toolsTitle ?? ""),
         toolsBody: pick("toolsBody", fbTp.toolsBody ?? ""),
+        metaTitle: pick("metaTitle", fbTp.metaTitle ?? ""),
+        metaDescription: pick("metaDescription", fbTp.metaDescription ?? ""),
+        indexable: tp.indexable === true,
         stats:
           Array.isArray(tp.stats) && tp.stats.length > 0
             ? (tp.stats as Array<Record<string, unknown>>).map((row, i) => ({
@@ -348,7 +382,174 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
     interiorCatalogMode: (data.interiorCatalogMode as SiteContent["interiorCatalogMode"]) || fb.interiorCatalogMode,
     inquiryForm: (data.inquiryForm as SiteContent["inquiryForm"]) || fb.inquiryForm,
     pages: (data.pages as SiteContent["pages"]) || fb.pages,
+    aboutPageSettings: mergePageSeoBlock(data.aboutPageSettings, {
+      metaTitle: (getAppMessages(getLocaleOrDefault(locale)).pageMeta as { aboutTitle?: string })
+        ?.aboutTitle,
+      metaDescription: (getAppMessages(getLocaleOrDefault(locale)).pageMeta as { aboutDescription?: string })
+        ?.aboutDescription,
+    }, locale),
+    faqPage: (() => {
+      const m = getAppMessages(getLocaleOrDefault(locale));
+      return mergeSimplePageBlock(
+        data.faqPage,
+        {
+          heroTitle: m.faq?.heroTitle,
+          heroSubtitle: m.faq?.heroSubtitle,
+          metaTitle: m.faq?.heroTitle,
+          metaDescription: m.faq?.heroSubtitle,
+        },
+        locale,
+        ["heroTitle", "heroSubtitle"],
+      );
+    })(),
+    cataloguePage: (() => {
+      const m = getAppMessages(getLocaleOrDefault(locale));
+      const cp = m.cataloguePage as { heroTitle?: string; heroSubtitle?: string } | undefined;
+      const pm = m.pageMeta as { catalogueTitle?: string; catalogueDescription?: string } | undefined;
+      return mergeSimplePageBlock(
+        data.cataloguePage,
+        {
+          heroTitle: cp?.heroTitle || pm?.catalogueTitle,
+          heroSubtitle: cp?.heroSubtitle || pm?.catalogueDescription,
+          metaTitle: pm?.catalogueTitle || cp?.heroTitle,
+          metaDescription: pm?.catalogueDescription || cp?.heroSubtitle,
+        },
+        locale,
+        ["heroTitle", "heroSubtitle"],
+      );
+    })(),
+    contactPage: (() => {
+      const m = getAppMessages(getLocaleOrDefault(locale));
+      const loc = getLocaleOrDefault(locale);
+      const contactFb = {
+        en: {
+          locationTitle: "Our Location",
+          locationSubtitle: "Visit our showroom or reach us online — we are here to help",
+          showroomsTitle: "Visit a showroom",
+          showroomsSubtitle: "Experience materials, layouts, and finishes in person at our locations.",
+          mapAriaLabel: "Varsovia Design office location map",
+        },
+        th: {
+          locationTitle: "ที่ตั้งของเรา",
+          locationSubtitle: "เยี่ยมชมโชว์รูมหรือติดต่อเราออนไลน์ — เรายินดีช่วยเหลือ",
+          showroomsTitle: "เยี่ยมชมโชว์รูม",
+          showroomsSubtitle: "สัมผัสวัสดุ เลย์เอาต์ และผิวงานด้วยตัวเองที่สาขาของเรา",
+          mapAriaLabel: "แผนที่สำนักงาน Varsovia Design",
+        },
+        pl: {
+          locationTitle: "Nasza lokalizacja",
+          locationSubtitle: "Odwiedź salon lub skontaktuj się online — jesteśmy tu, by pomóc",
+          showroomsTitle: "Odwiedź salon",
+          showroomsSubtitle: "Zobacz materiały, układy i wykończenia na żywo w naszych lokalizacjach.",
+          mapAriaLabel: "Mapa biura Varsovia Design",
+        },
+      }[loc];
+      const pm = m.pageMeta as { contactTitle?: string; contactDescription?: string } | undefined;
+      return mergeSimplePageBlock(
+        data.contactPage,
+        {
+          ...contactFb,
+          metaTitle: pm?.contactTitle || contactFb.locationTitle,
+          metaDescription: pm?.contactDescription || contactFb.locationSubtitle,
+          mapEmbedUrl:
+            ((pageCmsDefaults as Record<string, unknown>).contactPage as Record<string, unknown>)
+              ?.mapEmbedUrl || "",
+        },
+        locale,
+        [
+          "locationTitle",
+          "locationSubtitle",
+          "mapEmbedUrl",
+          "mapAriaLabel",
+          "showroomsTitle",
+          "showroomsSubtitle",
+        ],
+      );
+    })(),
+    legalPages: mergeLegalPages(data.legalPages, locale),
   };
+}
+
+function mergePageSeoBlock(
+  srcRaw: unknown,
+  fbRaw: unknown,
+  locale?: Locale,
+): SiteContent["aboutPageSettings"] {
+  const src = (srcRaw && typeof srcRaw === "object" ? srcRaw : {}) as Record<string, unknown>;
+  const fb = (fbRaw && typeof fbRaw === "object" ? fbRaw : {}) as Record<string, unknown>;
+  const loc = getLocaleOrDefault(locale);
+  return {
+    indexable: src.indexable === true,
+    metaTitle: pickSiteCopy(src.metaTitle, loc, String(fb.metaTitle ?? "")),
+    metaDescription: pickSiteCopy(src.metaDescription, loc, String(fb.metaDescription ?? "")),
+  };
+}
+
+function mergeSimplePageBlock(
+  srcRaw: unknown,
+  fbRaw: unknown,
+  locale: Locale | undefined,
+  extraKeys: string[],
+) {
+  const src = (srcRaw && typeof srcRaw === "object" ? srcRaw : {}) as Record<string, unknown>;
+  const fb = (fbRaw && typeof fbRaw === "object" ? fbRaw : {}) as Record<string, unknown>;
+  const loc = getLocaleOrDefault(locale);
+  const out: Record<string, unknown> = {
+    indexable: src.indexable === true,
+    metaTitle: pickSiteCopy(src.metaTitle, loc, String(fb.metaTitle ?? "")),
+    metaDescription: pickSiteCopy(src.metaDescription, loc, String(fb.metaDescription ?? "")),
+  };
+  for (const key of extraKeys) {
+    out[key] =
+      key === "mapEmbedUrl"
+        ? String(pickString(src[key], fb[key]) || "")
+        : pickSiteCopy(src[key], loc, String(fb[key] ?? ""));
+  }
+  return out;
+}
+
+function mergeLegalPages(raw: unknown, locale?: Locale) {
+  const src = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const loc = getLocaleOrDefault(locale);
+  const msgs = getAppMessages(loc).legal as Record<
+    string,
+    {
+      title?: string;
+      subtitle?: string;
+      metaDescription?: string;
+      updated?: string;
+      blocks?: Array<{ heading?: string; text?: string }>;
+    }
+  >;
+  const mergeDoc = (key: "privacy" | "terms") => {
+    const s = (src[key] && typeof src[key] === "object" ? src[key] : {}) as Record<string, unknown>;
+    const d = msgs[key] || {};
+    const blocksSrc = Array.isArray(s.blocks) ? (s.blocks as Array<Record<string, unknown>>) : [];
+    const blocksFb = Array.isArray(d.blocks) ? d.blocks : [];
+    const first = blocksSrc[0];
+    const cmsEnglishOnly =
+      loc !== "en" &&
+      first &&
+      pickSiteCopy(first.heading, loc, "") === pickSiteCopy(first.heading, "en", "") &&
+      Boolean(pickSiteCopy(first.heading, "en", ""));
+    const blocks =
+      blocksSrc.length > 0 && !cmsEnglishOnly
+        ? blocksSrc.map((row, i) => ({
+            heading: pickSiteCopy(row.heading, loc, blocksFb[i]?.heading || ""),
+            text: pickSiteCopy(row.text, loc, blocksFb[i]?.text || ""),
+          }))
+        : blocksFb.map((b) => ({ heading: b.heading || "", text: b.text || "" }));
+    return {
+      indexable: s.indexable === true,
+      metaTitle: pickSiteCopy(s.metaTitle, loc, d.title || ""),
+      metaDescription: pickSiteCopy(s.metaDescription, loc, d.metaDescription || ""),
+      title: pickSiteCopy(s.title, loc, d.title || ""),
+      subtitle: pickSiteCopy(s.subtitle, loc, d.subtitle || ""),
+      updated: pickSiteCopy(s.updated, loc, d.updated || ""),
+      blocks,
+    };
+  };
+  return { privacy: mergeDoc("privacy"), terms: mergeDoc("terms") };
 }
 
 function normalizeTestimonials(items: unknown[], locale?: Locale) {
@@ -370,7 +571,7 @@ export async function fetchSite(locale?: Locale): Promise<SiteContent> {
   try {
     const res = await fetch(withLocale(`${API_URL}/site`, locale), {
       headers: localeHeaders(locale),
-      next: { revalidate: 60 },
+      ...siteFetchInit(),
     });
     if (!res.ok) throw new Error("Failed to fetch site");
     const body = await res.json();
@@ -378,8 +579,7 @@ export async function fetchSite(locale?: Locale): Promise<SiteContent> {
     if (!data) throw new Error("Empty");
     return await mergeSiteFallback(data, locale);
   } catch {
-    const { getLocalizedSiteFallback } = await import("./i18n/localizedFallback");
-    return getLocalizedSiteFallback(locale);
+    return mergeSiteFallback({}, locale);
   }
 }
 
@@ -684,6 +884,28 @@ export async function fetchCatalogues(locale?: Locale): Promise<Record<string, u
     const { fallbackHomeData } = await import("./fallbackData");
     return fallbackHomeData.catalogues as Record<string, unknown>[];
   }
+}
+
+export async function fetchShowrooms(locale?: Locale) {
+  try {
+    const rows = await fetchAllListItems("/showrooms", locale, { next: { revalidate: 30 } });
+    if (rows.length > 0) {
+      return rows.map((row, index) => {
+        const item = row as Record<string, unknown>;
+        return {
+          _id: String(item._id ?? index),
+          name: pickLocalized(item.name, getLocaleOrDefault(locale)) || String(item.name ?? ""),
+          location:
+            pickLocalized(item.location, getLocaleOrDefault(locale)) || String(item.location ?? ""),
+          image: resolveMediaUrl(item.image as string | undefined, MEDIA.showrooms[index % 3]),
+        };
+      });
+    }
+  } catch {
+    /* fall through */
+  }
+  const { fallbackHomeData } = await import("./fallbackData");
+  return fallbackHomeData.showrooms;
 }
 
 export async function fetchShowcases(locale?: Locale) {

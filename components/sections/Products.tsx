@@ -128,12 +128,12 @@ export default function Products({ products }: ProductsProps) {
         >
           <motion.div variants={ctaVariant}>
             <MagneticButton
-              href="/products"
+              href={section?.ctaHref || "/interior-design"}
               variant="ghost"
               className="!rounded-md !border-transparent !bg-[#5c3d42] !px-8 !py-3 !text-sm !font-medium !normal-case !tracking-normal !text-white hover:!border-transparent hover:!bg-[#4a2f34] hover:!text-white"
               fullWidthMobile={false}
             >
-              {t("exploreMore")}
+              {section?.ctaLabel || t("exploreMore")}
             </MagneticButton>
           </motion.div>
         </motion.div>

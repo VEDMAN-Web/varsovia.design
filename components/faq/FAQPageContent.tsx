@@ -6,7 +6,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import CompanyHero from "@/components/company/CompanyHero";
 import FadeInView from "@/components/company/FadeInView";
-import { COMPANY_PAGE_BG, COMPANY_SHELL } from "@/components/company/companyLayoutShared";
+import { COMPANY_PAGE_BG, COMPANY_SHELL, SECTION_SUBTITLE_CLASS } from "@/components/company/companyLayoutShared";
 import {
   ACCORDION_EASE,
   FaqAccordionAccent,
@@ -32,7 +32,7 @@ import {
 const FAQ_COLUMN_TITLE =
   "font-outfit text-[clamp(1.0625rem,1.8vw,1.5rem)] font-semibold leading-[1.3] text-[#6a414d] md:leading-[32px]";
 
-import { SECTION_SUBTITLE_CLASS } from "@/components/ui/SectionHeading";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 
 /** Figma FAQ hero */
 const FAQ_HERO_TITLE =
@@ -243,6 +243,8 @@ export default function FAQPageContent() {
   const locale = useLocale();
   const t = useTranslations("faq");
   const tCommon = useTranslations("common");
+  const site = useSiteSettings();
+  const faqPage = site?.faqPage;
   const topicLabels = useMemo(
     (): Record<FaqTopic, string> => ({
       "Kitchen Interior": t("topicKitchen"),
@@ -285,8 +287,8 @@ export default function FAQPageContent() {
   return (
     <div className={COMPANY_PAGE_BG}>
       <CompanyHero
-        title={t("heroTitle")}
-        subtitle={t("heroSubtitle")}
+        title={faqPage?.heroTitle || t("heroTitle")}
+        subtitle={faqPage?.heroSubtitle || t("heroSubtitle")}
         subtitleSentenceCase={false}
         titleClassName={FAQ_HERO_TITLE}
         subtitleClassName={FAQ_HERO_SUBTITLE}

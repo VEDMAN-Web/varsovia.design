@@ -31,16 +31,51 @@ const CORE_STATIC: {
   path: string;
   priority: number;
   freq: MetadataRoute.Sitemap[0]["changeFrequency"];
-}[] = [
-  { path: "", priority: 1, freq: "weekly" },
-  { path: "/contact", priority: 0.8, freq: "weekly" },
-  { path: "/faq", priority: 0.8, freq: "weekly" },
-  { path: "/catalogue", priority: 0.8, freq: "weekly" },
-  { path: "/team", priority: 0.8, freq: "weekly" },
-  { path: "/quality-sale", priority: 0.8, freq: "weekly" },
-  { path: "/privacy", priority: 0.3, freq: "yearly" },
-  { path: "/terms", priority: 0.3, freq: "yearly" },
-];
+}[] = [{ path: "", priority: 1, freq: "weekly" }];
+
+type IndexablePage = {
+  path: string;
+  indexable?: boolean;
+  priority: number;
+  freq: MetadataRoute.Sitemap[0]["changeFrequency"];
+};
+
+function indexableRoutes(site: Awaited<ReturnType<typeof fetchSite>> | null): IndexablePage[] {
+  return [
+    { path: "/contact", indexable: site?.contactPage?.indexable, priority: 0.8, freq: "weekly" },
+    { path: "/faq", indexable: site?.faqPage?.indexable, priority: 0.8, freq: "weekly" },
+    {
+      path: "/catalogue",
+      indexable: site?.cataloguePage?.indexable,
+      priority: 0.8,
+      freq: "weekly",
+    },
+    {
+      path: "/team",
+      indexable: (site?.teamPage as { indexable?: boolean } | undefined)?.indexable,
+      priority: 0.8,
+      freq: "weekly",
+    },
+    {
+      path: "/quality-sale",
+      indexable: (site?.qualitySale as { indexable?: boolean } | undefined)?.indexable,
+      priority: 0.8,
+      freq: "weekly",
+    },
+    {
+      path: "/privacy",
+      indexable: site?.legalPages?.privacy?.indexable,
+      priority: 0.3,
+      freq: "yearly",
+    },
+    {
+      path: "/terms",
+      indexable: site?.legalPages?.terms?.indexable,
+      priority: 0.3,
+      freq: "yearly",
+    },
+  ];
+}
 
 export async function buildSitemapBucket(
   bucket: SitemapBucket,
@@ -53,6 +88,11 @@ export async function buildSitemapBucket(
     const routes: MetadataRoute.Sitemap = CORE_STATIC.flatMap(({ path, priority, freq }) =>
       localeEntries(base, path, priority, freq),
     );
+    for (const page of indexableRoutes(site)) {
+      if (page.indexable === true) {
+        routes.push(...localeEntries(base, page.path, page.priority, page.freq));
+      }
+    }
     if (site?.projectsPage?.indexable === true) {
       routes.push(...localeEntries(base, "/projects", 0.8, "weekly"));
     }

@@ -22,7 +22,7 @@
     "qualityAfterSales": "Obsługa posprzedażowa",
     "contact": "Kontakt",
     "getInTouch": "Skontaktuj się",
-    "faq": "FAQ",
+    "faq": "Najczęstsze pytania",
     "freeConsultation": "Bezpłatna konsultacja",
     "searchPlaceholder": "Szukaj...",
     "searchAria": "Szukaj",
@@ -248,7 +248,7 @@
     "toolsBody": "Professional design tools are adopted to assist for perfect art effect, including CAXA, CAD, 3D MAX, KD MAX, etc."
   },
   "faq": {
-    "heroTitle": "FAQ",
+    "heroTitle": "Najczęściej zadawane pytania",
     "heroSubtitle": "Jasne odpowiedzi, które pomogą Ci podjąć świadome decyzje projektowe",
     "topicKitchen": "Wnętrze kuchni",
     "topicBedroom": "Wnętrze sypialni",

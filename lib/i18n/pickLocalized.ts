@@ -23,15 +23,29 @@ export function hasLocalizedMap(value: unknown, locale: Locale): boolean {
 
 /**
  * Prefer locale message fallbacks for th/pl when CMS sends a plain (English) string
- * without { en, th, pl } maps.
+ * without { en, th, pl } maps — or a fake map where th/pl were copied from en.
  */
 export function pickSiteCopy(value: unknown, locale: Locale, localizedFallback: string): string {
+  const fallback = (localizedFallback || "").trim();
   if (hasLocalizedMap(value, locale)) {
-    return pickLocalized(value, locale);
+    const picked = pickLocalized(value, locale);
+    if (
+      locale !== "en" &&
+      fallback &&
+      fallback !== picked &&
+      value &&
+      typeof value === "object" &&
+      !Array.isArray(value)
+    ) {
+      const enVal = pickLocalized(value, "en");
+      // Seed often copied English into th/pl — treat that as untranslated.
+      if (picked && enVal && picked === enVal) return fallback;
+    }
+    return picked;
   }
   if (locale !== "en" && typeof value === "string" && value.trim()) {
-    return localizedFallback;
+    return fallback || value.trim();
   }
   const picked = pickLocalized(value, locale);
-  return picked || localizedFallback;
+  return picked || fallback;
 }
