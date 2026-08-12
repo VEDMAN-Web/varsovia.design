@@ -97,8 +97,18 @@ export type SiteContent = {
     subtitle?: string;
     order?: number;
   }>;
+  /** /projects listing SEO + hero (Group A CMS block) */
+  projectsPage?: {
+    metaTitle?: string;
+    metaDescription?: string;
+    heroTitle?: string;
+    heroSubtitle?: string;
+    indexable?: boolean;
+  };
   interiorCatalogMode?: "hybrid" | "api";
   inquiryForm?: import("./inquiryFormTypes").InquiryFormConfig;
+  /** Group A SEO IA hubs */
+  pages?: Record<string, unknown>;
 };
 
 export type ApiCoreStrength = {

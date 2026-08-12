@@ -23,7 +23,7 @@ export function parseShowcaseTabFromHref(href: string): ShowcaseTab | null {
     const qIndex = pathAndQuery.indexOf("?");
     const path = qIndex >= 0 ? pathAndQuery.slice(0, qIndex) : pathAndQuery;
     const normalizedPath = path.replace(/\/$/, "") || "/";
-    if (normalizedPath.endsWith("/showcase")) {
+    if (normalizedPath.endsWith("/showcase") || normalizedPath.endsWith("/projects")) {
       if (qIndex < 0) return "Home case" as ShowcaseTab;
       const params = new URLSearchParams(pathAndQuery.slice(qIndex + 1));
       const tabParam = params.get("tab");

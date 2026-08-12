@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import ContactFormPanel from "@/components/forms/ContactFormPanel";
 import ContactOurLocationSection from "@/components/contact/ContactOurLocationSection";
 import CompanyHero from "@/components/company/CompanyHero";
@@ -8,30 +7,25 @@ import PagePanelReveal from "@/components/ui/PagePanelReveal";
 import { SECTION_SUBTITLE_CLASS } from "@/components/ui/SectionHeading";
 import { COMPANY_SHELL } from "@/components/company/companyLayoutShared";
 import { fallbackHomeData } from "@/lib/fallbackData";
+import type { SiteContent } from "@/lib/siteTypes";
 
 const FALLBACK_IMAGES = fallbackHomeData.site.contactImages;
 
-export default function ContactPageContent() {
-  const [images, setImages] = useState<string[]>(FALLBACK_IMAGES);
-
-  useEffect(() => {
-    import("@/lib/api").then(({ fetchSite }) => {
-      fetchSite()
-        .then((site) => {
-          const imgs = site?.contactImages;
-          if (Array.isArray(imgs) && imgs.length > 0) {
-            setImages(imgs);
-          }
-        })
-        .catch(() => {/* keep fallback */});
-    });
-  }, []);
+export default function ContactPageContent({ site }: { site?: SiteContent | null }) {
+  const imgs = site?.contactImages;
+  const images =
+    Array.isArray(imgs) && imgs.length > 0 ? imgs : FALLBACK_IMAGES;
+  const section = site?.sectionCopy?.contact;
+  const title = section?.title?.trim() || "Get In touch";
+  const subtitle =
+    section?.subtitle?.trim() ||
+    "Your dream space begins with a simple conversation";
 
   return (
     <div className="bg-[#f7f3f2] pt-[72px] font-outfit">
       <CompanyHero
-        title="Get In touch"
-        subtitle="Your dream space begins with a simple conversation"
+        title={title}
+        subtitle={subtitle}
         subtitleSentenceCase={false}
         compact
         sectionClassName="!pb-0"

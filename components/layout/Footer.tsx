@@ -18,6 +18,7 @@ import type { SiteContent } from "@/lib/siteTypes";
 import { FOOTER_CONTACT, telHref } from "@/lib/footerContact";
 import { getFooterNavigationForUi } from "@/lib/footerNavigation";
 import type { FooterLinkColumn, FooterNavLink } from "@/lib/footerNavigationTypes";
+import { trackWhatsAppClick } from "@/lib/analytics";
 
 type FooterProps = {
   bio?: string;
@@ -230,6 +231,7 @@ export default function Footer({ bio, site }: FooterProps) {
                 rel="noopener noreferrer"
                 aria-label={socialLabels.whatsapp ?? t("whatsapp")}
                 className={`group ${SOCIAL_LINK}`}
+                onClick={() => trackWhatsAppClick("footer")}
               >
                 <IconWhatsApp className={SOCIAL_ICON} />
               </a>

@@ -29,7 +29,7 @@ export default function InteriorCategoryTabs({
       params.set("category", category);
     }
     const query = params.toString();
-    router.replace(query ? `/interior?${query}` : "/interior", { scroll: false });
+    router.replace(query ? `/interior-design?${query}` : "/interior-design", { scroll: false });
   }
 
   return (

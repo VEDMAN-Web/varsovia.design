@@ -65,7 +65,7 @@ export function interiorDetailSlug(project: InteriorLinkSource): string {
 }
 
 export function interiorDetailPath(project: InteriorLinkSource): string {
-  return `/interior/${interiorDetailSlug(project)}`;
+  return `/interior-design/${interiorDetailSlug(project)}`;
 }
 
 /** Prefer CMS seed numeric ids (live DB), then mock catalog ids 9–24. */

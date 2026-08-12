@@ -20,7 +20,7 @@ export default function ShowcaseProjectCard({ project, index = 0 }: ShowcaseProj
       title={project.title}
       image={project.image}
       imageFallback={FALLBACK}
-      href={`/showcase/${project.id}`}
+      href={`/projects/${project.id}`}
     />
   );
 }

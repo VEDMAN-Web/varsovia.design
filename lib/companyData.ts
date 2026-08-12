@@ -753,6 +753,54 @@ function resolveAuthorName(name: unknown, fallback: string): string {
   return fallback;
 }
 
+/** Map admin CMS `{ heading, text, image }` blocks → site BlogSection layout types. */
+function mapCmsBlogSections(raw: unknown, locale: Locale): BlogSection[] {
+  if (!Array.isArray(raw) || raw.length === 0) return [];
+  const out: BlogSection[] = [];
+
+  for (const entry of raw) {
+    if (!entry || typeof entry !== "object") continue;
+    const row = entry as Record<string, unknown>;
+    const heading =
+      pickLocalized(row.heading, locale) ||
+      (typeof row.heading === "string" ? row.heading : "") ||
+      "";
+    const text =
+      pickLocalized(row.text, locale) ||
+      (typeof row.text === "string" ? row.text : "") ||
+      "";
+    const image = typeof row.image === "string" ? row.image.trim() : "";
+
+    if (image && text) {
+      out.push({
+        type: "split-left",
+        text,
+        image,
+        imageAlt: heading || "Blog image",
+        caption: heading || undefined,
+      });
+      continue;
+    }
+    if (image) {
+      out.push({
+        type: "image",
+        image,
+        imageAlt: heading || "Blog image",
+        caption: heading || undefined,
+      });
+      continue;
+    }
+    if (heading) {
+      out.push({ type: "subheading", text: heading });
+    }
+    if (text) {
+      out.push({ type: "paragraph", text });
+    }
+  }
+
+  return out;
+}
+
 export function normalizeBlog(
   raw: Partial<BlogPost> & { id?: string },
   locale?: Locale,
@@ -800,6 +848,12 @@ export function normalizeBlog(
     localePack?.category ||
     fallback?.category ||
     "Design";
+
+  const cmsSections = mapCmsBlogSections(
+    (raw as { sections?: unknown }).sections,
+    loc,
+  );
+
   return {
     _id: id,
     title,
@@ -815,10 +869,12 @@ export function normalizeBlog(
     },
     views: raw.views ?? fallback?.views ?? 0,
     sections:
-      fallback?.sections ||
-      (bodyText
-        ? [{ type: "paragraph", text: bodyText }]
-        : [{ type: "paragraph", text: raw.excerpt || title }]),
+      cmsSections.length > 0
+        ? cmsSections
+        : fallback?.sections ||
+          (bodyText
+            ? [{ type: "paragraph", text: bodyText }]
+            : [{ type: "paragraph", text: raw.excerpt || title }]),
   };
 }
 
@@ -848,8 +904,13 @@ export function resolveBlogs(apiData: unknown[], locale?: Locale): BlogPost[] {
 }
 
 function isRichBlogSections(sections: BlogSection[]): boolean {
+  if (sections.length > 1) return true;
   return sections.some(
-    (s) => s.type === "image" || s.type === "split-left" || s.type === "split-right",
+    (s) =>
+      s.type === "image" ||
+      s.type === "split-left" ||
+      s.type === "split-right" ||
+      s.type === "subheading",
   );
 }
 

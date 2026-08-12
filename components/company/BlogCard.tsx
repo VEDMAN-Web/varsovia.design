@@ -38,7 +38,7 @@ export default function BlogCard({ blog, index = 0 }: BlogCardProps) {
       onBlur={() => setHovered(false)}
     >
       <Link
-        href={`/blog/${blog._id}`}
+        href={`/journal/p/${blog._id}`}
         className={`flex h-full flex-col overflow-hidden ${BLOG_CARD_ROUNDED} transition-[border-color,box-shadow,transform] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cf5374] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7f3f2] ${
           hovered ? BLOG_CARD_HOVER : BLOG_CARD_IDLE
         }`}

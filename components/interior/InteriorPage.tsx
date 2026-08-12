@@ -176,13 +176,19 @@ export default function InteriorPage({ initialCategory = "All" }: Props) {
         .then((data: ApiProject[]) => {
           if (!cancelled) {
             setProjects(
-              buildInteriorCatalog(data ?? [], locale as Locale, catalogMode) as ApiProject[],
+              buildInteriorCatalog(data ?? [], locale as Locale, catalogMode, {
+                apiFailed: false,
+              }) as ApiProject[],
             );
           }
         })
         .catch(() => {
           if (!cancelled) {
-            setProjects(buildInteriorCatalog([], locale as Locale, catalogMode) as ApiProject[]);
+            setProjects(
+              buildInteriorCatalog([], locale as Locale, catalogMode, {
+                apiFailed: true,
+              }) as ApiProject[],
+            );
           }
         })
         .finally(() => {

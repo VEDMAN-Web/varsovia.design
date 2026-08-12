@@ -284,6 +284,22 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
       }
       return Array.from(byKey.values()).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     })(),
+    projectsPage: (() => {
+      const src = (data.projectsPage as Record<string, unknown> | undefined) || {};
+      const fbPp = (fb.projectsPage || {}) as NonNullable<SiteContent["projectsPage"]>;
+      const loc = getLocaleOrDefault(locale);
+      return {
+        indexable: src.indexable === true,
+        metaTitle: pickSiteCopy(src.metaTitle, loc, fbPp.metaTitle ?? "Projects"),
+        metaDescription: pickSiteCopy(
+          src.metaDescription,
+          loc,
+          fbPp.metaDescription ?? "",
+        ),
+        heroTitle: pickSiteCopy(src.heroTitle, loc, fbPp.heroTitle ?? ""),
+        heroSubtitle: pickSiteCopy(src.heroSubtitle, loc, fbPp.heroSubtitle ?? ""),
+      };
+    })(),
     designTools:
       Array.isArray(data.designTools) && data.designTools.length > 0
         ? (data.designTools as NonNullable<SiteContent["designTools"]>).map((tool, i) => {
@@ -331,6 +347,7 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
     },
     interiorCatalogMode: (data.interiorCatalogMode as SiteContent["interiorCatalogMode"]) || fb.interiorCatalogMode,
     inquiryForm: (data.inquiryForm as SiteContent["inquiryForm"]) || fb.inquiryForm,
+    pages: (data.pages as SiteContent["pages"]) || fb.pages,
   };
 }
 
@@ -677,6 +694,7 @@ export async function fetchShowcases(locale?: Locale) {
       _id: string;
       title: string;
       category: string;
+      furnitureSlug?: string;
       image: string;
       location: string;
       typeLabel: string;

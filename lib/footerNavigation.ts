@@ -19,7 +19,7 @@ export function buildFallbackFooterNavigation(t: FooterT, tNav: NavT, tCat: CatT
       {
         id: "primary",
         links: [
-          { label: t("blog"), href: "/blog" },
+          { label: t("blog"), href: "/journal" },
           { label: t("aboutUs"), href: "/about" },
           { label: t("contactUs"), href: "/contact" },
           { label: tNav("faq"), href: "/faq" },
@@ -29,12 +29,12 @@ export function buildFallbackFooterNavigation(t: FooterT, tNav: NavT, tCat: CatT
       {
         id: "products",
         links: [
-          { label: tCat("kitchen"), href: "/interior?category=Kitchen" },
-          { label: tCat("bedroom"), href: "/interior?category=Bedroom" },
-          { label: tCat("bathroom"), href: "/interior?category=Bathroom" },
-          { label: tCat("furniture"), href: "/interior?category=Furniture" },
-          { label: tCat("doorWindows"), href: "/interior?category=Door%20%26%20Windows" },
-          { label: tCat("wholeHouse"), href: "/interior?category=Whole%20House%20Solutions" },
+          { label: tCat("kitchen"), href: "/interior-design?category=Kitchen" },
+          { label: tCat("bedroom"), href: "/interior-design?category=Bedroom" },
+          { label: tCat("bathroom"), href: "/interior-design?category=Bathroom" },
+          { label: tCat("furniture"), href: "/furniture" },
+          { label: tCat("doorWindows"), href: "/interior-design?category=Door%20%26%20Windows" },
+          { label: tCat("wholeHouse"), href: "/interior-design?category=Whole%20House%20Solutions" },
         ],
       },
     ],

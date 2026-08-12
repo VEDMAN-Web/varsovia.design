@@ -7,6 +7,8 @@ import FooterWrapper from "@/components/layout/FooterWrapper";
 import { SiteSettingsProvider } from "@/components/providers/SiteSettingsProvider";
 import LocaleHtmlLang from "@/components/i18n/LocaleHtmlLang";
 import SiteIntroShell from "@/components/preloader/HomePageShell";
+import GoogleAnalytics from "@/components/seo/GoogleAnalytics";
+import OrganizationJsonLd from "@/components/seo/OrganizationJsonLd";
 import { fetchSite } from "@/lib/api";
 import { routing, type Locale } from "@/lib/i18n/routing";
 
@@ -48,10 +50,23 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   setRequestLocale(locale);
   const [messages, site] = await Promise.all([getMessages(), fetchSite(locale as Locale)]);
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const siteDescription =
+    typeof (messages as { metadata?: { siteDescription?: string } }).metadata
+      ?.siteDescription === "string"
+      ? (messages as { metadata: { siteDescription: string } }).metadata.siteDescription
+      : undefined;
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       <LocaleHtmlLang locale={locale} />
+      <GoogleAnalytics measurementId={gaId} />
+      <OrganizationJsonLd
+        description={siteDescription}
+        email={site?.email}
+        telephone={site?.phone || site?.contactPhone}
+        logo={site?.brandLogoLockup || site?.brandLogoMark}
+      />
       <SmoothScroll>
         <SiteSettingsProvider site={site}>
           <SiteIntroShell heroImage={site?.heroImage}>

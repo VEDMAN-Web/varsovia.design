@@ -68,6 +68,14 @@ export function buildLocalizedSiteFallback(locale?: string): SiteContent {
       support3Image: D.qualitySupportImages[2],
       support4Image: D.qualitySupportImages[3],
     },
+    projectsPage: {
+      indexable: false,
+      metaTitle: "Projects",
+      metaDescription:
+        "Explore Varsovia Design projects across kitchens, bedrooms, and whole-home interiors.",
+      heroTitle: "Our Projects",
+      heroSubtitle: "Every space, every story",
+    },
     contactImages: [...MEDIA.contact],
     footerBio: s.footerBio,
     phone: "+66 64 683 9777",

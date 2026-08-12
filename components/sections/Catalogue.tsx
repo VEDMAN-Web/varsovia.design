@@ -22,6 +22,7 @@ import {
 import { fallbackHomeData } from "@/lib/fallbackData";
 import { fadeUpItem, reducedFadeUpItem, VIEWPORT_ONCE } from "@/lib/motionPresets";
 import { MEDIA } from "@/lib/mediaAssets";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 
 const FALLBACK_CATALOGUES = [
   { id: "1", image: MEDIA.catalogues[0], title: "Classic Collection 2026", downloadUrl: "" },
@@ -68,6 +69,8 @@ function catalogueImage(item: CatalogueItem, index: number) {
 
 export default function Catalogue({ catalogues, contactImages = fallbackHomeData.site.contactImages }: CatalogueProps) {
   const t = useTranslations("home");
+  const site = useSiteSettings();
+  const section = site?.sectionCopy?.catalogue;
   const raw: CatalogueItem[] = catalogues && catalogues.length > 0 ? catalogues : FALLBACK_CATALOGUES;
   const CATALOGUES = raw.map((c, index) => {
     const theme = brochureThemeForIndex(index, c.title);
@@ -247,8 +250,8 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
         <div className={CATALOGUE_SECTION_SHELL}>
           <div className={CATALOGUE_CONTENT_WIDTH}>
             <SectionHeadingReveal
-              title={t("catalogueTitle")}
-              subtitle={t("catalogueSubtitle")}
+              title={section?.title || t("catalogueTitle")}
+              subtitle={section?.subtitle || t("catalogueSubtitle")}
               className={SECTION_HEADING_WIDE}
             />
 

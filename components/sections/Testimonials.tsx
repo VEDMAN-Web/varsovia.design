@@ -9,6 +9,7 @@ import SectionHeading from "@/components/ui/SectionHeading";
 import SectionShell, { SECTION_HEADING_WIDE, SITE_SECTION_PADDING_Y } from "@/components/ui/SectionShell";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 import type { ApiTestimonial } from "@/lib/siteTypes";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 
 type Testimonial = ApiTestimonial;
 
@@ -182,6 +183,8 @@ function getCurve(offset: number, gap: number) {
 
 export default function Testimonials({ testimonials }: { testimonials: Testimonial[] }) {
   const t = useTranslations("home");
+  const site = useSiteSettings();
+  const section = site?.sectionCopy?.testimonials;
   const stories = useMemo(() => buildStories(testimonials), [testimonials]);
   const length = stories.length;
   const [active, setActive] = useState(0);
@@ -266,8 +269,8 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
       {/* Heading */}
       <div className="text-center">
         <SectionHeading
-          title={t("testimonialsTitle")}
-          subtitle={t("testimonialsSubtitle")}
+          title={section?.title || t("testimonialsTitle")}
+          subtitle={section?.subtitle || t("testimonialsSubtitle")}
           className={SECTION_HEADING_WIDE}
         />
       </div>

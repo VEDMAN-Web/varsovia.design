@@ -29,7 +29,7 @@ export default function ShowcaseFilterTabs({
       params.set("tab", tab);
     }
     const query = params.toString();
-    router.replace(query ? `/showcase?${query}` : "/showcase", { scroll: false });
+    router.replace(query ? `/projects?${query}` : "/projects", { scroll: false });
   }
 
   return (

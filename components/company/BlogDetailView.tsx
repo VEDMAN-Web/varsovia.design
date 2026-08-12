@@ -65,7 +65,7 @@ export default function BlogDetailView({ blog, related }: Props) {
             >
               <div className={`${BLOG_DETAIL_CARD_PAD} !pb-4 sm:!pb-5`}>
                 <Link
-                  href="/blog"
+                  href="/journal"
                   className="inline-flex items-center gap-2 font-outfit text-[14px] font-medium text-[#6a414d] transition-colors hover:text-[#1f1f1f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6a414d]/40 focus-visible:ring-offset-2"
                 >
                   <ArrowLeft size={16} strokeWidth={2} aria-hidden />

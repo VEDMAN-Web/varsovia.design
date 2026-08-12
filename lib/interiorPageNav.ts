@@ -28,7 +28,12 @@ export function parseInteriorCategoryFromHref(href: string): InteriorCategory | 
     const qIndex = pathAndQuery.indexOf("?");
     const path = qIndex >= 0 ? pathAndQuery.slice(0, qIndex) : pathAndQuery;
     const normalizedPath = path.replace(/\/$/, "") || "/";
-    if (!normalizedPath.endsWith("/interior")) return null;
+    if (
+      !normalizedPath.endsWith("/interior") &&
+      !normalizedPath.endsWith("/interior-design")
+    ) {
+      return null;
+    }
     if (qIndex < 0) return "All" as InteriorCategory;
     const params = new URLSearchParams(pathAndQuery.slice(qIndex + 1));
     const categoryParam = params.get("category");

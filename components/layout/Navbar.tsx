@@ -33,6 +33,7 @@ import {
   resolveMainNavigation,
 } from "@/lib/mainNavigation";
 import type { ResolvedNavItem } from "@/lib/mainNavigationTypes";
+import { trackCtaClick } from "@/lib/analytics";
 
 type SearchPage = {
   title: string;
@@ -70,12 +71,12 @@ function NavChevron({ className = "", size = 16 }: { className?: string; size?: 
 }
 
 const navLinkClass = (active: boolean) =>
-  `font-outfit flex shrink-0 items-center gap-[10px] whitespace-nowrap text-[18px] font-medium leading-[23px] transition-colors ${
+  `font-outfit flex shrink-0 items-center gap-1 whitespace-nowrap text-[15px] font-medium leading-5 transition-colors 2xl:gap-1.5 2xl:text-[17px] 2xl:leading-[23px] ${
     active ? "text-maroon" : "text-[#2b2b2b] hover:text-maroon"
   }`;
 
 const headerBtnBase =
-  "inline-flex h-[50px] items-center justify-center rounded-[6px] font-outfit text-[18px] font-normal leading-[23px] transition duration-200";
+  "inline-flex h-11 items-center justify-center rounded-[6px] font-outfit text-[15px] font-normal leading-5 transition duration-200 2xl:h-[50px] 2xl:text-[18px] 2xl:leading-[23px]";
 
 function useSearchablePages(): SearchPage[] {
   const t = useTranslations("search");
@@ -94,16 +95,16 @@ function useSearchablePages(): SearchPage[] {
     }
     return [
       { title: t("homeTitle"), href: "/", description: t("homeDesc") },
-      { title: t("interiorTitle"), href: "/interior", description: t("interiorDesc") },
-      { title: t("kitchenInteriorTitle"), href: "/interior?category=Kitchen", description: t("kitchenInteriorDesc") },
-      { title: t("bedroomInteriorTitle"), href: "/interior?category=Bedroom", description: t("bedroomInteriorDesc") },
+      { title: t("interiorTitle"), href: "/interior-design", description: t("interiorDesc") },
+      { title: t("kitchenInteriorTitle"), href: "/interior-design?category=Kitchen", description: t("kitchenInteriorDesc") },
+      { title: t("bedroomInteriorTitle"), href: "/interior-design?category=Bedroom", description: t("bedroomInteriorDesc") },
       { title: t("aboutTitle"), href: "/about", description: t("aboutDesc") },
       { title: t("teamTitle"), href: "/team", description: t("teamDesc") },
-      { title: t("blogTitle"), href: "/blog", description: t("blogDesc") },
+      { title: t("blogTitle"), href: "/journal", description: t("blogDesc") },
       { title: t("catalogueTitle"), href: "/catalogue", description: t("catalogueDesc") },
       { title: t("contactTitle"), href: "/contact", description: t("contactDesc") },
       { title: t("faqTitle"), href: "/faq", description: t("faqDesc") },
-      { title: t("showcaseTitle"), href: "/showcase", description: t("showcaseDesc") },
+      { title: t("showcaseTitle"), href: "/projects", description: t("showcaseDesc") },
       { title: t("qualityTitle"), href: "/quality-sale", description: t("qualityDesc") },
     ];
   }, [site?.searchPages, t]);
@@ -324,8 +325,15 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
 
   function isActive(item: ResolvedNavItem) {
     if (item.href === "/") return pathname === "/";
-    if (item.href.startsWith("/interior")) return pathname.startsWith("/interior");
-    return false;
+    const base = item.href.split("?")[0] || item.href;
+    if (base === "/projects" || base.startsWith("/showcase")) {
+      return pathname.startsWith("/projects") || pathname.startsWith("/showcase");
+    }
+    if (base.startsWith("/interior")) return pathname.startsWith("/interior");
+    if (base === "/about/varsovia" || base === "/about") {
+      return pathname.startsWith("/about");
+    }
+    return pathname === base || pathname.startsWith(`${base}/`);
   }
 
   const headerSolid = scrolled || openMenu !== null || langOpen || mobileOpen;
@@ -350,8 +358,8 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
         <NavbarLogo />
 
         <ul
-          className={`ml-[71px] hidden min-w-0 shrink items-center transition-[gap] duration-300 xl:flex ${
-            searchExpanded ? "gap-3" : "gap-5"
+          className={`ml-[clamp(0.75rem,2vw,2.5rem)] hidden min-w-0 items-center transition-[gap] duration-300 xl:flex ${
+            searchExpanded ? "gap-2" : "gap-2.5 2xl:gap-4"
           }`}
         >
           {navItems.map((item) => {
@@ -427,9 +435,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
           })}
         </ul>
 
-        <div className="min-w-0 flex-1" aria-hidden="true" />
-
-        <div className="flex shrink-0 items-center gap-5">
+        <div className="ml-auto flex shrink-0 items-center justify-end gap-2 sm:gap-3 2xl:gap-4">
           <div
             ref={searchWrapRef}
             className="relative hidden sm:block"
@@ -561,7 +567,8 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
 
           <Link
             href="/contact"
-            className={`${headerBtnBase} hidden w-[181px] bg-[#6a414d] px-5 text-white hover:bg-[#5a3540] sm:inline-flex`}
+            className={`${headerBtnBase} hidden w-[150px] bg-[#6a414d] px-4 text-white hover:bg-[#5a3540] sm:inline-flex 2xl:w-[181px] 2xl:px-5`}
+            onClick={() => trackCtaClick("free_consultation", "navbar_desktop")}
           >
             {t("freeConsultation")}
           </Link>
@@ -709,7 +716,10 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
           <Link
             href="/contact"
             className="mt-4 flex w-full items-center justify-center rounded-md bg-maroon py-3 text-sm font-medium text-white"
-            onClick={closeMobileMenu}
+            onClick={() => {
+              trackCtaClick("free_consultation", "navbar_mobile");
+              closeMobileMenu();
+            }}
           >
             {t("freeConsultation")}
           </Link>

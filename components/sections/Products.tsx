@@ -36,8 +36,8 @@ type ProductsProps = {
 
 function interiorListingHref(category?: string) {
   const c = category?.trim();
-  if (!c) return "/interior";
-  return `/interior?category=${encodeURIComponent(c)}`;
+  if (!c) return "/interior-design";
+  return `/interior-design?category=${encodeURIComponent(c)}`;
 }
 
 const FALLBACK_PRODUCTS: Product[] = [
@@ -128,7 +128,7 @@ export default function Products({ products }: ProductsProps) {
         >
           <motion.div variants={ctaVariant}>
             <MagneticButton
-              href="/interior"
+              href="/products"
               variant="ghost"
               className="!rounded-md !border-transparent !bg-[#5c3d42] !px-8 !py-3 !text-sm !font-medium !normal-case !tracking-normal !text-white hover:!border-transparent hover:!bg-[#4a2f34] hover:!text-white"
               fullWidthMobile={false}
@@ -141,3 +141,4 @@ export default function Products({ products }: ProductsProps) {
     </section>
   );
 }
+

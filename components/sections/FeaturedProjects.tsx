@@ -203,7 +203,7 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
         >
           <motion.div variants={ctaVariant}>
             <MagneticButton
-              href="/interior"
+              href="/projects"
               variant="ghost"
               className="!rounded-md !border-transparent !bg-[#5c3d42] !px-6 !py-2.5 !text-sm !font-medium !normal-case !tracking-normal !text-white hover:!border-transparent hover:!bg-[#4a2f34] hover:!text-white sm:!px-8 sm:!py-3"
               fullWidthMobile={false}
@@ -216,3 +216,4 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
     </section>
   );
 }
+

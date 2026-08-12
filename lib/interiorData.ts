@@ -978,11 +978,12 @@ function isInteriorCatalogItem(item: Record<string, unknown>) {
   );
 }
 
-/** Interior listing: prefer API/admin projects; mock catalog only when API returns none. */
+/** Interior listing: prefer API/admin projects; mocks only when the API request fails. */
 export function buildInteriorCatalog(
   apiProjects: Record<string, unknown>[] = [],
   locale?: Locale,
   mode: "hybrid" | "api" = "hybrid",
+  options: { apiFailed?: boolean } = {},
 ) {
   const mockNormalized = INTERIOR_ITEMS.map((item, index) =>
     normalizeInteriorProject({ ...item, _id: item.id }, index, locale, { source: "mock" }),
@@ -1000,7 +1001,13 @@ export function buildInteriorCatalog(
     return [];
   }
 
-  return mockNormalized;
+  // hybrid + successful empty API response → show empty (deleted catalog stays empty)
+  // hybrid + API failure → keep mock fallback so the page still renders offline
+  if (options.apiFailed) {
+    return mockNormalized;
+  }
+
+  return [];
 }
 
 const INTERIOR_GALLERY_FALLBACKS = [...MEDIA.featured.slice(0, 5)];
@@ -1103,8 +1110,8 @@ export function getRelatedInteriorProjects(
 }
 
 export function getInteriorBackHref(category?: string) {
-  if (!category || category === "All") return "/interior";
-  return `/interior?category=${encodeURIComponent(category)}`;
+  if (!category || category === "All") return "/interior-design";
+  return `/interior-design?category=${encodeURIComponent(category)}`;
 }
 
 export function interiorStaticParams() {

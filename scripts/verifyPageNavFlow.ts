@@ -23,10 +23,18 @@ function assert(cond: boolean, msg: string) {
 
 // --- href parsers (match backend default mainNavigation hrefs) ---
 assert(parseShowcaseTabFromHref("/showcase") === "Home case", "showcase /showcase → Home case");
+assert(parseShowcaseTabFromHref("/projects") === "Home case", "projects /projects → Home case");
 assert(parseShowcaseTabFromHref("/showcase?tab=All") === "All", "showcase tab=All");
+assert(parseShowcaseTabFromHref("/projects?tab=All") === "All", "projects tab=All");
 assert(parseShowcaseTabFromHref("/showcase?tab=South%20America") === "South America", "showcase South America encoded");
+assert(parseShowcaseTabFromHref("/projects?tab=South%20America") === "South America", "projects South America encoded");
 assert(parseInteriorCategoryFromHref("/interior") === "All", "interior /interior → All");
+assert(parseInteriorCategoryFromHref("/interior-design") === "All", "interior-design → All");
 assert(parseInteriorCategoryFromHref("/interior?category=Kitchen") === "Kitchen", "interior Kitchen");
+assert(
+  parseInteriorCategoryFromHref("/interior-design?category=Kitchen") === "Kitchen",
+  "interior-design Kitchen",
+);
 assert(
   parseInteriorCategoryFromHref("/interior?category=Door%20%26%20Windows") === "Door & Windows",
   "interior Door & Windows encoded",
@@ -39,28 +47,28 @@ const mockSite: SiteContent = {
       {
         id: "interior",
         label: "Interior",
-        href: "/interior",
+        href: "/interior-design",
         menuKind: "dropdown",
         menu: {
-          featured: { label: "All Interiors", subtitle: "Browse every room type", href: "/interior" },
+          featured: { label: "All Interiors", subtitle: "Browse every room type", href: "/interior-design" },
           sectionLabel: "By room",
           links: [
-            { label: "Kitchen", subtitle: "Modular kitchens", href: "/interior?category=Kitchen" },
-            { label: "Bedroom", subtitle: "Restful retreats", href: "/interior?category=Bedroom" },
+            { label: "Kitchen", subtitle: "Modular kitchens", href: "/interior-design?category=Kitchen" },
+            { label: "Bedroom", subtitle: "Restful retreats", href: "/interior-design?category=Bedroom" },
           ],
         },
       },
       {
         id: "showcase",
         label: "Showcase",
-        href: "/showcase",
+        href: "/projects",
         menuKind: "showcaseMega",
         menu: {
-          featured: { label: "Our Showcase", subtitle: "Every space, every story", href: "/showcase?tab=All" },
+          featured: { label: "Our Showcase", subtitle: "Every space, every story", href: "/projects?tab=All" },
           sectionLabel: "By region",
           links: [
-            { title: "South America", subtitle: "Vibrant Spaces", href: "/showcase?tab=South%20America" },
-            { title: "Europe", subtitle: "Timeless Elegance", href: "/showcase?tab=Europe" },
+            { title: "South America", subtitle: "Vibrant Spaces", href: "/projects?tab=South%20America" },
+            { title: "Europe", subtitle: "Timeless Elegance", href: "/projects?tab=Europe" },
           ],
         },
       },

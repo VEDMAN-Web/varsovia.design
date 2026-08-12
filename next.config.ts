@@ -10,7 +10,7 @@ const withNextIntl = createNextIntlPlugin("./lib/i18n/request.ts");
 const legacyInteriorRedirects = locales.flatMap((locale) =>
   Object.entries(allLegacyInteriorNumericRedirects()).map(([id, slug]) => ({
     source: `/${locale}/interior/${id}`,
-    destination: `/${locale}/interior/${slug}`,
+    destination: `/${locale}/interior-design/${slug}`,
     permanent: true,
   })),
 );
@@ -18,21 +18,53 @@ const legacyInteriorRedirects = locales.flatMap((locale) =>
 const productPageRedirects = locales.flatMap((locale) => [
   {
     source: `/${locale}/products`,
-    destination: `/${locale}/interior`,
+    destination: `/${locale}/interior-design`,
     permanent: true,
   },
   {
     source: `/${locale}/product/:slug`,
-    destination: `/${locale}/interior`,
+    destination: `/${locale}/interior-design`,
+    permanent: true,
+  },
+]);
+
+const iaRedirects = locales.flatMap((locale) => [
+  {
+    source: `/${locale}/showcase`,
+    destination: `/${locale}/projects`,
+    permanent: true,
+  },
+  {
+    source: `/${locale}/showcase/:id`,
+    destination: `/${locale}/projects/:id`,
+    permanent: true,
+  },
+  {
+    source: `/${locale}/blog`,
+    destination: `/${locale}/journal`,
+    permanent: true,
+  },
+  {
+    source: `/${locale}/blog/:id`,
+    destination: `/${locale}/journal/p/:id`,
+    permanent: true,
+  },
+  {
+    source: `/${locale}/interior`,
+    destination: `/${locale}/interior-design`,
+    permanent: true,
+  },
+  {
+    source: `/${locale}/interior/:slug`,
+    destination: `/${locale}/interior-design/:slug`,
     permanent: true,
   },
 ]);
 
 const nextConfig: NextConfig = {
   async redirects() {
-    return [...legacyInteriorRedirects, ...productPageRedirects];
+    return [...iaRedirects, ...legacyInteriorRedirects, ...productPageRedirects];
   },
-  // Allow phones/tablets on the same Wi‑Fi to load the dev server (Next.js 16+ blocks LAN by default).
   allowedDevOrigins: ["192.168.1.33", "192.168.1.*", "10.0.0.*"],
   turbopack: {
     root: path.join(__dirname),

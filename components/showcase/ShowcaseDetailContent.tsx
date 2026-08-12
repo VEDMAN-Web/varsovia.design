@@ -24,8 +24,8 @@ export default function ShowcaseDetailContent({ project }: ShowcaseDetailContent
 
   const backHref =
     project.category === "Home case"
-      ? "/showcase"
-      : `/showcase?tab=${encodeURIComponent(project.category)}`;
+      ? "/projects"
+      : `/projects?tab=${encodeURIComponent(project.category)}`;
 
   return (
     <>

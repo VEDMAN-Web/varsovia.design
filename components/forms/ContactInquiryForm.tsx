@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChevronDown, Download } from "lucide-react";
+import { trackGenerateLead } from "@/lib/analytics";
 import { submitContact } from "@/lib/submitContactClient";
 import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import { groupInquiryFields, resolveInquiryForm } from "@/lib/inquiryForm";
@@ -133,6 +134,7 @@ export default function ContactInquiryForm({
       const res = await submitContact(payload);
       setStatus("success");
       setMessage(res.message || copy.successLead);
+      trackGenerateLead(purpose === "catalogue" ? "catalogue" : "contact");
       resetForm();
       onSubmitted?.();
     } catch (err) {
