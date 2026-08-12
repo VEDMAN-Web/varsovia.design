@@ -174,6 +174,8 @@ function localizeSiteContent(doc, locale) {
       copy[key] = {
         title: resolveLocalized(block.title, locale),
         subtitle: resolveLocalized(block.subtitle, locale),
+        ctaLabel: resolveLocalized(block.ctaLabel, locale),
+        ctaHref: typeof block.ctaHref === "string" ? block.ctaHref : "",
       };
     }
     out.sectionCopy = copy;
@@ -271,6 +273,60 @@ function localizeSiteContent(doc, locale) {
     pp.heroTitle = resolveLocalized(pp.heroTitle, locale);
     pp.heroSubtitle = resolveLocalized(pp.heroSubtitle, locale);
     out.projectsPage = pp;
+  }
+
+  function localizeSimplePageBlock(block) {
+    if (!block || typeof block !== "object") return block;
+    const b = { ...block };
+    for (const key of [
+      "metaTitle",
+      "metaDescription",
+      "heroTitle",
+      "heroSubtitle",
+      "locationTitle",
+      "locationSubtitle",
+      "mapAriaLabel",
+      "showroomsTitle",
+      "showroomsSubtitle",
+      "title",
+      "subtitle",
+      "updated",
+    ]) {
+      if (key in b) b[key] = resolveLocalized(b[key], locale);
+    }
+    if (Array.isArray(b.blocks)) {
+      b.blocks = b.blocks.map((row) => ({
+        ...row,
+        heading: resolveLocalized(row.heading, locale),
+        text: resolveLocalized(row.text, locale),
+      }));
+    }
+    return b;
+  }
+
+  if (out.aboutPageSettings) out.aboutPageSettings = localizeSimplePageBlock(out.aboutPageSettings);
+  if (out.faqPage) out.faqPage = localizeSimplePageBlock(out.faqPage);
+  if (out.cataloguePage) out.cataloguePage = localizeSimplePageBlock(out.cataloguePage);
+  if (out.contactPage) out.contactPage = localizeSimplePageBlock(out.contactPage);
+  if (out.legalPages && typeof out.legalPages === "object") {
+    out.legalPages = {
+      ...out.legalPages,
+      privacy: localizeSimplePageBlock(out.legalPages.privacy),
+      terms: localizeSimplePageBlock(out.legalPages.terms),
+    };
+  }
+
+  if (out.teamPage && typeof out.teamPage === "object") {
+    out.teamPage = {
+      ...out.teamPage,
+      metaTitle: resolveLocalized(out.teamPage.metaTitle, locale),
+      metaDescription: resolveLocalized(out.teamPage.metaDescription, locale),
+    };
+  }
+
+  if (out.qualitySale && typeof out.qualitySale === "object") {
+    out.qualitySale.metaTitle = resolveLocalized(out.qualitySale.metaTitle, locale);
+    out.qualitySale.metaDescription = resolveLocalized(out.qualitySale.metaDescription, locale);
   }
 
   const { localizeIaPages, mergeIaPages } = require("../data/iaPagesDefaults");

@@ -3,8 +3,8 @@
  * Contact values (email, phones, offices) remain on SiteContent root fields.
  */
 
-function loc(en, th = en, pl = en) {
-  return { en, th, pl };
+function loc(en, th = "", pl = "") {
+  return { en, th: th || "", pl: pl || "" };
 }
 
 function link(label, href) {

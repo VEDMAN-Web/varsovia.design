@@ -41,7 +41,17 @@ const EXPECTED_HOME = [
   "hero", "about", "stats", "featured", "catalogue", "products",
   "testimonials", "coreStrengths", "partners", "contact",
 ];
-const EXPECTED_STANDALONE = ["aboutPage", "teamPage", "qualitySale", "projectsPage"];
+const EXPECTED_STANDALONE = [
+  "aboutPage",
+  "teamPage",
+  "qualitySale",
+  "projectsPage",
+  "faqPage",
+  "cataloguePage",
+  "contactPage",
+  "privacyPage",
+  "termsPage",
+];
 const EXPECTED_IA = [
   "iaFurniture", "iaInteriorDesign", "iaCompleteInteriors", "iaServices",
   "iaLocations", "iaForDevelopers", "iaJournal", "iaAboutBrand",
@@ -66,7 +76,7 @@ check("Home sections order", JSON.stringify(homeIds) === JSON.stringify(EXPECTED
 check("Standalone pages order", JSON.stringify(standaloneIds) === JSON.stringify(EXPECTED_STANDALONE), standaloneIds.join(","));
 check("IA hubs order", JSON.stringify(iaIds) === JSON.stringify(EXPECTED_IA), iaIds.join(","));
 check("Chrome sections last", JSON.stringify(chromeIds) === JSON.stringify(EXPECTED_CHROME), chromeIds.join(","));
-check("Section count", allIds.length === 26, `got ${allIds.length}`);
+check("Section count", allIds.length === 31, `got ${allIds.length}`);
 check("No duplicate section ids", allIds.length === new Set(allIds).size);
 
 const aboutBlock = src.match(/id: "aboutPage"[\s\S]*?id: "teamPage"/)?.[0] || "";

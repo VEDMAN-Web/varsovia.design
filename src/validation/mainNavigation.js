@@ -5,8 +5,8 @@
 
 const MENU_KINDS = new Set(["none", "dropdown", "showcaseMega"]);
 
-function loc(en, th = en, pl = en) {
-  return { en, th, pl };
+function loc(en, th = "", pl = "") {
+  return { en, th: th || "", pl: pl || "" };
 }
 
 function dropdownLink(label, subtitle, href) {

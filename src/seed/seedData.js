@@ -1,5 +1,7 @@
 /** Canonical seed payloads aligned with Varsovia frontend fallbacks / public assets */
 
+const { PAGE_CMS_DEFAULTS } = require("../data/pageCmsDefaults");
+
 const L = {
   hero: "/home/home-front-page.png",
   about1: "/home/about-1.png",
@@ -118,6 +120,9 @@ function siteContentDoc() {
       { name: "3D MAX", image: "/team/design-tools/3dmax.svg", order: 3 },
     ],
     teamPage: {
+      indexable: false,
+      metaTitle: "Our Team | Varsovia Design",
+      metaDescription: "Meet the designers, architects, and craftspeople behind Varsovia Design.",
       heroTitle: "Our Team",
       heroSubtitle: "THE CREATIVE MINDS BEHIND EVERY BEAUTIFUL SPACE",
       intro:
@@ -165,7 +170,6 @@ function siteContentDoc() {
       },
     ],
     sectionCopy: {
-      products: { title: "Our Products", subtitle: "Interiors made for the way you actually live" },
       partners: {
         title: "Our Global Partners",
         subtitle: "Powered by trusted brands from around the world",
@@ -176,10 +180,16 @@ function siteContentDoc() {
       },
       catalogue: { title: "Free Catalogue", subtitle: "Inspiration for Your Dream Kitchen" },
       testimonials: { title: "Real Stories. Real Spaces.", subtitle: "Hear how we've transformed houses into dream homes" },
-      featured: { title: "Featured Projects", subtitle: "Designed to inspire. Built to last" },
+      featured: { title: "Featured Projects", subtitle: "Designed to inspire. Built to last", ctaLabel: "Explore More", ctaHref: "/projects" },
       contact: {
         title: "Get In touch",
         subtitle: "Your dream space begins with a simple conversation",
+      },
+      products: {
+        title: "Our Products",
+        subtitle: "Interiors made for the way you actually live",
+        ctaLabel: "Explore More",
+        ctaHref: "/interior-design",
       },
     },
     searchPages: [
@@ -203,6 +213,10 @@ function siteContentDoc() {
     mainNavigation: require("../validation/mainNavigation").DEFAULT_MAIN_NAVIGATION,
     footerNavigation: require("../validation/footerNavigation").DEFAULT_FOOTER_NAVIGATION,
     qualitySale: {
+      indexable: false,
+      metaTitle: "Quality & After-Sales | Varsovia Design",
+      metaDescription:
+        "Varsovia quality standards, support process, and after-sales care for kitchens and interiors.",
       heroTitle: "Quality & After-Sales Support",
       heroSubtitle: "Built to last — supported long after installation",
       heroBody:
@@ -220,6 +234,7 @@ function siteContentDoc() {
       support3Image: "/quality-sale/support-illustration-3.png",
       support4Image: "/quality-sale/support-illustration-4.png",
     },
+    ...PAGE_CMS_DEFAULTS,
   };
 }
 

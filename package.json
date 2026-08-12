@@ -16,7 +16,12 @@
     "seed": "node src/seed/seed.js",
     "seed:sync": "node scripts/run-seed-sync.js",
     "migrate:interior-detail": "node scripts/migrate-interior-detail.js",
-    "seed:site": "node scripts/sync-site-from-seed.js"
+    "seed:site": "node scripts/sync-site-from-seed.js",
+    "sync:locales": "node scripts/syncAllLocales.js",
+    "smoke": "node scripts/fullProductionSmokeTest.js",
+    "smoke:locale": "node scripts/localeSmokeTest.js",
+    "smoke:staging": "node scripts/stagingSmokeTest.js",
+    "audit:admin": "node scripts/auditAdminSequence.js"
   },
   "dependencies": {
     "cors": "^2.8.6",

@@ -117,6 +117,16 @@ const siteContentSchema = new mongoose.Schema(
     interiorCatalogMode: { type: String, enum: ["hybrid", "api"], default: "hybrid" },
     /** Group A SEO IA hubs + children (furniture, locations, journal, …) */
     pages: { type: mongoose.Schema.Types.Mixed, default: undefined },
+    /** /about SEO */
+    aboutPageSettings: { type: mongoose.Schema.Types.Mixed, default: undefined },
+    /** /faq page hero + SEO */
+    faqPage: { type: mongoose.Schema.Types.Mixed, default: undefined },
+    /** /catalogue standalone page hero + SEO */
+    cataloguePage: { type: mongoose.Schema.Types.Mixed, default: undefined },
+    /** /contact standalone page SEO + location + showrooms headings */
+    contactPage: { type: mongoose.Schema.Types.Mixed, default: undefined },
+    /** /privacy and /terms CMS documents */
+    legalPages: { type: mongoose.Schema.Types.Mixed, default: undefined },
   },
   { timestamps: true },
 );

@@ -45,6 +45,9 @@ const designToolSchema = z.object({
 
 const teamPageSchema = z
   .object({
+    indexable: z.boolean().optional(),
+    metaTitle: localizedString.optional(),
+    metaDescription: localizedString.optional(),
     heroTitle: localizedString.optional(),
     heroSubtitle: localizedString.optional(),
     intro: localizedString.optional(),
@@ -424,6 +427,8 @@ const siteUpdateSchema = z.object({
   sectionCopy:            z.record(z.string(), z.object({
     title: localizedString.optional(),
     subtitle: localizedString.optional(),
+    ctaLabel: localizedString.optional(),
+    ctaHref: z.string().max(500).trim().optional(),
   })).optional(),
   searchPages:            z.array(searchPageSchema).optional(),
   navMenus:               z.array(z.record(z.string(), z.unknown())).optional(),
@@ -435,6 +440,62 @@ const siteUpdateSchema = z.object({
     metaDescription: localizedString.optional(),
     heroTitle: localizedString.optional(),
     heroSubtitle: localizedString.optional(),
+  }).nullish(),
+  aboutPageSettings:      z.object({
+    indexable: z.boolean().optional(),
+    metaTitle: localizedString.optional(),
+    metaDescription: localizedString.optional(),
+  }).nullish(),
+  faqPage:                z.object({
+    indexable: z.boolean().optional(),
+    metaTitle: localizedString.optional(),
+    metaDescription: localizedString.optional(),
+    heroTitle: localizedString.optional(),
+    heroSubtitle: localizedString.optional(),
+  }).nullish(),
+  cataloguePage:          z.object({
+    indexable: z.boolean().optional(),
+    metaTitle: localizedString.optional(),
+    metaDescription: localizedString.optional(),
+    heroTitle: localizedString.optional(),
+    heroSubtitle: localizedString.optional(),
+  }).nullish(),
+  contactPage:            z.object({
+    indexable: z.boolean().optional(),
+    metaTitle: localizedString.optional(),
+    metaDescription: localizedString.optional(),
+    locationTitle: localizedString.optional(),
+    locationSubtitle: localizedString.optional(),
+    mapEmbedUrl: z.string().max(1000).trim().optional(),
+    mapAriaLabel: localizedString.optional(),
+    showroomsTitle: localizedString.optional(),
+    showroomsSubtitle: localizedString.optional(),
+  }).nullish(),
+  legalPages:             z.object({
+    privacy: z.object({
+      indexable: z.boolean().optional(),
+      metaTitle: localizedString.optional(),
+      metaDescription: localizedString.optional(),
+      title: localizedString.optional(),
+      subtitle: localizedString.optional(),
+      updated: localizedString.optional(),
+      blocks: z.array(z.object({
+        heading: localizedString.optional(),
+        text: localizedString.optional(),
+      })).optional(),
+    }).optional(),
+    terms: z.object({
+      indexable: z.boolean().optional(),
+      metaTitle: localizedString.optional(),
+      metaDescription: localizedString.optional(),
+      title: localizedString.optional(),
+      subtitle: localizedString.optional(),
+      updated: localizedString.optional(),
+      blocks: z.array(z.object({
+        heading: localizedString.optional(),
+        text: localizedString.optional(),
+      })).optional(),
+    }).optional(),
   }).nullish(),
   interiorCatalogMode:    z.enum(["hybrid", "api"]).optional(),
   inquiryForm:            inquiryFormSchema.optional(),
