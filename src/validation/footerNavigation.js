@@ -12,15 +12,17 @@ function link(label, href) {
 }
 
 const DEFAULT_FOOTER_NAVIGATION = {
-  version: 1,
+  version: 2,
   linkColumns: [
     {
       id: "primary",
       order: 1,
       enabled: true,
       links: [
-        link("Blog", "/blog"),
-        link("About Us", "/about"),
+        link("Journal", "/journal"),
+        link("About Us", "/about/varsovia"),
+        link("Locations", "/locations"),
+        link("Services", "/services"),
         link("Contact Us", "/contact"),
         link("FAQ", "/faq"),
         link("Catalogue", "/catalogue"),
@@ -31,12 +33,13 @@ const DEFAULT_FOOTER_NAVIGATION = {
       order: 2,
       enabled: true,
       links: [
-        link("Kitchen", "/interior?category=Kitchen"),
-        link("Bedroom", "/interior?category=Bedroom"),
-        link("Bathroom", "/interior?category=Bathroom"),
-        link("Furniture", "/interior?category=Furniture"),
-        link("Door & Windows", "/interior?category=Door%20%26%20Windows"),
-        link("Whole House Solutions", "/interior?category=Whole%20House%20Solutions"),
+        link("Furniture", "/furniture"),
+        link("Kitchen", "/interior-design?category=Kitchen"),
+        link("Bedroom", "/interior-design?category=Bedroom"),
+        link("Bathroom", "/interior-design?category=Bathroom"),
+        link("Door & Windows", "/interior-design?category=Door%20%26%20Windows"),
+        link("Whole House Solutions", "/interior-design?category=Whole%20House%20Solutions"),
+        link("Projects", "/projects"),
       ],
     },
   ],
@@ -54,6 +57,8 @@ const DEFAULT_FOOTER_NAVIGATION = {
   socialLabels: {
     whatsapp: loc("WhatsApp"),
     facebook: loc("Facebook"),
+    instagram: loc("Instagram"),
+    x: loc("X"),
   },
   copyright: loc("©{year} Varsovia Design"),
 };

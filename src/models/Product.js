@@ -9,6 +9,7 @@ const productSchema = new mongoose.Schema(
     image: { type: String, default: "" },
     category: { type: String, default: "Kitchen" },
     featured: { type: Boolean, default: false },
+    visible: { type: Boolean, default: true },
     order: { type: Number, default: 0 },
     gallery: [{ type: String }],
     fullDescription: localizedField(),

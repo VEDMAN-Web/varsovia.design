@@ -7,6 +7,7 @@ const faqSchema = new mongoose.Schema(
     answer: { ...localizedField(), required: true },
     category: localizedField("Kitchen Interior"),
     order: { type: Number, default: 0 },
+    visible: { type: Boolean, default: true },
   },
   { timestamps: true },
 );

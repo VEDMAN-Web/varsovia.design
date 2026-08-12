@@ -30,6 +30,7 @@ const projectSchema = new mongoose.Schema(
     price: { type: Number, default: 0 },
     isNew: { type: Boolean, default: false },
     order: { type: Number, default: 0 },
+    visible: { type: Boolean, default: true },
     detailTitle: localizedField(),
     detailDescription: localizedField(),
     narrativeOne: localizedField(),

@@ -264,6 +264,18 @@ function localizeSiteContent(doc, locale) {
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
 
+  if (out.projectsPage && typeof out.projectsPage === "object") {
+    const pp = { ...out.projectsPage };
+    pp.metaTitle = resolveLocalized(pp.metaTitle, locale);
+    pp.metaDescription = resolveLocalized(pp.metaDescription, locale);
+    pp.heroTitle = resolveLocalized(pp.heroTitle, locale);
+    pp.heroSubtitle = resolveLocalized(pp.heroSubtitle, locale);
+    out.projectsPage = pp;
+  }
+
+  const { localizeIaPages, mergeIaPages } = require("../data/iaPagesDefaults");
+  out.pages = localizeIaPages(mergeIaPages(out.pages), resolveLocalized, locale);
+
   return out;
 }
 
@@ -279,6 +291,13 @@ function localizeBlog(doc, locale) {
   if (!doc) return doc;
   const out = localizeDoc(doc, locale, ["title", "excerpt", "content", "readTime", "category"]);
   if (out.author) out.author = localizeAuthor(out.author, locale);
+  if (Array.isArray(out.sections)) {
+    out.sections = out.sections.map((section) => ({
+      ...section,
+      heading: resolveLocalized(section.heading, locale),
+      text: resolveLocalized(section.text, locale),
+    }));
+  }
   return out;
 }
 
@@ -286,7 +305,7 @@ const MODEL_FIELDS = {
   Product: ["title", "description", "fullDescription"],
   Project: ["title", "description", "location", "detailTitle", "detailDescription", "narrativeOne", "narrativeTwo"],
   Testimonial: ["name", "role", "quote"],
-  Catalogue: ["title"],
+  Catalogue: ["title", "category"],
   Showcase: ["title", "category", "location", "typeLabel", "typeValue", "supplyArea"],
   Showroom: ["name", "location", "address"],
   TeamMember: ["name", "role"],

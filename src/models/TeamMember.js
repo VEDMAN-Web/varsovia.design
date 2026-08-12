@@ -8,6 +8,7 @@ const teamMemberSchema = new mongoose.Schema(
     image: { type: String, default: "" },
     teamType: { type: String, enum: ["Italian", "Headquarter"], default: "Italian" },
     order: { type: Number, default: 0 },
+    visible: { type: Boolean, default: true },
   },
   { timestamps: true },
 );

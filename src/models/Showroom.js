@@ -8,6 +8,7 @@ const showroomSchema = new mongoose.Schema(
     image: { type: String, default: "" },
     address: localizedField(),
     order: { type: Number, default: 0 },
+    visible: { type: Boolean, default: true },
   },
   { timestamps: true },
 );

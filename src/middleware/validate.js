@@ -151,6 +151,7 @@ const productSchema = z.object({
   specs:       z.array(z.object({ label: localizedString.optional(), value: localizedString.optional() })).optional(),
   category:    z.string().max(100).trim().optional(),
   featured:    z.boolean().optional(),
+  visible:     z.boolean().optional(),
   order:       z.number().int().min(0).optional(),
 });
 
@@ -173,16 +174,24 @@ const projectSchema = z.object({
   price:           z.number().min(0).optional(),
   isNew:           z.boolean().optional(),
   order:           z.number().int().min(0).optional(),
+  visible:         z.boolean().optional(),
   detailTitle:     localizedString.optional(),
   detailDescription: localizedString.optional(),
   narrativeOne:    localizedString.optional(),
   narrativeTwo:    localizedString.optional(),
 });
 
+const blogSectionSchema = z.object({
+  heading: localizedString.optional(),
+  text:    localizedString.optional(),
+  image:   z.string().max(500).trim().optional(),
+});
+
 const blogSchema = z.object({
   title:    localizedRequired,
   excerpt:  localizedString.optional(),
   content:  localizedString.optional(),
+  category: localizedString.optional(),
   date:     z.string().optional(),
   readTime: localizedString.optional(),
   author:   z.object({
@@ -190,8 +199,10 @@ const blogSchema = z.object({
     avatar: z.string().max(500).trim().optional(),
   }).optional(),
   image:    z.string().max(500).trim().optional(),
+  sections: z.array(blogSectionSchema).optional(),
   views:    z.number().int().min(0).optional(),
   order:    z.number().int().min(0).optional(),
+  visible:  z.boolean().optional(),
 });
 
 const testimonialSchema = z.object({
@@ -201,6 +212,7 @@ const testimonialSchema = z.object({
   rating: z.number().int().min(1).max(5).optional(),
   image:  z.string().max(500).trim().optional(),
   order:  z.number().int().min(0).optional(),
+  visible: z.boolean().optional(),
 });
 
 const teamMemberSchema = z.object({
@@ -209,6 +221,7 @@ const teamMemberSchema = z.object({
   image:    z.string().max(500).trim().optional(),
   teamType: z.enum(["Italian", "Headquarter"]).optional(),
   order:    z.number().int().min(0).optional(),
+  visible:  z.boolean().optional(),
 });
 
 const faqSchema = z.object({
@@ -216,13 +229,18 @@ const faqSchema = z.object({
   answer:   localizedRequired,
   category: localizedString.optional(),
   order:    z.number().int().min(0).optional(),
+  visible:  z.boolean().optional(),
 });
 
 const catalogueSchema = z.object({
-  title:       localizedRequired,
-  coverImage:  z.string().max(500).trim().optional(),
-  downloadUrl: z.string().max(500).trim().optional(),
-  order:       z.number().int().min(0).optional(),
+  title:        localizedRequired,
+  category:     localizedString.optional(),
+  coverImage:   z.string().max(500).trim().optional(),
+  downloadUrl:  z.string().max(500).trim().optional(),
+  fileName:     z.string().max(200).trim().optional(),
+  downloadName: z.string().max(200).trim().optional(),
+  order:        z.number().int().min(0).optional(),
+  visible:      z.boolean().optional(),
 });
 
 const partnerSchema = z.object({
@@ -230,6 +248,7 @@ const partnerSchema = z.object({
   logo:    z.string().max(500).trim().optional(),
   website: z.string().max(500).trim().optional(),
   order:   z.number().int().min(0).optional(),
+  visible: z.boolean().optional(),
 });
 
 const showroomSchema = z.object({
@@ -238,6 +257,7 @@ const showroomSchema = z.object({
   image:    z.string().max(500).trim().optional(),
   address:  localizedString.optional(),
   order:    z.number().int().min(0).optional(),
+  visible:  z.boolean().optional(),
 });
 
 const coreStrengthSchema = z.object({
@@ -246,6 +266,7 @@ const coreStrengthSchema = z.object({
   image:       z.string().max(500).trim().optional(),
   iconKey:     z.enum(["eye", "ruler", "users", "box", "shield", "pen"]).optional(),
   order:       z.number().int().min(0).optional(),
+  visible:     z.boolean().optional(),
 });
 
 const footerOfficeSchema = z.object({
@@ -350,6 +371,8 @@ const footerNavigationSchema = z.object({
     .object({
       whatsapp: localizedString.optional(),
       facebook: localizedString.optional(),
+      instagram: localizedString.optional(),
+      x: localizedString.optional(),
     })
     .optional(),
   copyright: localizedString.optional(),
@@ -406,14 +429,28 @@ const siteUpdateSchema = z.object({
   navMenus:               z.array(z.record(z.string(), z.unknown())).optional(),
   qualitySale:            z.record(z.string(), z.unknown()).optional(),
   showcaseMeta:           z.array(showcaseMetaItemSchema).max(30).optional(),
+  projectsPage:           z.object({
+    indexable: z.boolean().optional(),
+    metaTitle: localizedString.optional(),
+    metaDescription: localizedString.optional(),
+    heroTitle: localizedString.optional(),
+    heroSubtitle: localizedString.optional(),
+  }).nullish(),
   interiorCatalogMode:    z.enum(["hybrid", "api"]).optional(),
   inquiryForm:            inquiryFormSchema.optional(),
   mainNavigation:         mainNavigationSchema.optional(),
   footerNavigation:       footerNavigationSchema.optional(),
+  pages:                  z.record(z.string(), z.unknown()).optional(),
 });
 const showcaseSchema = z.object({
   title:      localizedRequired,
   category:   localizedString.optional(),
+  furnitureSlug: z
+    .string()
+    .max(80)
+    .trim()
+    .optional()
+    .or(z.literal("")),
   image:      z.string().max(500).trim().optional(),
   location:   localizedString.optional(),
   typeLabel:  localizedString.optional(),
@@ -421,6 +458,7 @@ const showcaseSchema = z.object({
   supplyArea: localizedString.optional(),
   gallery:    z.array(z.string().max(500)).optional(),
   order:      z.number().int().min(0).optional(),
+  visible:    z.boolean().optional(),
 });
 
 const showcaseUpdateSchema = showcaseSchema.partial();

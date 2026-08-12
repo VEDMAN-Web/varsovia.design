@@ -10,6 +10,7 @@ const coreStrengthSchema = new mongoose.Schema(
     image: { type: String, default: "" },
     iconKey: { type: String, enum: ICON_KEYS, default: "eye" },
     order: { type: Number, default: 0 },
+    visible: { type: Boolean, default: true },
   },
   { timestamps: true },
 );

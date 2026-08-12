@@ -49,7 +49,11 @@ function parseLimit(raw) {
 }
 
 async function searchCollection(Model, filter, projection, limit) {
-  return Model.find(filter).select(projection).sort({ order: 1, createdAt: -1 }).limit(limit).lean();
+  const query = {
+    visible: { $ne: false },
+    ...(filter && typeof filter === "object" ? filter : {}),
+  };
+  return Model.find(query).select(projection).sort({ order: 1, createdAt: -1 }).limit(limit).lean();
 }
 
 async function searchSite(req, res) {

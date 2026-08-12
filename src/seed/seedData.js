@@ -177,6 +177,10 @@ function siteContentDoc() {
       catalogue: { title: "Free Catalogue", subtitle: "Inspiration for Your Dream Kitchen" },
       testimonials: { title: "Real Stories. Real Spaces.", subtitle: "Hear how we've transformed houses into dream homes" },
       featured: { title: "Featured Projects", subtitle: "Designed to inspire. Built to last" },
+      contact: {
+        title: "Get In touch",
+        subtitle: "Your dream space begins with a simple conversation",
+      },
     },
     searchPages: [
       { title: "Home", description: "Varsovia Design homepage", href: "/", order: 1 },

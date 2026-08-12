@@ -35,10 +35,14 @@ function adminAuth(req, res, next) {
 }
 
 /**
- * Public GETs stay open. Full multilingual CMS shape (?cms=1) requires ADMIN_KEY.
+ * Public GETs stay open. Full CMS shape when:
+ * - ?cms=1 is set, or
+ * - a valid x-admin-key is provided (so admin clients see hidden rows / multilingual docs).
  */
 function requireAdminIfCms(req, res, next) {
-  if (String(req.query?.cms || "") === "1") {
+  const wantsCms = String(req.query?.cms || "") === "1";
+  const hasKey = Boolean(req.headers["x-admin-key"]);
+  if (wantsCms || hasKey) {
     return adminAuth(req, res, next);
   }
   return next();

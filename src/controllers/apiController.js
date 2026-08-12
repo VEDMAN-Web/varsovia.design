@@ -38,17 +38,28 @@ const TeamMember = require("../models/TeamMember");
 const FAQ = require("../models/FAQ");
 const CoreStrength = require("../models/CoreStrength");
 
+/** Existing docs without `visible` stay public; only explicit false is hidden. */
+function visibilityFilter(req) {
+  return isAdminRequest(req) ? {} : { visible: { $ne: false } };
+}
+
+function isHiddenFromPublic(req, doc) {
+  if (isAdminRequest(req) || !doc) return false;
+  return doc.visible === false;
+}
+
 async function getHomeData(req, res) {
   try {
+    const vis = visibilityFilter(req);
     const [products, projects, testimonials, catalogues, partners, showrooms, coreStrengths, site] =
       await Promise.all([
-        Product.find().sort({ order: 1 }),
-        Project.find({ featured: true }).sort({ order: 1 }),
-        Testimonial.find().sort({ order: 1 }),
-        Catalogue.find().sort({ order: 1 }),
-        Partner.find().sort({ order: 1 }),
-        Showroom.find().sort({ order: 1 }),
-        CoreStrength.find().sort({ order: 1 }),
+        Product.find(vis).sort({ order: 1 }),
+        Project.find({ featured: true, ...vis }).sort({ order: 1 }),
+        Testimonial.find(vis).sort({ order: 1 }),
+        Catalogue.find(vis).sort({ order: 1 }),
+        Partner.find(vis).sort({ order: 1 }),
+        Showroom.find(vis).sort({ order: 1 }),
+        CoreStrength.find(vis).sort({ order: 1 }),
         SiteContent.findOne({ key: "main" }),
       ]);
 
@@ -132,9 +143,10 @@ function crud(Model, modelName) {
     list: async (req, res) => {
       try {
         const { page, limit, skip } = parsePagination(req.query);
+        const filter = visibilityFilter(req);
         const [items, total] = await Promise.all([
-          Model.find().sort({ order: 1, createdAt: -1 }).skip(skip).limit(limit),
-          Model.countDocuments(),
+          Model.find(filter).sort({ order: 1, createdAt: -1 }).skip(skip).limit(limit),
+          Model.countDocuments(filter),
         ]);
         const payload = isAdminRequest(req)
           ? items
@@ -154,10 +166,15 @@ function crud(Model, modelName) {
     },
     update: async (req, res) => {
       try {
-        const item = await Model.findByIdAndUpdate(req.params.id, req.body, {
-          new: true,
-          runValidators: true,
-        });
+        // Explicit $set so boolean false (e.g. visible:false) always persists
+        const item = await Model.findByIdAndUpdate(
+          req.params.id,
+          { $set: req.body },
+          {
+            new: true,
+            runValidators: true,
+          },
+        );
         if (!item) return sendError(res, 404, { message: "Not found" });
         return sendSuccess(res, item, { req });
       } catch (error) {
@@ -184,6 +201,9 @@ async function getProjectById(req, res) {
     const project =
       (await Project.findById(id).catch(() => null)) || (await Project.findOne({ slug: id }));
     if (!project) return sendError(res, 404, { message: "Project not found" });
+    if (isHiddenFromPublic(req, project)) {
+      return sendError(res, 404, { message: "Project not found" });
+    }
     const payload = isAdminRequest(req)
       ? project
       : localizeModelDoc("Project", project, getRequestLocale(req));
@@ -204,6 +224,9 @@ async function getProductBySlug(req, res) {
       (await Product.findOne({ slug }).catch(() => null)) ||
       (await Product.findById(slug).catch(() => null));
     if (!product) return sendError(res, 404, { message: "Product not found" });
+    if (isHiddenFromPublic(req, product)) {
+      return sendError(res, 404, { message: "Product not found" });
+    }
     const payload = isAdminRequest(req)
       ? product
       : localizeModelDoc("Product", product, getRequestLocale(req));
@@ -215,12 +238,14 @@ async function getProductBySlug(req, res) {
 
 async function getSite(req, res) {
   try {
+    const { mergeIaPages } = require("../data/iaPagesDefaults");
     const site = await SiteContent.findOne({ key: "main" });
     if (isAdminRequest(req)) {
       const payload = site ? (site.toObject ? site.toObject() : site) : { key: "main" };
       if (!payload.inquiryForm) payload.inquiryForm = DEFAULT_INQUIRY_FORM;
       if (!payload.mainNavigation) payload.mainNavigation = DEFAULT_MAIN_NAVIGATION;
       if (!payload.footerNavigation) payload.footerNavigation = DEFAULT_FOOTER_NAVIGATION;
+      payload.pages = mergeIaPages(payload.pages);
       return sendSuccess(res, payload, { req });
     }
 
@@ -272,6 +297,9 @@ async function getShowcaseById(req, res) {
     const { id } = req.params;
     const showcase = await Showcase.findById(id).catch(() => null);
     if (!showcase) return sendError(res, 404, { message: "Showcase not found" });
+    if (isHiddenFromPublic(req, showcase)) {
+      return sendError(res, 404, { message: "Showcase not found" });
+    }
     const payload = isAdminRequest(req)
       ? showcase
       : localizeModelDoc("Showcase", showcase, getRequestLocale(req));
@@ -285,6 +313,9 @@ async function getBlogById(req, res) {
   try {
     const blog = await Blog.findById(req.params.id).catch(() => null);
     if (blog) {
+      if (isHiddenFromPublic(req, blog)) {
+        return sendError(res, 404, { message: "Blog not found" });
+      }
       const payload = isAdminRequest(req)
         ? blog
         : localizeModelDoc("Blog", blog, getRequestLocale(req));
@@ -295,6 +326,9 @@ async function getBlogById(req, res) {
     if (!isNaN(parsed)) {
       const blogByOrder = await Blog.findOne({ order: parsed });
       if (blogByOrder) {
+        if (isHiddenFromPublic(req, blogByOrder)) {
+          return sendError(res, 404, { message: "Blog not found" });
+        }
         const payload = isAdminRequest(req)
           ? blogByOrder
           : localizeModelDoc("Blog", blogByOrder, getRequestLocale(req));

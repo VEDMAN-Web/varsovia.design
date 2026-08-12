@@ -107,12 +107,16 @@ const siteContentSchema = new mongoose.Schema(
     footerNavigation: { type: mongoose.Schema.Types.Mixed, default: undefined },
     /** Quality & after-sales page CMS payload */
     qualitySale: { type: mongoose.Schema.Types.Mixed, default: {} },
-    /** Showcase listing tab hero titles/subtitles (drives /showcase) */
+    /** Showcase listing tab hero titles/subtitles (drives /projects) */
     showcaseMeta: { type: mongoose.Schema.Types.Mixed, default: undefined },
+    /** /projects listing SEO + hero copy */
+    projectsPage: { type: mongoose.Schema.Types.Mixed, default: undefined },
     /** Admin-defined contact / inquiry forms (contact page + catalogue modal) */
     inquiryForm: { type: mongoose.Schema.Types.Mixed, default: undefined },
     /** api = API interior projects only (with fallback); hybrid = merge mock + API */
     interiorCatalogMode: { type: String, enum: ["hybrid", "api"], default: "hybrid" },
+    /** Group A SEO IA hubs + children (furniture, locations, journal, …) */
+    pages: { type: mongoose.Schema.Types.Mixed, default: undefined },
   },
   { timestamps: true },
 );
