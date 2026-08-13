@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import { IaChildView } from "@/components/ia/IaLanding";
 import { fetchSite } from "@/lib/api";
-import { getIaChild, getIaHub } from "@/lib/iaPages";
+import { getIaChild, getIaHub, strField } from "@/lib/iaPages";
 import type { Locale } from "@/lib/i18n/routing";
 import { pageMetadata } from "@/lib/seo";
 import { setRequestLocale } from "next-intl/server";
@@ -18,15 +18,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, entity: raw } = await params;
   const entity = decodeURIComponent(String(raw || "")).trim();
   const site = await fetchSite(locale as Locale);
-  const child = getIaChild(site, "aboutBrand", entity);
+  const hub = getIaHub(site, "aboutBrand", locale);
+  const child = getIaChild(site, "aboutBrand", entity, locale);
   if (!child) return { title: "Not found" };
-  const title = String(child.metaTitle || child.title || entity);
+  const title = strField(
+    child.metaTitle || child.hero?.title || child.title || hub?.metaTitle,
+    entity,
+    locale,
+  );
   return pageMetadata({
     title,
-    description: String(child.metaDescription || ""),
+    description: strField(
+      child.metaDescription || child.hero?.subtitle || hub?.metaDescription,
+      "",
+      locale,
+    ),
     path: `/${locale}/about/${entity}`,
     locale,
-    indexable: child.indexable === true,
+    indexable: child.indexable === true || hub?.indexable === true,
   });
 }
 
@@ -35,9 +44,33 @@ export default async function AboutEntityPage({ params }: Props) {
   const entity = decodeURIComponent(String(raw || "")).trim();
   setRequestLocale(locale);
   const site = await fetchSite(locale as Locale);
-  const hub = getIaHub(site, "aboutBrand");
-  const child = getIaChild(site, "aboutBrand", entity);
+  const hub = getIaHub(site, "aboutBrand", locale);
+  const child = getIaChild(site, "aboutBrand", entity, locale);
   if (!child) notFound();
+
+  const merged = {
+    ...child,
+    body: strField(child.body, "", locale) ? child.body : hub?.body,
+    sections:
+      child.sections && child.sections.length > 0
+        ? child.sections
+        : hub?.sections,
+    hero: {
+      ...(hub?.hero || {}),
+      ...(child.hero || {}),
+      title:
+        strField(child.hero?.title, "", locale) ||
+        strField(child.title, "", locale) ||
+        hub?.hero?.title,
+      subtitle:
+        strField(child.hero?.subtitle, "", locale) || hub?.hero?.subtitle,
+      eyebrow: strField(child.hero?.eyebrow, "", locale) || hub?.hero?.eyebrow,
+      image: strField(child.hero?.image, "", locale) || hub?.hero?.image,
+      ctaLabel:
+        strField(child.hero?.ctaLabel, "", locale) || hub?.hero?.ctaLabel,
+      ctaHref: strField(child.hero?.ctaHref, "", locale) || hub?.hero?.ctaHref,
+    },
+  };
 
   return (
     <>
@@ -45,8 +78,8 @@ export default async function AboutEntityPage({ params }: Props) {
       <main>
         <IaChildView
           hubKey="aboutBrand"
-          hubTitle={String(hub.hero?.title || "About")}
-          child={child}
+          hubTitle={strField(hub?.hero?.title, "About", locale)}
+          child={merged}
           locale={locale}
         />
       </main>

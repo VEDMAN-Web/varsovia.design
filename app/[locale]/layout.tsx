@@ -30,13 +30,17 @@ export async function generateMetadata({ params }: Pick<Props, "params">): Promi
     metadata: { siteTitle: string; siteDescription: string };
   };
 
+  const site = await fetchSite(locale as Locale).catch(() => null);
+  const cmsTitle = String(site?.homeSeo?.metaTitle ?? "").trim();
+  const cmsDescription = String(site?.homeSeo?.metaDescription ?? "").trim();
+
   const languages = Object.fromEntries(
     routing.locales.map((l) => [l, `/${l}`]),
   ) as Record<string, string>;
 
   return {
-    title: messages.metadata.siteTitle,
-    description: messages.metadata.siteDescription,
+    title: cmsTitle || messages.metadata.siteTitle,
+    description: cmsDescription || messages.metadata.siteDescription,
     alternates: { languages },
   };
 }

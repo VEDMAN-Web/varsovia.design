@@ -3,7 +3,7 @@
 import Image from "next/image";
 import FadeInView from "@/components/company/FadeInView";
 import { COMPANY_SHELL } from "@/components/company/companyLayoutShared";
-import type { IaHubKey } from "@/lib/iaPages";
+import { strField, type IaHubKey } from "@/lib/iaPages";
 
 export type IaContentSection = {
   heading?: string;
@@ -256,9 +256,7 @@ export default function IaContentSections({
   const list = (Array.isArray(sections) ? sections : []).filter((s) => {
     if (!s || typeof s !== "object") return false;
     return Boolean(
-      String(s.heading || "").trim() ||
-        String(s.text || "").trim() ||
-        String(s.image || "").trim(),
+      strField(s.heading) || strField(s.text) || strField(s.image),
     );
   });
   if (!list.length) return null;
@@ -266,9 +264,9 @@ export default function IaContentSections({
   return (
     <div className={`${COMPANY_SHELL} mt-10 space-y-8 md:mt-14 md:space-y-12`}>
       {list.map((section, i) => {
-        const heading = String(section.heading || "").trim();
-        const text = String(section.text || "").trim();
-        const image = String(section.image || "").trim();
+        const heading = strField(section.heading);
+        const text = strField(section.text);
+        const image = strField(section.image);
         const layout = resolveLayout(section, i, hubKey);
         const imageOnLeft =
           section.imagePosition === "right"

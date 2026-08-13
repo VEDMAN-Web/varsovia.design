@@ -10,7 +10,7 @@ import {
 } from "@/components/company/companyLayoutShared";
 import { SECTION_SUBTITLE_CLASS } from "@/components/ui/SectionHeading";
 import type { IaChildPage, IaHubPage } from "@/lib/iaPages";
-import { childPath, hubPath, type IaHubKey } from "@/lib/iaPages";
+import { childPath, hubPath, strField, type IaHubKey } from "@/lib/iaPages";
 import { Link } from "@/lib/i18n/navigation";
 import { getPublicSiteUrl } from "@/lib/publicEnv";
 
@@ -317,10 +317,10 @@ function ChildLinkList({
   exploreSubtitle?: string;
 }) {
   if (!items.length) return null;
-  const withImages = items.some((c) => Boolean(String(c.image || "").trim()));
-  const sectionTitle = String(exploreTitle || "").trim() || "Explore";
+  const withImages = items.some((c) => Boolean(strField(c.image)));
+  const sectionTitle = strField(exploreTitle) || "Explore";
   const sectionSubtitle =
-    String(exploreSubtitle || "").trim() || "Choose a focus area to continue.";
+    strField(exploreSubtitle) || "Choose a focus area to continue.";
   return (
     <FadeInView className={`${COMPANY_SHELL} mt-16 md:mt-20 pb-16 md:pb-24`} delay={0.06}>
       <CompanySectionHeading
@@ -337,9 +337,9 @@ function ChildLinkList({
         }
       >
         {items.map((child, i) => {
-          const title = String(child.title || child.slug);
-          const image = String(child.image || "").trim();
-          const subtitle = String(child.subtitle || "").trim();
+          const title = strField(child.title, child.slug);
+          const image = strField(child.image);
+          const subtitle = strField(child.subtitle);
           return (
             <li key={child.slug} className="min-w-0">
               <FadeInView delay={0.04 * (i % 4)}>
@@ -394,9 +394,9 @@ function ServiceLinkList({
   subtitle?: string;
 }) {
   if (!items.length) return null;
-  const sectionTitle = String(title || "").trim() || "Services in this location";
+  const sectionTitle = strField(title) || "Services in this location";
   const sectionSubtitle =
-    String(subtitle || "").trim() || "How we support homes and projects here.";
+    strField(subtitle) || "How we support homes and projects here.";
   return (
     <FadeInView className={`${COMPANY_SHELL} mt-16 md:mt-20`} delay={0.06}>
       <CompanySectionHeading
@@ -433,10 +433,10 @@ export function IaHubView({
   locale: string;
   related?: { id: string; title: string; href: string; image?: string }[];
 }) {
-  const title = String(hub.hero?.title || hub.slug || "Page");
-  const subtitle = String(hub.hero?.subtitle || "");
-  const eyebrow = String(hub.hero?.eyebrow || "");
-  const body = String(hub.body || "");
+  const title = strField(hub.hero?.title, hub.slug || "Page", locale);
+  const subtitle = strField(hub.hero?.subtitle, "", locale);
+  const eyebrow = strField(hub.hero?.eyebrow, "", locale);
+  const body = strField(hub.body, "", locale);
   const children = Array.isArray(hub.children) ? hub.children : [];
   const serviceLd =
     hubKey === "services"
@@ -487,9 +487,9 @@ export function IaHubView({
         exploreSubtitle={hub.exploreSubtitle}
         items={children.map((c) => ({
           slug: c.slug,
-          title: String(c.hero?.title || c.title || c.slug),
-          image: c.hero?.image,
-          subtitle: c.hero?.subtitle,
+          title: strField(c.hero?.title, strField(c.title, c.slug, locale), locale),
+          image: strField(c.hero?.image, "", locale),
+          subtitle: strField(c.hero?.subtitle, "", locale),
         }))}
       />
     </div>
@@ -515,13 +515,17 @@ export function IaChildView({
   servicesTitle?: string;
   servicesSubtitle?: string;
 }) {
-  const title = String(child.hero?.title || child.title || child.slug);
-  const subtitle = String(child.hero?.subtitle || "");
-  const eyebrow = String(child.hero?.eyebrow || "");
-  const body = String(child.body || "");
+  const title = strField(
+    child.hero?.title,
+    strField(child.title, child.slug, locale),
+    locale,
+  );
+  const subtitle = strField(child.hero?.subtitle, "", locale);
+  const eyebrow = strField(child.hero?.eyebrow, "", locale);
+  const body = strField(child.body, "", locale);
   const crumbs: Crumb[] = [
     { label: "Home", href: "/" },
-    { label: hubTitle, href: hubPath(hubKey) },
+    { label: strField(hubTitle, String(hubKey), locale), href: hubPath(hubKey) },
     { label: title },
   ];
 
@@ -551,7 +555,7 @@ export function IaChildView({
       : null;
 
   const relatedHeading =
-    String(child.relatedTitle || "").trim() ||
+    strField(child.relatedTitle, "", locale) ||
     (hubKey === "journal"
       ? "Articles in this topic"
       : hubKey === "furniture"

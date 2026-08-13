@@ -81,7 +81,8 @@ function metaFromCms(
 
 /**
  * Showcase listing hero + filter pills.
- * Priority for headings: CMS showcaseMeta → mega menu → i18n fallbacks.
+ * Priority for headings:
+ *   projectsPage.hero* (All tab) → showcaseMeta → mega menu → i18n fallbacks.
  */
 export function buildShowcasePageNav(
   site: SiteContent | null | undefined,
@@ -137,7 +138,7 @@ export function buildShowcasePageNav(
     }
   }
 
-  // CMS showcaseMeta overrides mega-menu / defaults for page headings
+  // Per-tab CMS meta (regions / commercial) — does not beat projectsPage for All
   for (const [tab, meta] of cmsMeta) {
     const prev = metaMap.get(tab);
     metaMap.set(tab, {
@@ -145,6 +146,18 @@ export function buildShowcasePageNav(
       subtitle: meta.subtitle || prev?.subtitle || fallbackMeta(tab, tShowcase).subtitle,
     });
     if (!tabOrder.includes(tab)) tabOrder.push(tab);
+  }
+
+  // Projects Page CMS hero wins for the All / default listing view
+  const pageHeroTitle = String(site?.projectsPage?.heroTitle ?? "").trim();
+  const pageHeroSubtitle = String(site?.projectsPage?.heroSubtitle ?? "").trim();
+  if (pageHeroTitle || pageHeroSubtitle) {
+    const prev = metaMap.get("All") ?? fallbackMeta("All", tShowcase);
+    metaMap.set("All", {
+      title: pageHeroTitle || prev.title,
+      subtitle: pageHeroSubtitle || prev.subtitle,
+    });
+    if (!tabOrder.includes("All")) tabOrder.unshift("All");
   }
 
   return {

@@ -1,4 +1,6 @@
 import { DEFAULT_IA_PAGES, IA_HUB_PATHS } from "./iaPagesDefaults";
+import { pickLocalized } from "./i18n/pickLocalized";
+import type { Locale } from "./i18n/routing";
 
 export type IaHero = {
   eyebrow?: string;
@@ -54,55 +56,89 @@ export type IaHubKey = keyof typeof DEFAULT_IA_PAGES;
 
 export { DEFAULT_IA_PAGES, IA_HUB_PATHS };
 
-function str(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
+/** Resolve a plain string or `{ en, th, pl }` CMS map to one locale string. */
+export function strField(value: unknown, fallback = "", locale: Locale | string = "en"): string {
+  const loc = (locale === "th" || locale === "pl" || locale === "en" ? locale : "en") as Locale;
+  const picked = pickLocalized(value, loc);
+  if (picked) return picked;
+  if (typeof value === "string") return value.trim() || fallback;
+  return fallback;
 }
 
-function mergeStr(saved: unknown, def: unknown): string {
-  return str(saved) || str(def);
+function str(value: unknown, locale: Locale = "en"): string {
+  return strField(value, "", locale);
 }
 
-function mergeHero(saved: IaHero | undefined, def: IaHero | undefined): IaHero | undefined {
+function mergeStr(saved: unknown, def: unknown, locale: Locale = "en"): string {
+  return str(saved, locale) || str(def, locale);
+}
+
+function mergeHero(
+  saved: IaHero | undefined,
+  def: IaHero | undefined,
+  locale: Locale = "en",
+): IaHero | undefined {
   const d = def || {};
   const s = saved || {};
   return {
-    ...d,
-    ...s,
-    eyebrow: mergeStr(s.eyebrow, d.eyebrow),
-    title: mergeStr(s.title, d.title),
-    subtitle: mergeStr(s.subtitle, d.subtitle),
-    image: mergeStr(s.image, d.image),
-    ctaLabel: mergeStr(s.ctaLabel, d.ctaLabel),
-    ctaHref: mergeStr(s.ctaHref, d.ctaHref) || "/contact",
+    eyebrow: mergeStr(s.eyebrow, d.eyebrow, locale),
+    title: mergeStr(s.title, d.title, locale),
+    subtitle: mergeStr(s.subtitle, d.subtitle, locale),
+    image: mergeStr(s.image, d.image, locale),
+    ctaLabel: mergeStr(s.ctaLabel, d.ctaLabel, locale),
+    ctaHref: mergeStr(s.ctaHref, d.ctaHref, locale) || "/contact",
   };
 }
 
-function sectionHasContent(section: IaContentSection): boolean {
-  return Boolean(str(section.heading) || str(section.text) || str(section.image));
+function normalizeSection(section: IaContentSection, locale: Locale = "en"): IaContentSection {
+  const layoutRaw = typeof section.layout === "string" ? section.layout.trim() : "";
+  const layouts = ["band", "spotlight", "editorial", "overlay", "rail"] as const;
+  const layout = layouts.find((l) => l === layoutRaw);
+  return {
+    heading: str(section.heading, locale),
+    text: str(section.text, locale),
+    image: str(section.image, locale),
+    imagePosition:
+      section.imagePosition === "right" || section.imagePosition === "left"
+        ? section.imagePosition
+        : undefined,
+    layout,
+  };
+}
+
+function sectionHasContent(section: IaContentSection, locale: Locale = "en"): boolean {
+  const n = normalizeSection(section, locale);
+  return Boolean(n.heading || n.text || n.image);
 }
 
 function mergeSections(
   saved: IaContentSection[] | undefined,
   def: IaContentSection[] | undefined,
+  locale: Locale = "en",
 ): IaContentSection[] {
-  if (!saved?.length) return def || [];
-  if (!saved.some(sectionHasContent)) return def || [];
-  return saved;
+  const fallback = (def || []).map((s) => normalizeSection(s, locale));
+  if (!saved?.length) return fallback;
+  if (!saved.some((s) => sectionHasContent(s, locale))) return fallback;
+  return saved.map((s) => normalizeSection(s, locale));
 }
 
-function mergeChild(defChild: IaChildPage, savedChild: IaChildPage | undefined): IaChildPage {
+function mergeChild(
+  defChild: IaChildPage,
+  savedChild: IaChildPage | undefined,
+  locale: Locale = "en",
+): IaChildPage {
   const s: Partial<IaChildPage> = savedChild ?? {};
   return {
     ...defChild,
     ...s,
     slug: defChild.slug,
-    title: mergeStr(s.title, defChild.title),
-    metaTitle: mergeStr(s.metaTitle, defChild.metaTitle),
-    metaDescription: mergeStr(s.metaDescription, defChild.metaDescription),
-    body: mergeStr(s.body, defChild.body),
-    relatedTitle: mergeStr(s.relatedTitle, defChild.relatedTitle),
-    hero: mergeHero(s.hero, defChild.hero),
-    sections: mergeSections(s.sections, defChild.sections),
+    title: mergeStr(s.title, defChild.title, locale),
+    metaTitle: mergeStr(s.metaTitle, defChild.metaTitle, locale),
+    metaDescription: mergeStr(s.metaDescription, defChild.metaDescription, locale),
+    body: mergeStr(s.body, defChild.body, locale),
+    relatedTitle: mergeStr(s.relatedTitle, defChild.relatedTitle, locale),
+    hero: mergeHero(s.hero, defChild.hero, locale),
+    sections: mergeSections(s.sections, defChild.sections, locale),
     indexable: s.indexable === true,
     order: s.order ?? defChild.order ?? 0,
     locationSlugs:
@@ -111,7 +147,11 @@ function mergeChild(defChild: IaChildPage, savedChild: IaChildPage | undefined):
 }
 
 /** Merge CMS pages over defaults; empty saved strings do not wipe seed copy. */
-export function getIaPages(site: { pages?: unknown } | null | undefined): Record<string, IaHubPage> {
+export function getIaPages(
+  site: { pages?: unknown } | null | undefined,
+  locale: Locale | string = "en",
+): Record<string, IaHubPage> {
+  const loc = (locale === "th" || locale === "pl" || locale === "en" ? locale : "en") as Locale;
   const raw =
     site?.pages && typeof site.pages === "object"
       ? (site.pages as Record<string, IaHubPage>)
@@ -121,7 +161,19 @@ export function getIaPages(site: { pages?: unknown } | null | undefined): Record
     const def = DEFAULT_IA_PAGES[key] as unknown as IaHubPage;
     const saved = raw[key];
     if (!saved || typeof saved !== "object") {
-      out[key] = def;
+      out[key] = {
+        ...def,
+        metaTitle: str(def.metaTitle, loc),
+        metaDescription: str(def.metaDescription, loc),
+        body: str(def.body, loc),
+        exploreTitle: str(def.exploreTitle, loc),
+        exploreSubtitle: str(def.exploreSubtitle, loc),
+        servicesTitle: str(def.servicesTitle, loc),
+        servicesSubtitle: str(def.servicesSubtitle, loc),
+        hero: mergeHero(def.hero, undefined, loc),
+        sections: mergeSections(def.sections, undefined, loc),
+        children: (def.children || []).map((c) => mergeChild(c, undefined, loc)),
+      };
       continue;
     }
     const savedChildren = Array.isArray(saved.children) ? saved.children : [];
@@ -131,24 +183,26 @@ export function getIaPages(site: { pages?: unknown } | null | undefined): Record
         .map((c) => [c.slug, c]),
     );
     const children = (def.children || []).map((defChild) =>
-      mergeChild(defChild, bySlug.get(defChild.slug)),
+      mergeChild(defChild, bySlug.get(defChild.slug), loc),
     );
     for (const s of savedChildren) {
-      if (s?.slug && !children.some((c) => c.slug === s.slug)) children.push(s);
+      if (s?.slug && !children.some((c) => c.slug === s.slug)) {
+        children.push(mergeChild({ slug: s.slug }, s, loc));
+      }
     }
     out[key] = {
       ...def,
       ...saved,
       slug: def.slug,
-      metaTitle: mergeStr(saved.metaTitle, def.metaTitle),
-      metaDescription: mergeStr(saved.metaDescription, def.metaDescription),
-      body: mergeStr(saved.body, def.body),
-      exploreTitle: mergeStr(saved.exploreTitle, def.exploreTitle),
-      exploreSubtitle: mergeStr(saved.exploreSubtitle, def.exploreSubtitle),
-      servicesTitle: mergeStr(saved.servicesTitle, def.servicesTitle),
-      servicesSubtitle: mergeStr(saved.servicesSubtitle, def.servicesSubtitle),
-      hero: mergeHero(saved.hero, def.hero),
-      sections: mergeSections(saved.sections, def.sections),
+      metaTitle: mergeStr(saved.metaTitle, def.metaTitle, loc),
+      metaDescription: mergeStr(saved.metaDescription, def.metaDescription, loc),
+      body: mergeStr(saved.body, def.body, loc),
+      exploreTitle: mergeStr(saved.exploreTitle, def.exploreTitle, loc),
+      exploreSubtitle: mergeStr(saved.exploreSubtitle, def.exploreSubtitle, loc),
+      servicesTitle: mergeStr(saved.servicesTitle, def.servicesTitle, loc),
+      servicesSubtitle: mergeStr(saved.servicesSubtitle, def.servicesSubtitle, loc),
+      hero: mergeHero(saved.hero, def.hero, loc),
+      sections: mergeSections(saved.sections, def.sections, loc),
       indexable: saved.indexable === true,
       children,
     };
@@ -156,16 +210,21 @@ export function getIaPages(site: { pages?: unknown } | null | undefined): Record
   return out;
 }
 
-export function getIaHub(site: { pages?: unknown } | null | undefined, hubKey: IaHubKey): IaHubPage {
-  return getIaPages(site)[hubKey];
+export function getIaHub(
+  site: { pages?: unknown } | null | undefined,
+  hubKey: IaHubKey,
+  locale: Locale | string = "en",
+): IaHubPage {
+  return getIaPages(site, locale)[hubKey];
 }
 
 export function getIaChild(
   site: { pages?: unknown } | null | undefined,
   hubKey: IaHubKey,
   childSlug: string,
+  locale: Locale | string = "en",
 ): IaChildPage | null {
-  const hub = getIaHub(site, hubKey);
+  const hub = getIaHub(site, hubKey, locale);
   const children = Array.isArray(hub.children) ? hub.children : [];
   return children.find((c) => c.slug === childSlug) || null;
 }
@@ -178,12 +237,4 @@ export function childPath(hubKey: IaHubKey, slug: string): string {
   if (hubKey === "journal") return `/journal/topic/${slug}`;
   if (hubKey === "aboutBrand") return `/about/${slug}`;
   return `${hubPath(hubKey)}/${slug}`;
-}
-
-export function strField(value: unknown, fallback = ""): string {
-  if (typeof value === "string") return value;
-  if (value && typeof value === "object" && "en" in (value as object)) {
-    return String((value as { en?: string }).en || fallback);
-  }
-  return fallback;
 }

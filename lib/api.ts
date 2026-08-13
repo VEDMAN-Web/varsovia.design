@@ -12,6 +12,7 @@ import {
 } from "./apiEnvelope";
 import { getPublicApiUrl } from "./publicEnv";
 import pageCmsDefaults from "./pageCmsDefaults.json";
+import { getIaPages } from "./iaPages";
 
 export type { ApiProject, SiteContent, HomeData };
 
@@ -166,6 +167,11 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
     aboutIntro: pickSiteCopy(data.aboutIntro, getLocaleOrDefault(locale), fb.aboutIntro ?? ""),
     aboutStory: pickSiteCopy(data.aboutStory, getLocaleOrDefault(locale), fb.aboutStory ?? ""),
     aboutText: pickSiteCopy(data.aboutText, getLocaleOrDefault(locale), fb.aboutText ?? ""),
+    aboutHeroTitle: pickSiteCopy(
+      data.aboutHeroTitle,
+      getLocaleOrDefault(locale),
+      (fb as { aboutHeroTitle?: string }).aboutHeroTitle ?? "",
+    ),
     aboutHeroSubtitle: pickSiteCopy(
       data.aboutHeroSubtitle,
       getLocaleOrDefault(locale),
@@ -381,7 +387,7 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
     },
     interiorCatalogMode: (data.interiorCatalogMode as SiteContent["interiorCatalogMode"]) || fb.interiorCatalogMode,
     inquiryForm: (data.inquiryForm as SiteContent["inquiryForm"]) || fb.inquiryForm,
-    pages: (data.pages as SiteContent["pages"]) || fb.pages,
+    pages: getIaPages({ pages: data.pages || fb.pages }, getLocaleOrDefault(locale)),
     aboutPageSettings: mergePageSeoBlock(data.aboutPageSettings, {
       metaTitle: (getAppMessages(getLocaleOrDefault(locale)).pageMeta as { aboutTitle?: string })
         ?.aboutTitle,
@@ -457,6 +463,8 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
         },
         locale,
         [
+          "heroTitle",
+          "heroSubtitle",
           "locationTitle",
           "locationSubtitle",
           "mapEmbedUrl",
@@ -466,6 +474,11 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
         ],
       );
     })(),
+    homeSeo: mergePageSeoBlock(data.homeSeo, {
+      metaTitle: "",
+      metaDescription: "",
+      indexable: false,
+    }, locale),
     legalPages: mergeLegalPages(data.legalPages, locale),
   };
 }

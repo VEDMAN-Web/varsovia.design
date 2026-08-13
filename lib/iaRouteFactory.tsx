@@ -8,6 +8,7 @@ import {
   getIaChild,
   getIaHub,
   hubPath,
+  strField,
   type IaHubKey,
   DEFAULT_IA_PAGES,
 } from "@/lib/iaPages";
@@ -23,8 +24,8 @@ import { pageMetadata } from "@/lib/seo";
 import { setRequestLocale } from "next-intl/server";
 import { resolveBlogs } from "@/lib/companyData";
 
-function locTitle(value: unknown, fallback: string) {
-  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+function locTitle(value: unknown, fallback: string, locale: Locale | string = "en") {
+  return strField(value, fallback, locale);
 }
 
 type RelatedItem = { id: string; title: string; href: string; image?: string };
@@ -32,12 +33,12 @@ type RelatedItem = { id: string; title: string; href: string; image?: string };
 function projectToRelated(p: {
   _id?: string;
   slug?: string;
-  title?: string;
+  title?: unknown;
   coverImage?: string;
-}): RelatedItem {
+}, locale: Locale | string = "en"): RelatedItem {
   return {
     id: String(p._id || p.slug),
-    title: String(p.title || "Project"),
+    title: strField(p.title, "Project", locale),
     href: `/interior-design/${p.slug || p._id}`,
     image: String(p.coverImage || ""),
   };
@@ -45,12 +46,12 @@ function projectToRelated(p: {
 
 function showcaseToRelated(s: {
   _id?: string;
-  title?: string;
+  title?: unknown;
   image?: string;
-}): RelatedItem {
+}, locale: Locale | string = "en"): RelatedItem {
   return {
     id: String(s._id),
-    title: String(s.title || "Project"),
+    title: strField(s.title, "Project", locale),
     href: `/projects/${s._id}`,
     image: String(s.image || ""),
   };
@@ -64,9 +65,9 @@ export function makeIaHubHandlers(hubKey: IaHubKey) {
   }): Promise<Metadata> {
     const { locale } = await params;
     const site = await fetchSite(locale as Locale);
-    const hub = getIaHub(site, hubKey);
-    const title = locTitle(hub.metaTitle || hub.hero?.title, hub.slug).slice(0, 60);
-    const description = locTitle(hub.metaDescription || hub.hero?.subtitle, "").slice(0, 160);
+    const hub = getIaHub(site, hubKey, locale);
+    const title = locTitle(hub.metaTitle || hub.hero?.title, hub.slug, locale).slice(0, 60);
+    const description = locTitle(hub.metaDescription || hub.hero?.subtitle, "", locale).slice(0, 160);
     return pageMetadata({
       title,
       description,
@@ -80,7 +81,7 @@ export function makeIaHubHandlers(hubKey: IaHubKey) {
     const { locale } = await params;
     setRequestLocale(locale);
     const site = await fetchSite(locale as Locale);
-    const hub = getIaHub(site, hubKey);
+    const hub = getIaHub(site, hubKey, locale);
     return (
       <>
         <Navbar />
@@ -103,12 +104,13 @@ export function makeIaChildHandlers(hubKey: IaHubKey) {
     const { locale, slug: rawSlug } = await params;
     const slug = decodeURIComponent(String(rawSlug || "")).trim();
     const site = await fetchSite(locale as Locale);
-    const child = getIaChild(site, hubKey, slug);
+    const child = getIaChild(site, hubKey, slug, locale);
     if (!child) return { title: "Not found" };
-    const title = locTitle(child.metaTitle || child.hero?.title || child.title, slug).slice(0, 60);
+    const title = locTitle(child.metaTitle || child.hero?.title || child.title, slug, locale).slice(0, 60);
     const description = locTitle(
       child.metaDescription || child.hero?.subtitle,
       "",
+      locale,
     ).slice(0, 160);
     return pageMetadata({
       title,
@@ -121,7 +123,7 @@ export function makeIaChildHandlers(hubKey: IaHubKey) {
 
   async function generateStaticParams() {
     const site = await fetchSite("en");
-    const hub = getIaHub(site, hubKey);
+    const hub = getIaHub(site, hubKey, "en");
     const children = Array.isArray(hub.children) && hub.children.length > 0
       ? hub.children
       : ((DEFAULT_IA_PAGES[hubKey] as { children?: { slug: string }[] }).children || []);
@@ -139,8 +141,8 @@ export function makeIaChildHandlers(hubKey: IaHubKey) {
     const slug = decodeURIComponent(String(rawSlug || "")).trim();
     setRequestLocale(locale);
     const site = await fetchSite(locale as Locale);
-    const hub = getIaHub(site, hubKey);
-    const child = getIaChild(site, hubKey, slug);
+    const hub = getIaHub(site, hubKey, locale);
+    const child = getIaChild(site, hubKey, slug, locale);
     if (!child) notFound();
 
     let related: RelatedItem[] = [];
@@ -156,21 +158,21 @@ export function makeIaChildHandlers(hubKey: IaHubKey) {
         ...projects
           .filter((p) => locationMatchesSlug((p as { location?: unknown }).location, slug))
           .slice(0, 6)
-          .map((p) => projectToRelated(p)),
+          .map((p) => projectToRelated(p, locale)),
         ...(Array.isArray(showcases) ? showcases : [])
           .filter((s) => locationMatchesSlug((s as { location?: unknown }).location, slug))
           .slice(0, 6)
-          .map((s) => showcaseToRelated(s)),
+          .map((s) => showcaseToRelated(s, locale)),
       ].slice(0, 6);
 
-      const servicesHub = getIaHub(site, "services");
+      const servicesHub = getIaHub(site, "services", locale);
       relatedServices = servicesForLocationSlug(
         slug,
         (servicesHub.children || []).filter((c) => c.slug),
         6,
       ).map((c) => ({
         id: c.slug,
-        title: String(c.title || c.slug),
+        title: strField(c.title, c.slug, locale),
         href: childPath("services", c.slug),
       }));
     }
@@ -194,7 +196,7 @@ export function makeIaChildHandlers(hubKey: IaHubKey) {
           return catSet.size === 0 || [...catSet].some((c) => cat.includes(c.toLowerCase()));
         })
         .slice(0, 6)
-        .map((p) => projectToRelated(p));
+        .map((p) => projectToRelated(p, locale));
 
       const fromShowcases = (Array.isArray(showcases) ? showcases : [])
         .filter((s) => {
@@ -209,7 +211,7 @@ export function makeIaChildHandlers(hubKey: IaHubKey) {
             : false;
         })
         .slice(0, 6)
-        .map((s) => showcaseToRelated(s));
+        .map((s) => showcaseToRelated(s, locale));
 
       related = [...fromShowcases, ...fromProjects].slice(0, 6);
     }
@@ -224,7 +226,7 @@ export function makeIaChildHandlers(hubKey: IaHubKey) {
         .slice(0, 12)
         .map((b) => ({
           id: b._id,
-          title: b.title,
+          title: strField(b.title, "Article", locale),
           href: `/journal/p/${b._id}`,
           image: b.image,
         }));
@@ -236,7 +238,7 @@ export function makeIaChildHandlers(hubKey: IaHubKey) {
         <main>
           <IaChildView
             hubKey={hubKey}
-            hubTitle={locTitle(hub.hero?.title, hub.slug)}
+            hubTitle={locTitle(hub.hero?.title, hub.slug, locale)}
             child={child}
             locale={locale}
             related={related}

@@ -29,6 +29,7 @@ type Project = {
   location?: string;
   description?: string;
   gallery?: string[];
+  featured?: boolean;
 };
 
 type FeaturedProjectsProps = {
@@ -43,8 +44,15 @@ function resolveCover(project: Project) {
   return resolveMediaUrl(project.coverImage || project.gallery?.[0], DEFAULT_COVER);
 }
 
-function buildDisplayProjects(projects?: Project[]) {
+/** Prefer CMS `featured: true` projects; fall back to full list if none flagged. */
+function pickFeaturedSource(projects?: Project[]) {
   const source = projects && projects.length > 0 ? projects : FALLBACK_PROJECTS;
+  const flagged = source.filter((p) => p.featured === true);
+  return flagged.length > 0 ? flagged : source;
+}
+
+function buildDisplayProjects(projects?: Project[]) {
+  const source = pickFeaturedSource(projects);
   const merged: Project[] = [];
   const seen = new Set<string>();
 

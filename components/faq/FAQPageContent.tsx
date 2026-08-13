@@ -320,14 +320,14 @@ export default function FAQPageContent() {
               />
             </FadeInView>
 
-            <div className="min-w-0">
+            <FadeInView delay={0.06} className="min-w-0">
               <FaqAccordionList
                 faqs={currentFAQs}
                 listKey={activeTopic}
                 openIndex={openIndex}
                 onToggle={toggleQuestion}
               />
-            </div>
+            </FadeInView>
           </div>
         </div>
       </section>

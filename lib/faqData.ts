@@ -165,10 +165,18 @@ export function resolveFaqsForTopic(
   locale: Locale = "en",
 ): FaqItem[] {
   const localizedStatic = getFaqDataForLocale(locale)[topic] ?? [];
+  const topicNorm = topic.trim().toLowerCase();
 
-  const apiForTopic = apiFaqs.filter(
-    (f) => f.category === topic && f.question && f.answer,
-  );
+  const apiForTopic = apiFaqs.filter((f) => {
+    const cat = String(f.category || "").trim().toLowerCase();
+    if (!cat || !f.question || !f.answer) return false;
+    return (
+      cat === topicNorm ||
+      cat.includes(topicNorm) ||
+      topicNorm.includes(cat) ||
+      cat.replace(/\s+/g, "") === topicNorm.replace(/\s+/g, "")
+    );
+  });
 
   if (locale !== "en" && localizedStatic.length > 0) {
     const apiHasLocaleFields = apiForTopic.some(

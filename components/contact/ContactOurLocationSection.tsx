@@ -57,7 +57,7 @@ export default function ContactOurLocationSection({
     <section
       className={`${COMPANY_SHELL} ${CONTACT_LOCATION_SECTION_GAP} ${CONTACT_LOCATION_SECTION_PAD}`.trim()}
     >
-      <PagePanelReveal className={CONTACT_LOCATION_CARD}>
+      <div className={CONTACT_LOCATION_CARD}>
         <SectionHeadingReveal
           title={title}
           subtitle={subtitle}
@@ -68,7 +68,7 @@ export default function ContactOurLocationSection({
           className={`${SECTION_HEADING_WIDE} ${CONTACT_LOCATION_HEADING_CLASS}`.trim()}
         />
 
-        <div className={CONTACT_LOCATION_BODY}>
+        <PagePanelReveal delay={0.1} className={CONTACT_LOCATION_BODY}>
           <div className={CONTACT_LOCATION_MAP_WRAP}>
             <div className={CONTACT_LOCATION_MAP_SHELL}>
               <iframe
@@ -94,8 +94,8 @@ export default function ContactOurLocationSection({
               </div>
             </div>
           </div>
-        </div>
-      </PagePanelReveal>
+        </PagePanelReveal>
+      </div>
     </section>
   );
 }

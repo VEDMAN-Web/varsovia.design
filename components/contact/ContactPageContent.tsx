@@ -31,12 +31,14 @@ export default function ContactPageContent({
   const images =
     Array.isArray(imgs) && imgs.length > 0 ? imgs : FALLBACK_IMAGES;
   const section = site?.sectionCopy?.contact;
-  const title = section?.title?.trim() || "Get In touch";
+  const cp = site?.contactPage;
+  const title =
+    cp?.heroTitle?.trim() || section?.title?.trim() || "Get In touch";
   const subtitle =
+    cp?.heroSubtitle?.trim() ||
     section?.subtitle?.trim() ||
     "Your dream space begins with a simple conversation";
 
-  const cp = site?.contactPage;
   const showroomsTitle = cp?.showroomsTitle?.trim() || "Visit a showroom";
   const showroomsSubtitle =
     cp?.showroomsSubtitle?.trim() ||
@@ -65,20 +67,20 @@ export default function ContactPageContent({
 
       {showrooms.length > 0 && (
         <section className={`${COMPANY_SHELL} pb-16 pt-10 sm:pb-20 sm:pt-12 md:pb-24`}>
-          <PagePanelReveal>
-            <SectionHeadingReveal
-              title={showroomsTitle}
-              subtitle={showroomsSubtitle}
-              titleAs="h2"
-              compact
-              subtitleSentenceCase={false}
-              subtitleClassName={`${SECTION_SUBTITLE_CLASS} !mt-3 sm:!mt-4`}
-              className={`${SECTION_HEADING_WIDE} text-center`}
-            />
-            <div className="mt-10">
+          <SectionHeadingReveal
+            title={showroomsTitle}
+            subtitle={showroomsSubtitle}
+            titleAs="h2"
+            compact
+            subtitleSentenceCase={false}
+            subtitleClassName={`${SECTION_SUBTITLE_CLASS} !mt-3 sm:!mt-4`}
+            className={`${SECTION_HEADING_WIDE} text-center`}
+          />
+          <div className="mt-10">
+            <PagePanelReveal delay={0.08}>
               <Showrooms showrooms={showrooms} embedded />
-            </div>
-          </PagePanelReveal>
+            </PagePanelReveal>
+          </div>
         </section>
       )}
     </div>

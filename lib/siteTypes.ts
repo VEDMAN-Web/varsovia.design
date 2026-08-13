@@ -54,6 +54,8 @@ export type CataloguePageContent = PageSeoBlock & {
 };
 
 export type ContactPageContent = PageSeoBlock & {
+  heroTitle?: string;
+  heroSubtitle?: string;
   locationTitle?: string;
   locationSubtitle?: string;
   mapEmbedUrl?: string;
@@ -82,6 +84,7 @@ export type SiteContent = {
   aboutText?: string;
   aboutIntro?: string;
   aboutStory?: string;
+  aboutHeroTitle?: string;
   aboutHeroSubtitle?: string;
   aboutImages?: string[];
   aboutStoryImages?: string[];
@@ -153,6 +156,11 @@ export type SiteContent = {
   /** Group A SEO IA hubs */
   pages?: Record<string, unknown>;
   aboutPageSettings?: PageSeoBlock;
+  /** Site-wide / home Google listing (locale layout metadata). */
+  homeSeo?: PageSeoBlock & {
+    metaTitle?: string;
+    metaDescription?: string;
+  };
   faqPage?: FaqPageContent;
   cataloguePage?: CataloguePageContent;
   contactPage?: ContactPageContent;
@@ -182,6 +190,7 @@ export type ApiProject = {
   gallery?: string[];
   image?: string;
   isNew?: boolean;
+  featured?: boolean;
 };
 
 export type ApiTestimonial = {

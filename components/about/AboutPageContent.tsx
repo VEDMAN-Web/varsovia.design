@@ -12,6 +12,7 @@ import { galleryFromCms } from "@/lib/siteGalleryImages";
 import { MEDIA } from "@/lib/mediaAssets";
 import { DEFAULT_SITE_IMAGE_PATHS } from "@/lib/defaultSiteImages";
 import { resolveMediaUrl } from "@/lib/mediaAssets";
+import { Link } from "@/lib/i18n/navigation";
 import {
   COMPANY_BODY,
   COMPANY_HERO_SECTION_PAD,
@@ -29,6 +30,7 @@ export type AboutSite = {
   aboutIntro?: string;
   aboutStory?: string;
   aboutText?: string;
+  aboutHeroTitle?: string;
   aboutHeroSubtitle?: string;
   aboutImages?: string[];
   aboutStoryImages?: string[];
@@ -36,6 +38,17 @@ export type AboutSite = {
   mission?: SiteBlock;
   values?: SiteBlock;
   processSteps?: ProcessStep[];
+  /** Brand hub children for Explore strip (pages.aboutBrand). */
+  brandHub?: {
+    exploreTitle?: string;
+    exploreSubtitle?: string;
+    children?: Array<{
+      slug: string;
+      title?: string;
+      subtitle?: string;
+      image?: string;
+    }>;
+  };
 };
 
 /** Same frame as COMPANY_IMAGE_FRAME, on this page's tighter 6px radius */
@@ -72,6 +85,7 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
 
   const intro = site?.aboutIntro || site?.aboutText || tSite("aboutIntro");
   const storyText = site?.aboutStory || site?.aboutText || tSite("aboutStory");
+  const heroTitle = site?.aboutHeroTitle?.trim() || t("heroTitle");
   const heroSubtitle = site?.aboutHeroSubtitle || tSite("aboutHeroSubtitle");
 
   const heroGallery = galleryFromCms(site?.aboutImages, 3, MEDIA.about);
@@ -139,7 +153,7 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
       <section className={`${COMPANY_SHELL} ${COMPANY_HERO_SECTION_PAD}`}>
         <SectionHeadingReveal
           trigger="mount"
-          title={t("heroTitle")}
+          title={heroTitle}
           subtitle={heroSubtitle || undefined}
           titleAs="h1"
           expanded
@@ -372,6 +386,40 @@ export default function AboutPageContent({ site }: { site?: AboutSite | null }) 
           </div>
         </div>
       </section>
+
+      {site?.brandHub?.children && site.brandHub.children.length > 0 ? (
+        <section className={`${COMPANY_SHELL} mb-16 md:mb-24`}>
+          <CompanySectionHeading
+            title={site.brandHub.exploreTitle?.trim() || "Our brands"}
+            subtitle={
+              site.brandHub.exploreSubtitle?.trim() ||
+              "Explore Varsovia, Livo, and Oppolia."
+            }
+            subtitleSentenceCase={false}
+            className="mb-8 md:mb-10"
+            radiusClassName="rounded-[6px]"
+          />
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {site.brandHub.children.map((brand) => (
+              <li key={brand.slug}>
+                <Link
+                  href={`/about/${brand.slug}`}
+                  className="group flex min-h-[96px] flex-col justify-center rounded-[8px] border border-[#e5dcd3]/90 bg-white/50 px-5 py-4 transition hover:border-[#6a414d]/35 hover:bg-white"
+                >
+                  <span className="font-outfit text-[16px] font-semibold text-[#3d2a30] transition group-hover:text-[#6a414d]">
+                    {brand.title || brand.slug}
+                  </span>
+                  {brand.subtitle ? (
+                    <span className="mt-1 font-outfit text-[13px] text-[#6a414d]/70">
+                      {brand.subtitle}
+                    </span>
+                  ) : null}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </div>
   );
 }

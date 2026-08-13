@@ -3,7 +3,7 @@ import Navbar from "@/components/layout/Navbar";
 import { IaHubView } from "@/components/ia/IaLanding";
 import JournalArticleGrid from "@/components/journal/JournalArticleGrid";
 import { fetchSite } from "@/lib/api";
-import { getIaHub, hubPath } from "@/lib/iaPages";
+import { getIaHub, hubPath, strField } from "@/lib/iaPages";
 import type { Locale } from "@/lib/i18n/routing";
 import { pageMetadata } from "@/lib/seo";
 import { setRequestLocale } from "next-intl/server";
@@ -13,19 +13,16 @@ export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ locale: string }> };
 
-function locTitle(value: unknown, fallback: string) {
-  return typeof value === "string" && value.trim() ? value.trim() : fallback;
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const site = await fetchSite(locale as Locale);
-  const hub = getIaHub(site, "journal");
+  const hub = getIaHub(site, "journal", locale);
   return pageMetadata({
-    title: locTitle(hub.metaTitle || hub.hero?.title, "Journal").slice(0, 60),
-    description: locTitle(
+    title: strField(hub.metaTitle || hub.hero?.title, "Journal", locale).slice(0, 60),
+    description: strField(
       hub.metaDescription || hub.hero?.subtitle,
       "Design insights, materials, and interior inspiration from Varsovia Design.",
+      locale,
     ).slice(0, 160),
     path: `/${locale}${hubPath("journal")}`,
     locale,
@@ -37,7 +34,7 @@ export default async function JournalPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const site = await fetchSite(locale as Locale);
-  const hub = getIaHub(site, "journal");
+  const hub = getIaHub(site, "journal", locale);
 
   return (
     <>

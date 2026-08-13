@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import AboutPageContent from "@/components/about/AboutPageContent";
 import { fetchSite } from "@/lib/api";
+import { getIaHub, strField } from "@/lib/iaPages";
 import { getAppMessages } from "@/lib/i18n/messageCatalog";
 import type { Locale } from "@/lib/i18n/routing";
 import { pageMetadata } from "@/lib/seo";
@@ -29,12 +30,28 @@ export default async function AboutRoute({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const site = await fetchSite(locale as Locale);
+  const brandHub = getIaHub(site, "aboutBrand", locale);
+  const aboutSite = {
+    ...site,
+    brandHub: brandHub
+      ? {
+          exploreTitle: strField(brandHub.exploreTitle, "", locale),
+          exploreSubtitle: strField(brandHub.exploreSubtitle, "", locale),
+          children: (brandHub.children || []).map((c) => ({
+            slug: c.slug,
+            title: strField(c.hero?.title || c.title, c.slug, locale),
+            subtitle: strField(c.hero?.subtitle, "", locale),
+            image: strField(c.hero?.image, "", locale),
+          })),
+        }
+      : undefined,
+  };
 
   return (
     <>
       <Navbar />
       <main>
-        <AboutPageContent site={site} />
+        <AboutPageContent site={aboutSite} />
       </main>
     </>
   );

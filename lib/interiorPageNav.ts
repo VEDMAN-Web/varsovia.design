@@ -1,6 +1,7 @@
 import type { SiteContent } from "@/lib/siteTypes";
 import type { MainNavMenu } from "@/lib/mainNavigationTypes";
 import { INTERIOR_CATEGORIES, type InteriorCategory } from "@/lib/interiorData";
+import { strField } from "@/lib/iaPages";
 
 export type InteriorPageCategoryMeta = {
   title: string;
@@ -106,6 +107,7 @@ function fallbackLabel(category: InteriorCategory, tCat: (key: string) => string
 
 /**
  * Interior listing hero + room tabs aligned with header dropdown (site.mainNavigation).
+ * Hub CMS `pages.interiorDesign.hero` overrides the "All" category headline when set.
  */
 export function buildInteriorPageNav(
   site: SiteContent | null | undefined,
@@ -156,6 +158,20 @@ export function buildInteriorPageNav(
       metaMap.set(cat, fallbackMeta(cat, tHero));
       labelMap.set(cat, fallbackLabel(cat, tCat));
     }
+  }
+
+  // Interior Design hub CMS → "All" listing hero (catalog page, not IaHubView)
+  const hub = (site?.pages as Record<string, { hero?: { title?: unknown; subtitle?: unknown } }> | undefined)
+    ?.interiorDesign;
+  const hubTitle = strField(hub?.hero?.title, "");
+  const hubSubtitle = strField(hub?.hero?.subtitle, "");
+  if (hubTitle || hubSubtitle) {
+    const prev = metaMap.get("All") ?? fallbackMeta("All", tHero);
+    metaMap.set("All", {
+      title: hubTitle ? hubTitle.toUpperCase() : prev.title,
+      subtitle: hubSubtitle || prev.subtitle,
+    });
+    if (!categoryOrder.includes("All")) categoryOrder.unshift("All");
   }
 
   return {
