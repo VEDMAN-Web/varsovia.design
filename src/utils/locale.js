@@ -76,6 +76,7 @@ function localizeSiteContent(doc, locale) {
     "aboutText",
     "aboutIntro",
     "aboutStory",
+    "aboutHeroTitle",
     "aboutHeroSubtitle",
     "footerBio",
     "address",
@@ -305,6 +306,7 @@ function localizeSiteContent(doc, locale) {
   }
 
   if (out.aboutPageSettings) out.aboutPageSettings = localizeSimplePageBlock(out.aboutPageSettings);
+  if (out.homeSeo) out.homeSeo = localizeSimplePageBlock(out.homeSeo);
   if (out.faqPage) out.faqPage = localizeSimplePageBlock(out.faqPage);
   if (out.cataloguePage) out.cataloguePage = localizeSimplePageBlock(out.cataloguePage);
   if (out.contactPage) out.contactPage = localizeSimplePageBlock(out.contactPage);

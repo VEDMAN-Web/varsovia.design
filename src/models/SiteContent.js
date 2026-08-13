@@ -31,6 +31,7 @@ const siteContentSchema = new mongoose.Schema(
     statsImage: { type: String, default: "" },
     aboutIntro: localizedField(),
     aboutStory: localizedField(),
+    aboutHeroTitle: localizedField(),
     aboutHeroSubtitle: localizedField(),
     vision: {
       title: mongoose.Schema.Types.Mixed,
@@ -119,6 +120,8 @@ const siteContentSchema = new mongoose.Schema(
     pages: { type: mongoose.Schema.Types.Mixed, default: undefined },
     /** /about SEO */
     aboutPageSettings: { type: mongoose.Schema.Types.Mixed, default: undefined },
+    /** Home / locale layout Google listing */
+    homeSeo: { type: mongoose.Schema.Types.Mixed, default: undefined },
     /** /faq page hero + SEO */
     faqPage: { type: mongoose.Schema.Types.Mixed, default: undefined },
     /** /catalogue standalone page hero + SEO */

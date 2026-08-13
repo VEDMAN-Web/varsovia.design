@@ -394,6 +394,7 @@ const siteUpdateSchema = z.object({
   aboutText:              localizedString.optional(),
   aboutIntro:             localizedString.optional(),
   aboutStory:             localizedString.optional(),
+  aboutHeroTitle:         localizedString.optional(),
   aboutHeroSubtitle:      localizedString.optional(),
   aboutImages:            z.array(z.string().max(500)).optional(),
   aboutStoryImages:       z.array(z.string().max(500)).optional(),
@@ -446,6 +447,11 @@ const siteUpdateSchema = z.object({
     metaTitle: localizedString.optional(),
     metaDescription: localizedString.optional(),
   }).nullish(),
+  homeSeo:                z.object({
+    indexable: z.boolean().optional(),
+    metaTitle: localizedString.optional(),
+    metaDescription: localizedString.optional(),
+  }).nullish(),
   faqPage:                z.object({
     indexable: z.boolean().optional(),
     metaTitle: localizedString.optional(),
@@ -464,6 +470,8 @@ const siteUpdateSchema = z.object({
     indexable: z.boolean().optional(),
     metaTitle: localizedString.optional(),
     metaDescription: localizedString.optional(),
+    heroTitle: localizedString.optional(),
+    heroSubtitle: localizedString.optional(),
     locationTitle: localizedString.optional(),
     locationSubtitle: localizedString.optional(),
     mapEmbedUrl: z.string().max(1000).trim().optional(),
