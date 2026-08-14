@@ -134,6 +134,8 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   const [searchHover, setSearchHover] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [mobileSearchFocused, setMobileSearchFocused] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreWrapRef = useRef<HTMLLIElement>(null);
   const [query, setQuery] = useState("");
   const { grouped, loading, fetchError, apiEligible, showEmpty } = useSiteSearch(
     query,
@@ -341,6 +343,42 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   const frostedBar = headerSolid || overDarkBackdrop || overlayHero;
   const strongFrost = (overDarkBackdrop || overlayHero) && !headerSolid;
 
+  /**
+   * Same pattern as Thailand Kitchen's navbar: while the search bar is
+   * expanded and eating horizontal space, tuck the least-critical items
+   * behind a "..." menu instead of letting the bar wrap/overlap. They stay
+   * reachable as plain links in the dropdown; only the top-level item's own
+   * mega/dropdown submenu is skipped while collapsed.
+   */
+  const NAV_OVERFLOW_KEEP_ON_SEARCH = new Set([
+    "home",
+    "furniture",
+    "interior",
+    "showcase",
+    "locations",
+  ]);
+  const overflowNavItems: ResolvedNavItem[] = searchExpanded
+    ? navItems.filter((item) => !NAV_OVERFLOW_KEEP_ON_SEARCH.has(item.id))
+    : [];
+  const visibleNavItems: ResolvedNavItem[] = overflowNavItems.length
+    ? navItems.filter((item) => NAV_OVERFLOW_KEEP_ON_SEARCH.has(item.id))
+    : navItems;
+
+  useEffect(() => {
+    if (!searchExpanded) setMoreOpen(false);
+  }, [searchExpanded]);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    function onClick(event: MouseEvent) {
+      if (!moreWrapRef.current?.contains(event.target as Node)) {
+        setMoreOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [moreOpen]);
+
   return (
     <header
       ref={navRef}
@@ -362,7 +400,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
             searchExpanded ? "gap-2" : "gap-2.5 2xl:gap-4"
           }`}
         >
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const active = isActive(item);
             return (
               <li
@@ -433,6 +471,40 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
               </li>
             );
           })}
+
+          {overflowNavItems.length > 0 ? (
+            <li ref={moreWrapRef} className="relative shrink-0">
+              <button
+                type="button"
+                aria-label="More"
+                className={navLinkClass(
+                  overflowNavItems.some((item) => isActive(item))
+                )}
+                onClick={() => setMoreOpen((open) => !open)}
+              >
+                <span className="relative shrink-0 whitespace-nowrap pb-0.5">
+                  &#8230;
+                </span>
+              </button>
+
+              <AnimatePresence>
+                {moreOpen ? (
+                  <div className="absolute right-0 top-full z-[80] mt-2 min-w-[11rem] overflow-hidden rounded-xl border border-black/5 bg-white py-1 shadow-[0_8px_28px_rgba(0,0,0,0.12)]">
+                    {overflowNavItems.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={item.href}
+                        onClick={() => setMoreOpen(false)}
+                        className="block whitespace-nowrap px-4 py-2 text-sm text-[#2b2b2b] hover:bg-black/5 hover:text-maroon"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
+              </AnimatePresence>
+            </li>
+          ) : null}
         </ul>
 
         <div className="ml-auto flex shrink-0 items-center justify-end gap-2 sm:gap-3 2xl:gap-4">
