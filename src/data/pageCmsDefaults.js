@@ -111,6 +111,11 @@ const legalTermsBlocks = [
 ];
 
 const PAGE_CMS_DEFAULTS = {
+  homeSeo: {
+    indexable: false,
+    metaTitle: L(""),
+    metaDescription: L(""),
+  },
   aboutPageSettings: {
     indexable: false,
     metaTitle: L("About Us | Varsovia Design"),

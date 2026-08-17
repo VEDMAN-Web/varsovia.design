@@ -123,6 +123,19 @@ async function migrateMainNavigation() {
   }
 }
 
+async function migratePageCmsDefaults() {
+  const { PAGE_CMS_DEFAULTS } = require("../data/pageCmsDefaults");
+  const keys = Object.keys(PAGE_CMS_DEFAULTS);
+  const site = await SiteContent.findOne({ key: "main" }).select(keys.join(" ")).lean();
+  const patch = {};
+  for (const [key, value] of Object.entries(PAGE_CMS_DEFAULTS)) {
+    if (!site?.[key] || typeof site[key] !== "object") patch[key] = value;
+  }
+  if (Object.keys(patch).length) {
+    await SiteContent.updateOne({ key: "main" }, { $set: patch }, { upsert: true });
+  }
+}
+
 async function migrateFooterNavigation() {
   const { DEFAULT_FOOTER_NAVIGATION } = require("../validation/footerNavigation");
   const site = await SiteContent.findOne({ key: "main" }).select("footerNavigation").lean();
@@ -142,6 +155,7 @@ async function seedIfEmpty() {
   await migrateInquiryForm();
   await migrateMainNavigation();
   await migrateFooterNavigation();
+  await migratePageCmsDefaults();
 
   if (await needsCanonicalSync()) {
     console.log("Applying canonical seed (empty or incomplete data detected)...");

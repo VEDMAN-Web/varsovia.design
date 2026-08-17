@@ -239,12 +239,16 @@ async function getProductBySlug(req, res) {
 async function getSite(req, res) {
   try {
     const { mergeIaPages } = require("../data/iaPagesDefaults");
+    const { PAGE_CMS_DEFAULTS } = require("../data/pageCmsDefaults");
     const site = await SiteContent.findOne({ key: "main" });
     if (isAdminRequest(req)) {
       const payload = site ? (site.toObject ? site.toObject() : site) : { key: "main" };
       if (!payload.inquiryForm) payload.inquiryForm = DEFAULT_INQUIRY_FORM;
       if (!payload.mainNavigation) payload.mainNavigation = DEFAULT_MAIN_NAVIGATION;
       if (!payload.footerNavigation) payload.footerNavigation = DEFAULT_FOOTER_NAVIGATION;
+      for (const [key, value] of Object.entries(PAGE_CMS_DEFAULTS)) {
+        if (!payload[key]) payload[key] = value;
+      }
       payload.pages = mergeIaPages(payload.pages);
       return sendSuccess(res, payload, { req });
     }
