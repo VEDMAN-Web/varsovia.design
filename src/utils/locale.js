@@ -73,7 +73,10 @@ function localizeSiteContent(doc, locale) {
     "heroPrimaryCtaLabel",
     "heroSecondaryCtaLabel",
     "aboutTitle",
+    "aboutSubtitle",
     "aboutText",
+    "aboutCtaLabel",
+    "aboutCtaHref",
     "aboutIntro",
     "aboutStory",
     "aboutHeroTitle",
@@ -177,6 +180,7 @@ function localizeSiteContent(doc, locale) {
         subtitle: resolveLocalized(block.subtitle, locale),
         ctaLabel: resolveLocalized(block.ctaLabel, locale),
         ctaHref: typeof block.ctaHref === "string" ? block.ctaHref : "",
+        itemCtaLabel: resolveLocalized(block.itemCtaLabel, locale),
       };
     }
     out.sectionCopy = copy;
