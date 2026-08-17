@@ -145,7 +145,24 @@
     "/for-developers": "Developer partnerships",
     "/quality-sale": "Care & after-sales",
     "/contact": "Start your project",
-    "/faq": "Common questions"
+    "/faq": "Common questions",
+    "/catalogue": "Download the lookbook",
+    "/furniture": "Kitchens to whole-home fit-outs",
+    "/furniture/kitchens": "Modular & custom kitchen furniture",
+    "/furniture/wardrobes": "Fitted wardrobe systems",
+    "/furniture/living-room": "Lounge & media furniture",
+    "/furniture/bedrooms": "Bedroom furniture suites",
+    "/furniture/bathroom": "Vanities & wet-room joinery",
+    "/furniture/dining": "Dining furniture & storage",
+    "/furniture/doors": "Interior door systems",
+    "/furniture/whole-house": "Full-home furniture packages",
+    "/locations": "Where we design across Thailand",
+    "/locations/koh-samui": "Island villas & residences",
+    "/locations/phuket": "Coastal homes & resorts",
+    "/locations/bangkok": "City apartments & townhomes",
+    "/locations/pattaya": "Coastal living",
+    "/locations/hua-hin": "Relaxed seaside homes",
+    "/locations/chiang-mai": "Northern residences"
   },
   "preloader": {
     "loading": "Loading Varsovia Design"

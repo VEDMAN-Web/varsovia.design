@@ -62,13 +62,13 @@ function ShowcaseListingInner() {
     import("@/lib/api").then(({ fetchShowcases }) => {
       fetchShowcases(locale as Locale)
         .then((data) => {
-          if (data && data.length > 0) {
-            setApiProjects(
-              data.map((row) =>
-                mapApiShowcaseToProject(row as Record<string, unknown>, locale as Locale),
-              ),
-            );
-          }
+          // null = API failed → keep hardcoded; [] = CMS empty / all hidden
+          if (data === null) return;
+          setApiProjects(
+            data.map((row) =>
+              mapApiShowcaseToProject(row as Record<string, unknown>, locale as Locale),
+            ),
+          );
         })
         .catch(() => {
           /* keep hardcoded */

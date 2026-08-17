@@ -45,8 +45,11 @@ export default async function Home({ params }: Props) {
         />
         <About
           title={site.aboutTitle}
+          subtitle={site.aboutSubtitle}
           text={site.aboutText}
           images={site.aboutImages}
+          ctaLabel={site.aboutCtaLabel}
+          ctaHref={site.aboutCtaHref}
         />
         <Stats stats={site.stats} statsImage={site.statsImage} />
         <FeaturedProjects projects={projects} />

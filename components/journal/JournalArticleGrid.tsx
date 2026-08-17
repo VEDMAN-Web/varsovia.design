@@ -15,7 +15,6 @@ import {
 import { fetchBlogs } from "@/lib/api";
 import type { Locale } from "@/lib/i18n/routing";
 import {
-  fallbackBlogs,
   paginateBlogs,
   resolveBlogs,
   sortBlogPosts,
@@ -45,7 +44,7 @@ export default function JournalArticleGrid() {
     fetchBlogs(locale as Locale)
       .then((data) => {
         const resolved = resolveBlogs(Array.isArray(data) ? data : [], locale as Locale);
-        setArticles(resolved.length > 0 ? resolved : fallbackBlogs);
+        setArticles(resolved);
       })
       .finally(() => setLoading(false));
   }, [locale]);

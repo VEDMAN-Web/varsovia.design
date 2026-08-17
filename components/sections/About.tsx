@@ -37,11 +37,21 @@ const FALLBACK_ABOUT_IMAGES = [...MEDIA.about];
 
 type AboutProps = {
   title?: string;
+  subtitle?: string;
   text?: string;
   images?: string[];
+  ctaLabel?: string;
+  ctaHref?: string;
 };
 
-export default function About({ title, text, images }: AboutProps) {
+export default function About({
+  title,
+  subtitle,
+  text,
+  images,
+  ctaLabel,
+  ctaHref = "#projects",
+}: AboutProps) {
   const t = useTranslations("home");
   const tSite = useTranslations("siteFallback");
   const [hovered, setHovered] = useState<number | null>(null);
@@ -76,7 +86,7 @@ export default function About({ title, text, images }: AboutProps) {
   const defaultParagraphs = tSite("aboutText").split(/\n+/).filter(Boolean);
   const paragraphs = text ? text.split(/\n+/).filter(Boolean) : defaultParagraphs;
   const displayTitle = title || t("aboutTitle");
-  const subtitle = t("aboutSubtitle");
+  const displaySubtitle = subtitle || t("aboutSubtitle");
 
   const displayImages = ABOUT_LAYOUT.map((layout, i) => ({
     src: resolveMediaUrl(images?.[i], FALLBACK_ABOUT_IMAGES[i]),
@@ -107,7 +117,7 @@ export default function About({ title, text, images }: AboutProps) {
             {displayTitle}
           </motion.h2>
           <motion.p className={SECTION_SUBTITLE_CLASS} variants={subtitleItem}>
-            {subtitle}
+            {displaySubtitle}
           </motion.p>
         </motion.div>
 
@@ -179,14 +189,14 @@ export default function About({ title, text, images }: AboutProps) {
             ))}
 
             <motion.a
-              href="#projects"
+              href={ctaHref || "#projects"}
               variants={textItem}
               className="font-outfit group mt-2 inline-flex items-center gap-1 text-[1.25rem] font-medium text-[#cf5374]"
               whileHover={reduceMotion ? undefined : { x: 3 }}
               transition={{ duration: 0.25, ease: REVEAL_EASE }}
             >
               <span className="underline decoration-[#cf5374]/70 underline-offset-4 transition-colors group-hover:text-[#cf5374] group-hover:decoration-[#cf5374]">
-                {t("aboutLearnMore")}
+                {ctaLabel || t("aboutLearnMore")}
               </span>
               <span
                 aria-hidden

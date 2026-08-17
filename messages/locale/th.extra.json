@@ -145,7 +145,24 @@
     "/for-developers": "สำหรับนักพัฒนา",
     "/quality-sale": "ดูแลหลังขาย",
     "/contact": "เริ่มโครงการ",
-    "/faq": "คำถามที่พบบ่อย"
+    "/faq": "คำถามที่พบบ่อย",
+    "/catalogue": "ดาวน์โหลดลุคบุ๊ก",
+    "/furniture": "จากครัวถึงเฟอร์นิเจอร์ทั้งบ้าน",
+    "/furniture/kitchens": "เฟอร์นิเจอร์ครัวโมดูลาร์และสั่งทำ",
+    "/furniture/wardrobes": "ระบบตู้เสื้อผ้าบิวท์อิน",
+    "/furniture/living-room": "เฟอร์นิเจอร์ห้องนั่งเล่น",
+    "/furniture/bedrooms": "ชุดเฟอร์นิเจอร์ห้องนอน",
+    "/furniture/bathroom": "เคาน์เตอร์ห้องน้ำและงานบิวท์อิน",
+    "/furniture/dining": "เฟอร์นิเจอร์และที่เก็บของห้องอาหาร",
+    "/furniture/doors": "ระบบประตูภายใน",
+    "/furniture/whole-house": "แพ็กเกจเฟอร์นิเจอร์ทั้งบ้าน",
+    "/locations": "พื้นที่ที่เราออกแบบทั่วไทย",
+    "/locations/koh-samui": "วิลล่าและที่พักบนเกาะ",
+    "/locations/phuket": "บ้านและรีสอร์ทชายฝั่ง",
+    "/locations/bangkok": "อพาร์ตเมนต์และทาวน์โฮมในเมือง",
+    "/locations/pattaya": "การใช้ชีวิตชายฝั่ง",
+    "/locations/hua-hin": "บ้านทะเลบรรยากาศผ่อนคลาย",
+    "/locations/chiang-mai": "ที่พักภาคเหนือ"
   },
   "preloader": {
     "loading": "กำลังโหลด Varsovia Design"

@@ -16,7 +16,6 @@ import {
   fadeUpItem,
   reducedFadeUpItem,
 } from "@/lib/motionPresets";
-import { fallbackHomeData } from "@/lib/fallbackData";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 
@@ -30,13 +29,12 @@ type Project = {
   description?: string;
   gallery?: string[];
   featured?: boolean;
+  visible?: boolean;
 };
 
 type FeaturedProjectsProps = {
   projects?: Project[];
 };
-
-const FALLBACK_PROJECTS = fallbackHomeData.projects as Project[];
 
 const DEFAULT_COVER = MEDIA.featured[0];
 
@@ -44,9 +42,10 @@ function resolveCover(project: Project) {
   return resolveMediaUrl(project.coverImage || project.gallery?.[0], DEFAULT_COVER);
 }
 
-/** Prefer CMS `featured: true` projects; fall back to full list if none flagged. */
+/** Prefer CMS `featured: true` projects; otherwise show the provided list as-is. */
 function pickFeaturedSource(projects?: Project[]) {
-  const source = projects && projects.length > 0 ? projects : FALLBACK_PROJECTS;
+  const source = (projects || []).filter((p) => (p as Project & { visible?: boolean }).visible !== false);
+  if (source.length === 0) return [];
   const flagged = source.filter((p) => p.featured === true);
   return flagged.length > 0 ? flagged : source;
 }
@@ -60,14 +59,6 @@ function buildDisplayProjects(projects?: Project[]) {
     const key = project.slug || project._id;
     if (seen.has(key)) continue;
     merged.push({ ...project, coverImage: resolveCover(project) });
-    seen.add(key);
-  }
-
-  for (const fallback of FALLBACK_PROJECTS) {
-    if (merged.length >= 8) break;
-    const key = fallback.slug || fallback._id;
-    if (seen.has(key)) continue;
-    merged.push({ ...fallback, coverImage: resolveCover(fallback) });
     seen.add(key);
   }
 
@@ -110,6 +101,8 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
 
   const stackItem = reduceMotion ? reducedScaleFadeItem : scaleFadeItem;
   const ctaVariant = reduceMotion ? reducedFadeUpItem : fadeUpItem;
+
+  if (displayProjects.length === 0) return null;
 
   return (
     <section id="projects" className={`bg-transparent ${SITE_SECTION_PADDING_Y} !pb-6 sm:!pb-8 md:!pb-10`}>

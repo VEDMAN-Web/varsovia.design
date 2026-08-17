@@ -81,17 +81,19 @@ const FALLBACK_STRENGTHS = [
 ];
 
 function resolveStrengths(items?: ApiCoreStrength[]) {
-  if (!items?.length) return FALLBACK_STRENGTHS;
-  return items.map((item, index) => {
-    const iconKey = (item.iconKey || "eye") as keyof typeof ICON_MAP;
-    return {
-      id: item._id,
-      icon: ICON_MAP[iconKey] || Eye,
-      title: item.title,
-      description: item.description || "",
-      image: resolveMediaUrl(item.image, MEDIA.core[index % MEDIA.core.length]),
-    };
-  });
+  if (!items?.length) return [];
+  return items
+    .filter((item) => (item as ApiCoreStrength & { visible?: boolean }).visible !== false)
+    .map((item, index) => {
+      const iconKey = (item.iconKey || "eye") as keyof typeof ICON_MAP;
+      return {
+        id: item._id,
+        icon: ICON_MAP[iconKey] || Eye,
+        title: item.title,
+        description: item.description || "",
+        image: resolveMediaUrl(item.image, MEDIA.core[index % MEDIA.core.length]),
+      };
+    });
 }
 
 const MAX_VISIBLE_OFFSET = 2;
@@ -183,12 +185,14 @@ export default function CoreStrengths({ strengths }: { strengths?: ApiCoreStreng
   }, []);
 
   useEffect(() => {
-    if (paused || prefersReducedMotion) return;
+    if (length === 0 || paused || prefersReducedMotion) return;
     const timer = setInterval(() => {
       setActive((prev) => (prev + 1) % length);
     }, AUTOPLAY_MS);
     return () => clearInterval(timer);
   }, [paused, prefersReducedMotion, length]);
+
+  if (length === 0) return null;
 
   function prev() {
     setActive((i) => (i - 1 + length) % length);

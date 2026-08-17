@@ -71,7 +71,9 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
   const t = useTranslations("home");
   const site = useSiteSettings();
   const section = site?.sectionCopy?.catalogue;
-  const raw: CatalogueItem[] = catalogues && catalogues.length > 0 ? catalogues : FALLBACK_CATALOGUES;
+  const raw: CatalogueItem[] = (catalogues || []).filter(
+    (c) => (c as CatalogueItem & { visible?: boolean }).visible !== false,
+  );
   const CATALOGUES = raw.map((c, index) => {
     const theme = brochureThemeForIndex(index, c.title);
     return {
@@ -194,12 +196,14 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
   }, []);
 
   useEffect(() => {
-    if (paused || prefersReducedMotion) return;
+    if (length === 0 || paused || prefersReducedMotion) return;
     const timer = setInterval(() => {
       setActive((prev) => (prev + 1) % length);
     }, AUTOPLAY_MS);
     return () => clearInterval(timer);
   }, [paused, prefersReducedMotion, length]);
+
+  if (length === 0) return null;
 
   function prev() {
     setActive((p) => (p - 1 + length) % length);
@@ -380,6 +384,7 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
                           variant="carousel"
                           metrics={{ width: cardWidth, height: cardHeight }}
                           downloadInteractive
+                          downloadLabel={section?.ctaLabel || t("catalogueDownload")}
                           className="pointer-events-none [&_button]:pointer-events-auto"
                           onDownload={(e) => {
                             e.stopPropagation();

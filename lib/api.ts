@@ -144,7 +144,28 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
     heroPrimaryCtaHref: String(pickString(data.heroPrimaryCtaHref, fb.heroPrimaryCtaHref)),
     heroSecondaryCtaLabel: pickLocalizedString(data.heroSecondaryCtaLabel, locale, fb.heroSecondaryCtaLabel),
     heroSecondaryCtaHref: String(pickString(data.heroSecondaryCtaHref, fb.heroSecondaryCtaHref)),
-    stats: (data.stats as SiteContent["stats"])?.length ? (data.stats as SiteContent["stats"]) : fb.stats,
+    aboutTitle: pickSiteCopy(data.aboutTitle, getLocaleOrDefault(locale), fb.aboutTitle ?? ""),
+    aboutSubtitle: pickSiteCopy(
+      data.aboutSubtitle,
+      getLocaleOrDefault(locale),
+      (fb as { aboutSubtitle?: string }).aboutSubtitle ?? "",
+    ),
+    aboutCtaLabel: pickSiteCopy(
+      data.aboutCtaLabel,
+      getLocaleOrDefault(locale),
+      (fb as { aboutCtaLabel?: string }).aboutCtaLabel ?? "",
+    ),
+    aboutCtaHref: String(pickString(data.aboutCtaHref, (fb as { aboutCtaHref?: string }).aboutCtaHref) || "#projects"),
+    stats: (() => {
+      const loc = getLocaleOrDefault(locale);
+      const rows = (data.stats as SiteContent["stats"])?.length
+        ? (data.stats as Array<Record<string, unknown>>)
+        : ((fb.stats || []) as Array<Record<string, unknown>>);
+      return rows.map((row, i) => ({
+        value: pickSiteCopy(row.value, loc, fb.stats?.[i]?.value ?? ""),
+        label: pickSiteCopy(row.label, loc, fb.stats?.[i]?.label ?? ""),
+      }));
+    })(),
     statsImage: resolveMediaUrl(pickString(data.statsImage, fb.statsImage) as string, MEDIA.stats),
     aboutImages: resolveMediaUrls(
       (data.aboutImages as string[])?.length ? (data.aboutImages as string[]) : undefined,
@@ -196,16 +217,17 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
         : fb.footerOffices,
     sectionCopy: (() => {
       const src =
-        (data.sectionCopy as Record<string, { title?: unknown; subtitle?: unknown; ctaLabel?: unknown; ctaHref?: unknown }> | undefined) ||
+        (data.sectionCopy as Record<string, { title?: unknown; subtitle?: unknown; ctaLabel?: unknown; ctaHref?: unknown; itemCtaLabel?: unknown }> | undefined) ||
         {};
       const loc = getLocaleOrDefault(locale);
       const home = getAppMessages(loc).home as Record<string, string>;
-      const msgCopy: Record<string, { title?: string; subtitle?: string; ctaLabel?: string; ctaHref?: string }> = {
+      const msgCopy: Record<string, { title?: string; subtitle?: string; ctaLabel?: string; ctaHref?: string; itemCtaLabel?: string }> = {
         products: {
           title: home.productsTitle,
           subtitle: home.productsSubtitle,
           ctaLabel: home.exploreMore || home.exploreInteriors,
           ctaHref: "/interior-design",
+          itemCtaLabel: home.exploreInteriors,
         },
         featured: {
           title: home.featuredTitle,
@@ -215,7 +237,11 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
         },
         partners: { title: home.partnersTitle, subtitle: home.partnersSubtitle },
         coreStrengths: { title: home.strengthsTitle, subtitle: home.strengthsSubtitle },
-        catalogue: { title: home.catalogueTitle, subtitle: home.catalogueSubtitle },
+        catalogue: {
+          title: home.catalogueTitle,
+          subtitle: home.catalogueSubtitle,
+          ctaLabel: home.catalogueDownload,
+        },
         testimonials: { title: home.testimonialsTitle, subtitle: home.testimonialsSubtitle },
         contact: { title: home.contactTitle, subtitle: home.contactSubtitle },
       };
@@ -228,6 +254,11 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
           subtitle: pickSiteCopy(src[key]?.subtitle, loc, fbCopy[key]?.subtitle ?? ""),
           ctaLabel: pickSiteCopy(src[key]?.ctaLabel, loc, fbCopy[key]?.ctaLabel ?? ""),
           ctaHref: String(pickString(src[key]?.ctaHref, fbCopy[key]?.ctaHref) || ""),
+          itemCtaLabel: pickSiteCopy(
+            src[key]?.itemCtaLabel,
+            loc,
+            fbCopy[key]?.itemCtaLabel ?? "",
+          ),
         };
       }
       return out;
@@ -606,10 +637,15 @@ export type FetchedProduct = {
   [key: string]: unknown;
 };
 
+/** Public CMS lists: respect `visible` (API already filters; keep as a client guard). */
+function onlyVisibleRows<T extends Record<string, unknown>>(rows: unknown[]): T[] {
+  return (rows as T[]).filter((row) => row && row.visible !== false);
+}
+
 export async function fetchProducts(locale?: Locale): Promise<FetchedProduct[]> {
   try {
-    const rows = await fetchAllListItems("/products", locale, { next: { revalidate: 30 } });
-    if (!rows.length) throw new Error("Empty");
+    const rows = onlyVisibleRows(await fetchAllListItems("/products", locale, { next: { revalidate: 30 } }));
+    // Empty CMS list is intentional (all hidden / none created) — do not swap in demos.
     return rows.map((row, index) => {
       const product = row as Record<string, unknown>;
       return {
@@ -625,8 +661,6 @@ export async function fetchProducts(locale?: Locale): Promise<FetchedProduct[]> 
   }
 }
 
-const MIN_FEATURED_PROJECTS = 8;
-
 function normalizeProjectCover(project: Record<string, unknown>) {
   const gallery = (project.gallery as string[] | undefined)?.map((url) => resolveMediaUrl(url));
   const coverImage = resolveMediaUrl(
@@ -638,32 +672,12 @@ function normalizeProjectCover(project: Record<string, unknown>) {
   return { ...project, coverImage, gallery: gallery?.length ? gallery : [coverImage] };
 }
 
-async function mergeFeaturedProjects(apiProjects: Record<string, unknown>[]) {
-  const { fallbackHomeData } = await import("./fallbackData");
-  const fallbacks = fallbackHomeData.projects as Record<string, unknown>[];
-  const merged: Record<string, unknown>[] = apiProjects.map(normalizeProjectCover);
-  const seen = new Set(
-    merged.map((project) => String(project.slug || project._id)),
-  );
-
-  for (const fallback of fallbacks) {
-    if (merged.length >= MIN_FEATURED_PROJECTS) break;
-    const key = String(fallback.slug || fallback._id);
-    if (seen.has(key)) continue;
-    merged.push(normalizeProjectCover(fallback));
-    seen.add(key);
-  }
-
-  return merged.length > 0 ? merged : fallbacks.map(normalizeProjectCover);
-}
-
 export async function fetchProjects(locale?: Locale): Promise<ApiProject[]> {
-  const { fallbackHomeData } = await import("./fallbackData");
   try {
-    const rows = await fetchAllListItems("/projects", locale, { next: { revalidate: 30 } });
-    if (!rows.length) throw new Error("Empty");
-    return (await mergeFeaturedProjects(rows as Record<string, unknown>[])) as ApiProject[];
+    const rows = onlyVisibleRows(await fetchAllListItems("/projects", locale, { next: { revalidate: 30 } }));
+    return rows.map((row) => normalizeProjectCover(row as Record<string, unknown>)) as ApiProject[];
   } catch {
+    const { fallbackHomeData } = await import("./fallbackData");
     return fallbackHomeData.projects.map(normalizeProjectCover) as ApiProject[];
   }
 }
@@ -680,27 +694,41 @@ export async function fetchHomeData(locale?: Locale): Promise<HomeData> {
     if (data.site) {
       data.site = await mergeSiteFallback(data.site as Record<string, unknown>, locale);
     }
-    if (Array.isArray(data.testimonials) && data.testimonials.length > 0) {
-      data.testimonials = normalizeTestimonials(data.testimonials, locale);
-    } else {
-      const { fallbackHomeData } = await import("./fallbackData");
-      data.testimonials = fallbackHomeData.testimonials;
+    // Trust CMS visibility: empty arrays stay empty (do not reinject demo content).
+    data.testimonials = Array.isArray(data.testimonials)
+      ? normalizeTestimonials(
+          onlyVisibleRows(data.testimonials as unknown as Record<string, unknown>[]),
+          locale,
+        )
+      : [];
+    data.catalogues = Array.isArray(data.catalogues)
+      ? (onlyVisibleRows(data.catalogues as unknown as Record<string, unknown>[]).map(
+          (catalogue: Record<string, unknown>, index: number) => ({
+            ...catalogue,
+            title: String(catalogue.title ?? ""),
+            coverImage: resolveMediaUrl(
+              catalogue.coverImage as string | undefined,
+              MEDIA.catalogues[index % MEDIA.catalogues.length],
+            ),
+          }),
+        ) as HomeData["catalogues"])
+      : [];
+    if (Array.isArray(data.products)) {
+      data.products = onlyVisibleRows(data.products as unknown as Record<string, unknown>[]) as HomeData["products"];
     }
-    // If catalogues are empty, use local fallback
-    if (!data.catalogues || data.catalogues.length === 0) {
-      const { fallbackHomeData } = await import("./fallbackData");
-      data.catalogues = fallbackHomeData.catalogues;
-    } else {
-      data.catalogues = data.catalogues.map(
-        (catalogue: Record<string, unknown>, index: number) => ({
-          ...catalogue,
-          title: String(catalogue.title ?? ""),
-          coverImage: resolveMediaUrl(
-            catalogue.coverImage as string | undefined,
-            MEDIA.catalogues[index % MEDIA.catalogues.length],
-          ),
-        }),
-      ) as HomeData["catalogues"];
+    if (Array.isArray(data.projects)) {
+      data.projects = onlyVisibleRows(data.projects as unknown as Record<string, unknown>[]) as HomeData["projects"];
+    }
+    if (Array.isArray(data.partners)) {
+      data.partners = onlyVisibleRows(data.partners as unknown as Record<string, unknown>[]) as HomeData["partners"];
+    }
+    if (Array.isArray(data.coreStrengths)) {
+      data.coreStrengths = onlyVisibleRows(
+        data.coreStrengths as unknown as Record<string, unknown>[],
+      ) as HomeData["coreStrengths"];
+    }
+    if (Array.isArray(data.showrooms)) {
+      data.showrooms = onlyVisibleRows(data.showrooms as unknown as Record<string, unknown>[]) as HomeData["showrooms"];
     }
     return data;
   } catch {
@@ -711,10 +739,9 @@ export async function fetchHomeData(locale?: Locale): Promise<HomeData> {
 
 export async function fetchBlogs(locale?: Locale): Promise<Record<string, unknown>[]> {
   try {
-    const rows = await fetchAllListItems("/blogs", locale, { next: { revalidate: 10 } });
-    if (rows.length > 0) return rows as Record<string, unknown>[];
+    return onlyVisibleRows(await fetchAllListItems("/blogs", locale, { next: { revalidate: 10 } }));
   } catch {
-    /* fall through to fallback */
+    /* fall through to fallback only when API is unreachable */
   }
   const { fallbackBlogs, resolveBlogs } = await import("@/lib/companyData");
   return resolveBlogs(fallbackBlogs, locale);
@@ -769,10 +796,7 @@ export async function fetchBlogById(id: string, locale?: Locale) {
 
 export async function fetchTeamMembers(locale?: Locale): Promise<Record<string, unknown>[]> {
   try {
-    return (await fetchAllListItems("/team", locale, { next: { revalidate: 10 } })) as Record<
-      string,
-      unknown
-    >[];
+    return onlyVisibleRows(await fetchAllListItems("/team", locale, { next: { revalidate: 10 } }));
   } catch {
     return [];
   }
@@ -780,10 +804,7 @@ export async function fetchTeamMembers(locale?: Locale): Promise<Record<string, 
 
 export async function fetchFAQs(locale?: Locale): Promise<Record<string, unknown>[]> {
   try {
-    return (await fetchAllListItems("/faqs", locale, { next: { revalidate: 10 } })) as Record<
-      string,
-      unknown
-    >[];
+    return onlyVisibleRows(await fetchAllListItems("/faqs", locale, { next: { revalidate: 10 } }));
   } catch {
     return [];
   }
@@ -890,9 +911,7 @@ export async function fetchProjectById(idOrSlug: string, locale?: Locale) {
 
 export async function fetchCatalogues(locale?: Locale): Promise<Record<string, unknown>[]> {
   try {
-    const rows = await fetchAllListItems("/catalogues", locale, { next: { revalidate: 10 } });
-    if (!rows.length) throw new Error("Empty");
-    return rows as Record<string, unknown>[];
+    return onlyVisibleRows(await fetchAllListItems("/catalogues", locale, { next: { revalidate: 10 } }));
   } catch {
     const { fallbackHomeData } = await import("./fallbackData");
     return fallbackHomeData.catalogues as Record<string, unknown>[];
@@ -901,31 +920,26 @@ export async function fetchCatalogues(locale?: Locale): Promise<Record<string, u
 
 export async function fetchShowrooms(locale?: Locale) {
   try {
-    const rows = await fetchAllListItems("/showrooms", locale, { next: { revalidate: 30 } });
-    if (rows.length > 0) {
-      return rows.map((row, index) => {
-        const item = row as Record<string, unknown>;
-        return {
-          _id: String(item._id ?? index),
-          name: pickLocalized(item.name, getLocaleOrDefault(locale)) || String(item.name ?? ""),
-          location:
-            pickLocalized(item.location, getLocaleOrDefault(locale)) || String(item.location ?? ""),
-          image: resolveMediaUrl(item.image as string | undefined, MEDIA.showrooms[index % 3]),
-        };
-      });
-    }
+    const rows = onlyVisibleRows(await fetchAllListItems("/showrooms", locale, { next: { revalidate: 30 } }));
+    return rows.map((row, index) => {
+      const item = row as Record<string, unknown>;
+      return {
+        _id: String(item._id ?? index),
+        name: pickLocalized(item.name, getLocaleOrDefault(locale)) || String(item.name ?? ""),
+        location:
+          pickLocalized(item.location, getLocaleOrDefault(locale)) || String(item.location ?? ""),
+        image: resolveMediaUrl(item.image as string | undefined, MEDIA.showrooms[index % 3]),
+      };
+    });
   } catch {
-    /* fall through */
+    const { fallbackHomeData } = await import("./fallbackData");
+    return fallbackHomeData.showrooms;
   }
-  const { fallbackHomeData } = await import("./fallbackData");
-  return fallbackHomeData.showrooms;
 }
 
 export async function fetchShowcases(locale?: Locale) {
   try {
-    const rows = await fetchAllListItems("/showcases", locale, { next: { revalidate: 30 } });
-    if (!rows.length) throw new Error("Empty");
-    return rows as {
+    return onlyVisibleRows(await fetchAllListItems("/showcases", locale, { next: { revalidate: 30 } })) as {
       _id: string;
       title: string;
       category: string;
@@ -939,7 +953,7 @@ export async function fetchShowcases(locale?: Locale) {
       order: number;
     }[];
   } catch {
-    return null; // null = use hardcoded fallback
+    return null; // null = use hardcoded fallback (API unreachable)
   }
 }
 

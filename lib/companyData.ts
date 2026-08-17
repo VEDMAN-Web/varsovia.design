@@ -880,27 +880,11 @@ export function normalizeBlog(
 
 export function resolveBlogs(apiData: unknown[], locale?: Locale): BlogPost[] {
   const loc = getLocaleOrDefault(locale);
-  const localizedFallbacks = () =>
-    fallbackBlogs.map((item) => normalizeBlog(item, loc)).filter(Boolean) as BlogPost[];
 
-  if (!Array.isArray(apiData) || apiData.length === 0) return localizedFallbacks();
-  const normalized = apiData
+  if (!Array.isArray(apiData) || apiData.length === 0) return [];
+  return apiData
     .map((item) => normalizeBlog(item as Partial<BlogPost> & { id?: string }, loc))
     .filter(Boolean) as BlogPost[];
-  if (normalized.length === 0) return localizedFallbacks();
-  if (normalized.length >= fallbackBlogs.length) return normalized;
-
-  const seen = new Set(normalized.map((b) => b._id));
-  const padded = [...normalized];
-  for (const post of fallbackBlogs) {
-    if (padded.length >= fallbackBlogs.length) break;
-    if (!seen.has(post._id)) {
-      const localized = normalizeBlog(post, loc);
-      if (localized) padded.push(localized);
-      seen.add(post._id);
-    }
-  }
-  return padded;
 }
 
 function isRichBlogSections(sections: BlogSection[]): boolean {

@@ -106,28 +106,18 @@ const FALLBACK_STORIES: StoryCard[] = [
 ];
 
 function buildStories(testimonials?: Testimonial[]): StoryCard[] {
-  if (!testimonials?.length) return FALLBACK_STORIES;
+  if (!testimonials?.length) return [];
 
-  const fromApi = testimonials.map((item, index) => ({
-    id: item._id,
-    name: item.name,
-    rating: item.rating || 5,
-    quote: item.quote,
-    image: resolveMediaUrl(item.image, MEDIA.stories[index % MEDIA.stories.length]),
-    avatar: resolveMediaUrl(item.image, STORY_AVATARS[index % STORY_AVATARS.length]),
-  }));
-
-  if (fromApi.length >= FALLBACK_STORIES.length) return fromApi;
-
-  const seen = new Set(fromApi.map((s) => s.id));
-  for (const fallback of FALLBACK_STORIES) {
-    if (fromApi.length >= FALLBACK_STORIES.length) break;
-    if (seen.has(fallback.id)) continue;
-    fromApi.push(fallback);
-    seen.add(fallback.id);
-  }
-
-  return fromApi;
+  return testimonials
+    .filter((item) => (item as Testimonial & { visible?: boolean }).visible !== false)
+    .map((item, index) => ({
+      id: item._id,
+      name: item.name,
+      rating: item.rating || 5,
+      quote: item.quote,
+      image: resolveMediaUrl(item.image, MEDIA.stories[index % MEDIA.stories.length]),
+      avatar: resolveMediaUrl(item.image, STORY_AVATARS[index % STORY_AVATARS.length]),
+    }));
 }
 
 const MAX_VISIBLE_OFFSET = 2;
@@ -222,12 +212,14 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
   }, []);
 
   useEffect(() => {
-    if (paused || prefersReducedMotion) return;
+    if (length === 0 || paused || prefersReducedMotion) return;
     const timer = setInterval(() => {
       setActive((prev) => (prev + 1) % length);
     }, AUTOPLAY_MS);
     return () => clearInterval(timer);
   }, [paused, prefersReducedMotion, length]);
+
+  if (length === 0) return null;
 
   function prev() {
     setActive((i) => (i - 1 + length) % length);

@@ -22,6 +22,7 @@ export type SiteSectionCopy = {
   subtitle?: string;
   ctaLabel?: string;
   ctaHref?: string;
+  itemCtaLabel?: string;
 };
 
 export type PageSeoBlock = {
@@ -81,7 +82,10 @@ export type SiteContent = {
   heroSecondaryCtaLabel?: string;
   heroSecondaryCtaHref?: string;
   aboutTitle?: string;
+  aboutSubtitle?: string;
   aboutText?: string;
+  aboutCtaLabel?: string;
+  aboutCtaHref?: string;
   aboutIntro?: string;
   aboutStory?: string;
   aboutHeroTitle?: string;
@@ -202,6 +206,24 @@ export type ApiTestimonial = {
   image?: string;
 };
 
+export type ApiProduct = {
+  _id: string;
+  title: string;
+  slug?: string;
+  description?: string;
+  image?: string;
+  category?: string;
+  visible?: boolean;
+};
+
+export type ApiShowroom = {
+  _id: string;
+  name: string;
+  location?: string;
+  image?: string;
+  visible?: boolean;
+};
+
 export type HomeData = {
   site: SiteContent;
   catalogues?: Array<{
@@ -211,6 +233,9 @@ export type HomeData = {
     downloadUrl?: string;
   }>;
   testimonials?: ApiTestimonial[];
+  products?: ApiProduct[];
+  projects?: ApiProject[];
+  showrooms?: ApiShowroom[];
   partners?: Array<{ _id: string; name: string; logo?: string; website?: string }>;
   coreStrengths?: ApiCoreStrength[];
 };

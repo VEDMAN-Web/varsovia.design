@@ -2,6 +2,7 @@ import { SHOWCASE_TABS, type ShowcaseTab } from "@/lib/showcaseData";
 import { showcaseTabMessageKey } from "@/lib/showcaseTabI18n";
 import type { SiteContent } from "@/lib/siteTypes";
 import type { MainNavItem, ResolvedNavItem } from "@/lib/mainNavigationTypes";
+import { getNavDropdownSubtitle } from "@/components/layout/navDropdownMeta";
 
 function mapNavItem(item: MainNavItem): ResolvedNavItem {
   return {
@@ -36,6 +37,9 @@ export function buildFallbackMainNavigation(
   tDrop: NavTranslator,
   tShowcase: ShowcaseTranslator,
 ): ResolvedNavItem[] {
+  const drop = (href: string, fallback = "") =>
+    getNavDropdownSubtitle(href, tDrop) || fallback;
+
   const furnitureLinks = [
     { title: "Kitchens", subtitle: "Modular & custom kitchen furniture", href: "/furniture/kitchens" },
     { title: "Wardrobes", subtitle: "Fitted wardrobe systems", href: "/furniture/wardrobes" },
@@ -47,7 +51,7 @@ export function buildFallbackMainNavigation(
     { title: "Whole House", subtitle: "Full-home furniture packages", href: "/furniture/whole-house" },
   ].map((link) => ({
     ...link,
-    subtitle: tDrop(link.href) || link.subtitle,
+    subtitle: drop(link.href, link.subtitle),
   }));
 
   const interiorLinks = [
@@ -77,14 +81,14 @@ export function buildFallbackMainNavigation(
 
   const companyLinks = [
     { title: "Services", subtitle: "Design, make & install", href: "/services" },
-    { title: t("freeCatalogue"), subtitle: "Download the lookbook", href: "/catalogue" },
-    { title: t("ourBlog"), subtitle: tDrop("/journal") || "Design insights", href: "/journal" },
+    { title: t("freeCatalogue"), subtitle: drop("/catalogue", "Download the lookbook"), href: "/catalogue" },
+    { title: t("ourBlog"), subtitle: drop("/journal", "Design insights"), href: "/journal" },
     { title: "Complete Interiors", subtitle: "Villas, condos & resorts", href: "/complete-interiors" },
     { title: "For Developers", subtitle: "Project partnerships", href: "/for-developers" },
     { title: "Livo", subtitle: "Brand partner", href: "/about/livo" },
     { title: "Oppolia", subtitle: "Brand partner", href: "/about/oppolia" },
-    { title: t("ourTeam"), subtitle: tDrop("/team") || "Meet the experts", href: "/team" },
-    { title: t("qualityAfterSales"), subtitle: tDrop("/quality-sale") || "Care & after-sales", href: "/quality-sale" },
+    { title: t("ourTeam"), subtitle: drop("/team", "Meet the experts"), href: "/team" },
+    { title: t("qualityAfterSales"), subtitle: drop("/quality-sale", "Care & after-sales"), href: "/quality-sale" },
   ];
 
   const contactLinks = [
@@ -92,7 +96,7 @@ export function buildFallbackMainNavigation(
     { label: t("faq"), href: "/faq" },
   ].map((link) => ({
     ...link,
-    subtitle: tDrop(link.href) || undefined,
+    subtitle: drop(link.href),
   }));
 
   const showcaseItems = SHOWCASE_TABS.filter((tab) => tab !== "All");
@@ -117,7 +121,7 @@ export function buildFallbackMainNavigation(
         featured: {
           href: "/furniture",
           label: "All Furniture",
-          subtitle: tDrop("/furniture") || "Kitchens to whole-home fit-outs",
+          subtitle: drop("/furniture", "Kitchens to whole-home fit-outs"),
         },
         sectionLabel: "Categories",
         links: furnitureLinks,
@@ -181,7 +185,7 @@ export function buildFallbackMainNavigation(
         featured: {
           href: "/about/varsovia",
           label: t("aboutVarsovia"),
-          subtitle: tDrop("/about") || "Our story & vision",
+          subtitle: drop("/about", "Our story & vision"),
         },
         sectionLabel: "Discover",
         links: companyLinks,
@@ -197,7 +201,7 @@ export function buildFallbackMainNavigation(
         featured: {
           href: "/contact",
           label: t("getInTouch"),
-          subtitle: tDrop("/contact") || undefined,
+          subtitle: drop("/contact"),
         },
         sectionLabel: t("supportSection"),
         links: contactLinks,

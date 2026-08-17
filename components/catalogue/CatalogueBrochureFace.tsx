@@ -16,6 +16,7 @@ type CatalogueBrochureFaceProps = {
   metrics?: CarouselFaceMetrics;
   downloadInteractive?: boolean;
   onDownload?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  downloadLabel?: string;
   className?: string;
 };
 
@@ -26,6 +27,7 @@ export default function CatalogueBrochureFace({
   metrics,
   downloadInteractive = false,
   onDownload,
+  downloadLabel,
   className = "",
 }: CatalogueBrochureFaceProps) {
   const t = useTranslations("home");
@@ -48,7 +50,7 @@ export default function CatalogueBrochureFace({
 
   const downloadInner = (
     <>
-      {t("catalogueDownload")}
+      {downloadLabel || t("catalogueDownload")}
       {downloadIcon}
     </>
   );

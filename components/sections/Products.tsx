@@ -78,7 +78,11 @@ export default function Products({ products }: ProductsProps) {
   const itemVariant = reduceMotion ? reducedScaleFadeItem : scaleFadeItem;
   const ctaVariant = reduceMotion ? reducedFadeUpItem : fadeUpItem;
 
-  const displayProducts = (products && products.length > 0 ? products : FALLBACK_PRODUCTS).slice(0, 3);
+  const displayProducts = (products || [])
+    .filter((p) => (p as Product & { visible?: boolean }).visible !== false)
+    .slice(0, 3);
+
+  if (displayProducts.length === 0) return null;
 
   return (
     <section
@@ -111,6 +115,7 @@ export default function Products({ products }: ProductsProps) {
                     imageFallback={MEDIA.products[i % MEDIA.products.length]}
                     href={interiorListingHref(product.category)}
                     category={product.category}
+                    ctaLabel={section?.itemCtaLabel || t("exploreInteriors")}
                     motionVariant="none"
                   />
                 </motion.div>

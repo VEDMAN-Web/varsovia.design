@@ -109,10 +109,13 @@ export const FALLBACK_INQUIRY_FORM_EN: InquiryFormConfig = {
 export function resolveInquiryForm(site: SiteContent | null | undefined): InquiryFormConfig {
   const raw = site?.inquiryForm;
   if (raw?.fields?.length) {
+    const fields = [...raw.fields]
+      .filter((field) => (field as { enabled?: boolean }).enabled !== false)
+      .sort((a, b) => a.order - b.order);
     return {
       version: raw.version,
       submitLabel: raw.submitLabel,
-      fields: [...raw.fields].sort((a, b) => a.order - b.order),
+      fields,
     };
   }
   return FALLBACK_INQUIRY_FORM_EN;
