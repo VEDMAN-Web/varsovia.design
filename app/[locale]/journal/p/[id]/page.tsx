@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import BlogDetailView from "@/components/company/BlogDetailView";
-import { fetchBlogById, fetchBlogs } from "@/lib/api";
+import { fetchBlogById, fetchBlogs, fetchSite } from "@/lib/api";
 import type { Locale } from "@/lib/i18n/routing";
 import {
   enrichBlogForDetailPage,
@@ -9,6 +9,7 @@ import {
   getRelatedBlogs,
   resolveBlogs,
 } from "@/lib/companyData";
+import { getIaHub } from "@/lib/iaPages";
 import { getPublicSiteUrl } from "@/lib/publicEnv";
 import { pageMetadata } from "@/lib/seo";
 import { setRequestLocale } from "next-intl/server";
@@ -21,14 +22,19 @@ type Props = { params: Promise<{ locale: string; id: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, id } = await params;
   const allBlogs = resolveBlogs(await fetchBlogs(locale as Locale), locale as Locale);
-  const apiBlog = await fetchBlogById(id, locale as Locale);
+  const [apiBlog, site] = await Promise.all([
+    fetchBlogById(id, locale as Locale),
+    fetchSite(locale as Locale).catch(() => null),
+  ]);
   const blog = getBlogById(id, apiBlog, allBlogs, locale as Locale);
   if (!blog) return { title: "Not found" };
+  const hub = getIaHub(site, "journal", locale);
   return pageMetadata({
     title: blog.title.slice(0, 60),
     description: (blog.excerpt || blog.title).slice(0, 160),
     path: `/${locale}/journal/p/${id}`,
     locale,
+    indexable: hub.indexable === true,
   });
 }
 

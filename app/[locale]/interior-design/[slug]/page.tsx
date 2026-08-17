@@ -2,10 +2,11 @@ import { cache } from "react";
 import { notFound, redirect } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import InteriorDetail from "@/components/interior/InteriorDetail";
-import { fetchProjectById } from "@/lib/api";
+import { fetchProjectById, fetchSite } from "@/lib/api";
 import type { Locale } from "@/lib/i18n/routing";
 import { interiorDetailStaticParams } from "@/lib/interiorData";
 import { legacyInteriorSlugRedirect } from "@/lib/interiorRoutes";
+import { getIaHub } from "@/lib/iaPages";
 import { pageMetadata } from "@/lib/seo";
 import { setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
@@ -33,19 +34,24 @@ const resolveInteriorProject = cache(async (locale: string, slug: string) => {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
-  const project = await resolveInteriorProject(locale, slug);
+  const [project, site] = await Promise.all([
+    resolveInteriorProject(locale, slug),
+    fetchSite(locale as Locale).catch(() => null),
+  ]);
   const title =
     typeof project?.title === "string"
       ? project.title
       : typeof (project as { detailTitle?: string } | null)?.detailTitle === "string"
         ? String((project as { detailTitle?: string }).detailTitle)
         : "Interior";
+  const hub = getIaHub(site, "interiorDesign", locale);
   return pageMetadata({
     title,
     description:
       typeof project?.description === "string" ? project.description : undefined,
     path: `/${locale}/interior-design/${slug}`,
     locale,
+    indexable: hub?.indexable === true,
   });
 }
 

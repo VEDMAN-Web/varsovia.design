@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getPublicSiteUrl } from "@/lib/publicEnv";
-import { fetchBlogs, fetchShowcases, fetchSite } from "@/lib/api";
+import { fetchBlogs, fetchProjects, fetchShowcases, fetchSite } from "@/lib/api";
 import { getIaPages, hubPath, childPath, type IaHubKey } from "@/lib/iaPages";
 import { getShowcaseProjects } from "@/lib/showcaseData";
 import { locales } from "@/lib/i18n/routing";
@@ -27,12 +27,6 @@ export function localeEntries(
   }));
 }
 
-const CORE_STATIC: {
-  path: string;
-  priority: number;
-  freq: MetadataRoute.Sitemap[0]["changeFrequency"];
-}[] = [{ path: "", priority: 1, freq: "weekly" }];
-
 type IndexablePage = {
   path: string;
   indexable?: boolean;
@@ -42,6 +36,8 @@ type IndexablePage = {
 
 function indexableRoutes(site: Awaited<ReturnType<typeof fetchSite>> | null): IndexablePage[] {
   return [
+    { path: "", indexable: site?.homeSeo?.indexable, priority: 1, freq: "weekly" },
+    { path: "/about", indexable: site?.aboutPageSettings?.indexable, priority: 0.8, freq: "weekly" },
     { path: "/contact", indexable: site?.contactPage?.indexable, priority: 0.8, freq: "weekly" },
     { path: "/faq", indexable: site?.faqPage?.indexable, priority: 0.8, freq: "weekly" },
     {
@@ -77,6 +73,15 @@ function indexableRoutes(site: Awaited<ReturnType<typeof fetchSite>> | null): In
   ];
 }
 
+function dedupeSitemap(entries: MetadataRoute.Sitemap): MetadataRoute.Sitemap {
+  const seen = new Set<string>();
+  return entries.filter((entry) => {
+    if (seen.has(entry.url)) return false;
+    seen.add(entry.url);
+    return true;
+  });
+}
+
 export async function buildSitemapBucket(
   bucket: SitemapBucket,
 ): Promise<MetadataRoute.Sitemap> {
@@ -85,9 +90,7 @@ export async function buildSitemapBucket(
   const pages = getIaPages(site);
 
   if (bucket === "pages") {
-    const routes: MetadataRoute.Sitemap = CORE_STATIC.flatMap(({ path, priority, freq }) =>
-      localeEntries(base, path, priority, freq),
-    );
+    const routes: MetadataRoute.Sitemap = [];
     for (const page of indexableRoutes(site)) {
       if (page.indexable === true) {
         routes.push(...localeEntries(base, page.path, page.priority, page.freq));
@@ -109,10 +112,28 @@ export async function buildSitemapBucket(
         }
       }
     }
-    return routes;
+    if (pages.interiorDesign?.indexable === true) {
+      const projects = await fetchProjects().catch(() => []);
+      for (const project of Array.isArray(projects) ? projects : []) {
+        const slug = String(project.slug || project._id || "").trim();
+        if (!slug) continue;
+        const cover = project.coverImage || project.image;
+        routes.push(
+          ...localeEntries(
+            base,
+            `/interior-design/${slug}`,
+            0.65,
+            "monthly",
+            cover ? [resolveMediaUrl(String(cover), String(cover))] : undefined,
+          ),
+        );
+      }
+    }
+    return dedupeSitemap(routes);
   }
 
   if (bucket === "journal") {
+    if (pages.journal?.indexable !== true) return [];
     const blogs = await fetchBlogs().catch(() => []);
     return (Array.isArray(blogs) ? blogs : []).flatMap(
       (b: { _id?: string; image?: string }) =>
@@ -129,6 +150,7 @@ export async function buildSitemapBucket(
   }
 
   if (bucket === "projects") {
+    if (site?.projectsPage?.indexable !== true) return [];
     const showcases = await fetchShowcases().catch(() => null);
     const ids = new Set<string>();
     const imagesById = new Map<string, string>();
@@ -179,19 +201,23 @@ export async function buildSitemapBucket(
   }
 
   const [blogs, showcases] = await Promise.all([
-    fetchBlogs().catch(() => []),
-    fetchShowcases().catch(() => null),
+    pages.journal?.indexable === true ? fetchBlogs().catch(() => []) : Promise.resolve([]),
+    site?.projectsPage?.indexable === true
+      ? fetchShowcases().catch(() => null)
+      : Promise.resolve(null),
   ]);
-  for (const b of Array.isArray(blogs) ? blogs : []) {
-    if (b._id && b.image) {
-      imageRoutes.push(
-        ...localeEntries(base, `/journal/p/${b._id}`, 0.4, "monthly", [
-          resolveMediaUrl(String(b.image), String(b.image)),
-        ]),
-      );
+  if (pages.journal?.indexable === true) {
+    for (const b of Array.isArray(blogs) ? blogs : []) {
+      if (b._id && b.image) {
+        imageRoutes.push(
+          ...localeEntries(base, `/journal/p/${b._id}`, 0.4, "monthly", [
+            resolveMediaUrl(String(b.image), String(b.image)),
+          ]),
+        );
+      }
     }
   }
-  if (Array.isArray(showcases)) {
+  if (site?.projectsPage?.indexable === true && Array.isArray(showcases)) {
     for (const row of showcases) {
       if (row._id && row.image) {
         imageRoutes.push(
@@ -202,7 +228,7 @@ export async function buildSitemapBucket(
       }
     }
   }
-  return imageRoutes;
+  return dedupeSitemap(imageRoutes);
 }
 
 export function sitemapEntriesToXml(entries: MetadataRoute.Sitemap): string {

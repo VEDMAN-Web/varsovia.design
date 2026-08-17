@@ -16,13 +16,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const site = await fetchSite(locale as Locale);
   const seo = site.aboutPageSettings;
+  const hub = getIaHub(site, "aboutBrand", locale);
   const m = getAppMessages(locale);
   return pageMetadata({
     title: seo?.metaTitle || m.pageMeta.aboutTitle,
     description: seo?.metaDescription || m.pageMeta.aboutDescription,
     path: `/${locale}/about`,
     locale,
-    indexable: seo?.indexable === true,
+    indexable: seo?.indexable === true || hub?.indexable === true,
   });
 }
 

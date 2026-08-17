@@ -5,6 +5,7 @@ export const metadata: Metadata = pageMetadata({
   title: "Blog",
   description: "Design insights, kitchen trends, and interior inspiration from Varsovia Design.",
   path: "/blog",
+  indexable: false,
 });
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {

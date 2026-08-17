@@ -11,7 +11,7 @@ export function pageMetadata({
   description = DEFAULT_DESCRIPTION,
   path = "",
   locale,
-  indexable = true,
+  indexable = false,
 }: {
   title: string;
   description?: string;
@@ -62,7 +62,7 @@ export function pageMetadata({
     },
   };
 
-  if (indexable === false) {
+  if (indexable !== true) {
     metadata.robots = { index: false, follow: true };
   }
 

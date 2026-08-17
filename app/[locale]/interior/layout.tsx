@@ -5,6 +5,7 @@ export const metadata: Metadata = pageMetadata({
   title: "Interior Catalogue",
   description: "Browse modular kitchens, bedrooms, bathrooms, and whole-house interior solutions.",
   path: "/interior",
+  indexable: false,
 });
 
 export default function InteriorLayout({ children }: { children: React.ReactNode }) {
