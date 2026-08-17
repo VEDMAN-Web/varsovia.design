@@ -47,22 +47,34 @@ function footerColumnTitle(column: FooterLinkColumn, t: (key: string) => string)
   return null;
 }
 
+function isExternalFooterHref(href: string) {
+  return (
+    /^(https?:\/\/|mailto:|tel:|sms:|whatsapp:)/i.test(href) ||
+    href.startsWith("//") ||
+    href.endsWith(".xml")
+  );
+}
+
 function FooterNavLink({ href, label }: { href: string; label: string }) {
   const pathname = usePathname();
+  const pathOnly = href.split(/[?#]/)[0] || href;
   const active =
-    href === "/"
+    pathOnly === "/"
       ? pathname === "/"
-      : pathname === href || pathname.startsWith(`${href}/`);
-
-  const isExternal = href.startsWith("http") || href.endsWith(".xml");
+      : Boolean(pathOnly) && (pathname === pathOnly || pathname.startsWith(`${pathOnly}/`));
 
   const className = `${FOOTER_LINK} ${
     active ? "font-medium text-[#cf5374]" : "text-white/85 hover:text-white"
   }`;
 
-  if (isExternal) {
+  if (isExternalFooterHref(href)) {
+    const newTab = /^(https?:\/\/)/i.test(href) || href.startsWith("//") || href.endsWith(".xml");
     return (
-      <a href={href} className={className} target="_blank" rel="noopener noreferrer">
+      <a
+        href={href}
+        className={className}
+        {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      >
         {label}
       </a>
     );
@@ -76,11 +88,17 @@ function FooterNavLink({ href, label }: { href: string; label: string }) {
 }
 
 function FooterLegalLink({ link }: { link: FooterNavLink }) {
-  const isExternal = link.href.startsWith("http") || link.href.endsWith(".xml");
-
-  if (isExternal || link.href === "#") {
+  if (isExternalFooterHref(link.href) || link.href === "#") {
+    const newTab =
+      /^(https?:\/\/)/i.test(link.href) ||
+      link.href.startsWith("//") ||
+      link.href.endsWith(".xml");
     return (
-      <a href={link.href} className={FOOTER_LEGAL}>
+      <a
+        href={link.href}
+        className={FOOTER_LEGAL}
+        {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      >
         {link.label}
       </a>
     );
