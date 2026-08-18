@@ -79,6 +79,18 @@ const LOCAL_ALIASES: Record<string, string> = {
   "/blog/blog1.png": MEDIA.blog,
   "/Interior-kitchen/kitchen1.png": MEDIA.interior[0],
   "/Interior-kitchen/kitchen2.png": MEDIA.interior[1],
+  "/partners/figma/fischer.png": "/partners/fischer-mask.svg",
+  "/partners/figma/bostik.png": "/partners/bostik-mask.svg",
+  "/partners/figma/egger.png": "/partners/egger-mask.svg",
+  "/partners/figma/blum.png": "/partners/blum.svg",
+  "/partners/figma/jowat.png": "/partners/jowat-mask.svg",
+  "/partners/figma/emblem.png": "/partners/partner-emblem-mask.svg",
+  "/partners/fischer.png": "/partners/fischer-mask.svg",
+  "/partners/bostik.png": "/partners/bostik-mask.svg",
+  "/partners/egger.png": "/partners/egger-mask.svg",
+  "/partners/blum.png": "/partners/blum.svg",
+  "/partners/jowat.png": "/partners/jowat-mask.svg",
+  "/partners/emblem.png": "/partners/partner-emblem-mask.svg",
 };
 
 for (let i = 1; i <= 8; i += 1) {
