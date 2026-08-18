@@ -184,7 +184,8 @@ export function resolveFaqsForTopic(
         f._raw &&
         (hasLocalizedMap(f._raw.question, locale) || hasLocalizedMap(f._raw.answer, locale)),
     );
-    if (!apiHasLocaleFields) {
+    const apiHasCopy = apiForTopic.some((f) => f.question && f.answer);
+    if (!apiHasLocaleFields && !apiHasCopy) {
       return localizedStatic;
     }
   }

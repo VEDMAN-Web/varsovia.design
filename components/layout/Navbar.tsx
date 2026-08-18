@@ -28,7 +28,9 @@ import { DEFAULT_SITE_IMAGE_PATHS } from "@/lib/defaultSiteImages";
 import { resolveMediaUrl } from "@/lib/mediaAssets";
 import type { SearchResultType } from "@/lib/searchTypes";
 import { useNavBackdropTone } from "@/hooks/useNavBackdropTone";
+import { rafThrottle } from "@/lib/scrollRuntime";
 import {
+  applyLiveLocaleToNavigation,
   buildFallbackMainNavigation,
   resolveMainNavigation,
 } from "@/lib/mainNavigation";
@@ -122,9 +124,11 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   const site = useSiteSettings();
   const navItems = useMemo(() => {
     const fromApi = resolveMainNavigation(site);
-    if (fromApi.length > 0) return fromApi;
+    if (fromApi.length > 0) {
+      return applyLiveLocaleToNavigation(fromApi, locale, t, tDrop, tShowcase);
+    }
     return buildFallbackMainNavigation(t, tDrop, tShowcase);
-  }, [site, t, tDrop, tShowcase]);
+  }, [site, locale, t, tDrop, tShowcase]);
   const searchablePages = useSearchablePages();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
@@ -199,9 +203,10 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   }, []);
 
   useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > 8);
-    }
+    const onScroll = rafThrottle(() => {
+      const next = window.scrollY > 8;
+      setScrolled((prev) => (prev === next ? prev : next));
+    });
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -384,12 +389,12 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
       ref={navRef}
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-out ${
         mobileOpen
-          ? "border-b border-white/50 bg-white/90 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-sm"
+          ? "border-b border-white/50 bg-white/90 shadow-[0_4px_20px_rgba(0,0,0,0.06)] lg:backdrop-blur-sm"
           : frostedBar
             ? strongFrost
-              ? "border-b border-white/40 bg-white/88 shadow-[0_4px_28px_rgba(0,0,0,0.12)] backdrop-blur-sm backdrop-saturate-110"
-              : "border-b border-white/45 bg-white/78 shadow-[0_4px_20px_rgba(0,0,0,0.08)] backdrop-blur-sm backdrop-saturate-105"
-            : "border-b border-transparent bg-transparent shadow-none backdrop-blur-none"
+              ? "border-b border-white/40 bg-white/95 shadow-[0_4px_28px_rgba(0,0,0,0.12)] lg:bg-white/88 lg:backdrop-blur-sm lg:backdrop-saturate-110"
+              : "border-b border-white/45 bg-white/95 shadow-[0_4px_20px_rgba(0,0,0,0.08)] lg:bg-white/78 lg:backdrop-blur-sm lg:backdrop-saturate-105"
+            : "border-b border-transparent bg-transparent shadow-none"
       }`}
     >
       <nav className="mx-auto flex h-[102.33px] w-full max-w-[1440px] items-center px-[clamp(1.25rem,7vw,100px)]">

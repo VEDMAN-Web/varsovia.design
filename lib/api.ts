@@ -110,7 +110,14 @@ function mergeProcessSteps(
       const item = row as Record<string, unknown>;
       return hasLocalizedMap(item.title, loc) || hasLocalizedMap(item.text, loc);
     });
-    if (!apiHasLocaleFields) return fb;
+    const apiHasResolvedCopy = raw.some((row) => {
+      const item = row as Record<string, unknown>;
+      return (
+        (typeof item.title === "string" && item.title.trim()) ||
+        (typeof item.text === "string" && item.text.trim())
+      );
+    });
+    if (!apiHasLocaleFields && !apiHasResolvedCopy) return fb;
   }
 
   return raw.map((row, i) => {
@@ -570,14 +577,13 @@ function mergeLegalPages(raw: unknown, locale?: Locale) {
     const d = msgs[key] || {};
     const blocksSrc = Array.isArray(s.blocks) ? (s.blocks as Array<Record<string, unknown>>) : [];
     const blocksFb = Array.isArray(d.blocks) ? d.blocks : [];
-    const first = blocksSrc[0];
-    const cmsEnglishOnly =
-      loc !== "en" &&
-      first &&
-      pickSiteCopy(first.heading, loc, "") === pickSiteCopy(first.heading, "en", "") &&
-      Boolean(pickSiteCopy(first.heading, "en", ""));
+    const cmsHasBlocks = blocksSrc.some(
+      (row) =>
+        Boolean(pickSiteCopy(row.heading, loc, "").trim()) ||
+        Boolean(pickSiteCopy(row.text, loc, "").trim()),
+    );
     const blocks =
-      blocksSrc.length > 0 && !cmsEnglishOnly
+      cmsHasBlocks
         ? blocksSrc.map((row, i) => ({
             heading: pickSiteCopy(row.heading, loc, blocksFb[i]?.heading || ""),
             text: pickSiteCopy(row.text, loc, blocksFb[i]?.text || ""),

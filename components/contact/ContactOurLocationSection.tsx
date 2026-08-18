@@ -18,6 +18,7 @@ import {
 } from "@/components/contact/contactLocationShared";
 import { CONTACT_MAP_EMBED_SRC } from "@/lib/contactLocation";
 import type { SiteContent } from "@/lib/siteTypes";
+import { useTranslations } from "next-intl";
 
 function MapPinIcon() {
   return (
@@ -44,14 +45,13 @@ export default function ContactOurLocationSection({
 }: {
   site?: SiteContent | null;
 }) {
+  const t = useTranslations("contact");
   const cp = site?.contactPage;
-  const title = cp?.locationTitle?.trim() || "Our Location";
+  const title = cp?.locationTitle?.trim() || t("ourLocationTitle");
   const subtitle =
-    cp?.locationSubtitle?.trim() ||
-    "Visit our showroom or reach us online — we are here to help";
+    cp?.locationSubtitle?.trim() || t("ourLocationSubtitle");
   const mapSrc = cp?.mapEmbedUrl?.trim() || CONTACT_MAP_EMBED_SRC;
-  const mapAria =
-    cp?.mapAriaLabel?.trim() || "Varsovia Design office location map";
+  const mapAria = cp?.mapAriaLabel?.trim() || t("mapAriaLabel");
 
   return (
     <section

@@ -363,7 +363,7 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
                           : "0 12px 28px rgba(70,40,50,0.14)",
                       }}
                       initial={false}
-                      animate={{ filter: `grayscale(${s.grayscale})` }}
+                      animate={{ filter: s.grayscale > 0.01 ? `grayscale(${s.grayscale})` : "none" }}
                       transition={springTransition}
                     >
                       <img

@@ -356,7 +356,7 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
                           borderLeft: "4.6px solid #251B1E",
                           boxShadow: isHovered ? CARD_HOVER_SHADOW : CARD_REST_SHADOW,
                           transformOrigin: "center center",
-                          willChange: "transform, filter, opacity",
+                          willChange: "transform",
                         }}
                         initial={false}
                         animate={{

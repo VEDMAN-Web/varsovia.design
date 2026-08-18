@@ -28,13 +28,13 @@ export const fadeUpItem = {
   },
 };
 
+/** Opacity/transform only — CSS `filter: blur` forces paint on every frame. */
 export const fadeUpBlurItem = {
-  hidden: { opacity: 0, y: 22, filter: "blur(6px)" },
+  hidden: { opacity: 0, y: 22 },
   visible: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: revealTransition(0, 0.75),
+    transition: revealTransition(0, 0.6),
   },
 };
 

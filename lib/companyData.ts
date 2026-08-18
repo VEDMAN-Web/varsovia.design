@@ -1,7 +1,7 @@
 /** Fallback content for Company pages when API is empty */
 
 import { getLocaleOrDefault } from "@/lib/i18n/messageCatalog";
-import { hasLocalizedMap, pickLocalized } from "@/lib/i18n/pickLocalized";
+import { hasCmsCopy, pickLocalized } from "@/lib/i18n/pickLocalized";
 import type { Locale } from "@/lib/i18n/routing";
 import blogContentPl from "../messages/locale/blog.content.pl.json";
 import blogContentTh from "../messages/locale/blog.content.th.json";
@@ -810,9 +810,9 @@ export function normalizeBlog(
   if (!id) return null;
   const fallback = fallbackBlogs.find((b) => b._id === id);
   const apiHasLocale =
-    hasLocalizedMap(raw.title, loc) ||
-    hasLocalizedMap(raw.excerpt, loc) ||
-    hasLocalizedMap(raw.content, loc);
+    hasCmsCopy(raw.title, loc) ||
+    hasCmsCopy(raw.excerpt, loc) ||
+    hasCmsCopy(raw.content, loc);
   const localePack = loc !== "en" ? BLOG_BY_LOCALE[loc]?.[id] : undefined;
 
   let title =

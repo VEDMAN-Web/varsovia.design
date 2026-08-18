@@ -6,7 +6,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { motion, useReducedMotion } from "framer-motion";
 
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { pickLocalized } from "@/lib/i18n/pickLocalized";
+import type { Locale } from "@/lib/i18n/routing";
 
 import Navbar from "@/components/layout/Navbar";
 
@@ -38,8 +40,6 @@ import { notebookBrochureTheme } from "@/components/catalogue/catalogueBrochureT
 
 import { fetchCatalogues } from "@/lib/api";
 import { LISTING_PAGE_SIZE, paginateItems } from "@/lib/pagination";
-
-import type { Locale } from "@/lib/i18n/routing";
 
 import { fallbackHomeData } from "@/lib/fallbackData";
 
@@ -78,6 +78,7 @@ const FALLBACK_ITEMS: CatalogueItem[] = fallbackHomeData.catalogues.map((c) => (
 export default function CataloguePageClient() {
 
   const locale = useLocale();
+  const tSearch = useTranslations("search");
   const site = useSiteSettings();
   const cataloguePage = site?.cataloguePage;
   const reducedMotion = useReducedMotion();
@@ -115,8 +116,8 @@ export default function CataloguePageClient() {
             downloadUrl?: string;
           };
           return {
-          id: c._id || c.id || c.title,
-          title: c.title,
+          id: c._id || c.id || String(c.title || ""),
+          title: pickLocalized(c.title, locale as Locale) || String(c.title || ""),
           coverImage: c.coverImage || "/home/catalog.png",
           downloadUrl: c.downloadUrl || "",
         };
@@ -205,8 +206,8 @@ export default function CataloguePageClient() {
             <SectionHeadingReveal
               trigger="mount"
               titleAs="h1"
-              title={cataloguePage?.heroTitle || "Free Catalogue"}
-              subtitle={cataloguePage?.heroSubtitle || "Explore Our Interior Design Catalogue"}
+              title={cataloguePage?.heroTitle || tSearch("catalogueTitle")}
+              subtitle={cataloguePage?.heroSubtitle || tSearch("catalogueDesc")}
               subtitleSentenceCase
               className={`${SECTION_HEADING_WIDE} mb-8 sm:mb-10 md:mb-14`}
             />

@@ -21,31 +21,58 @@ export function hasLocalizedMap(value: unknown, locale: Locale): boolean {
   return typeof v === "string" && v.trim().length > 0;
 }
 
+/** Map has this locale, or the public API already resolved a non-empty string. */
+export function hasCmsCopy(value: unknown, locale: Locale): boolean {
+  if (hasLocalizedMap(value, locale)) return true;
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function hasThaiScript(value: string): boolean {
+  return /[\u0E00-\u0E7F]/.test(value);
+}
+
+function hasPolishChars(value: string): boolean {
+  return /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/.test(value);
+}
+
+/** Public API often resolves empty th/pl to English; prefer the locale dictionary in that case. */
+function prefersLocalizedFallback(resolved: string, fallback: string, locale: Locale): boolean {
+  if (!fallback || fallback === resolved) return false;
+  if (locale === "th") {
+    if (hasThaiScript(resolved)) return false;
+    return hasThaiScript(fallback);
+  }
+  if (locale === "pl") {
+    if (hasPolishChars(resolved)) return false;
+    return hasPolishChars(fallback) || fallback !== resolved;
+  }
+  return false;
+}
+
 /**
  * Prefer locale message fallbacks for th/pl when CMS sends a plain (English) string
  * without { en, th, pl } maps — or a fake map where th/pl were copied from en.
  */
 export function pickSiteCopy(value: unknown, locale: Locale, localizedFallback: string): string {
   const fallback = (localizedFallback || "").trim();
+
   if (hasLocalizedMap(value, locale)) {
     const picked = pickLocalized(value, locale);
-    if (
-      locale !== "en" &&
-      fallback &&
-      fallback !== picked &&
-      value &&
-      typeof value === "object" &&
-      !Array.isArray(value)
-    ) {
+    if (locale !== "en") {
       const enVal = pickLocalized(value, "en");
-      // Seed often copied English into th/pl — treat that as untranslated.
-      if (picked && enVal && picked === enVal) return fallback;
+      if (picked && enVal && picked === enVal) return fallback || picked;
     }
     return picked;
   }
-  if (locale !== "en" && typeof value === "string" && value.trim()) {
-    return fallback || value.trim();
+
+  if (typeof value === "string" && value.trim()) {
+    const resolved = value.trim();
+    if (locale !== "en" && prefersLocalizedFallback(resolved, fallback, locale)) {
+      return fallback;
+    }
+    return resolved;
   }
+
   const picked = pickLocalized(value, locale);
   return picked || fallback;
 }

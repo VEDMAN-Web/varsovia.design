@@ -68,6 +68,8 @@ function localizeChild(raw: unknown, locale = "en") {
     metaDescription: pickLoc(c.metaDescription, locale),
     body: pickLoc(c.body, locale),
     relatedTitle: pickLoc(c.relatedTitle, locale),
+    servicesTitle: pickLoc(c.servicesTitle, locale),
+    servicesSubtitle: pickLoc(c.servicesSubtitle, locale),
     hero: localizeHero(c.hero, locale),
     sections: localizeSections(c.sections, locale),
     indexable: c.indexable === true,

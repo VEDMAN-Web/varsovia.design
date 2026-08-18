@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { shouldUseScrollParallax } from "@/lib/scrollRuntime";
 
 type FixedBackgroundImageProps = {
   src: string;
@@ -13,6 +14,7 @@ type FixedBackgroundImageProps = {
  * Image stays fixed in the viewport; only this clip frame scrolls with the page
  * (background-attachment: fixed window effect).
  *
+ * Desktop-only: fixed backgrounds force a full-viewport repaint on phones.
  * Keep this out of any transformed ancestor — a transform on a parent makes the
  * fixed background scroll with the element and kills the effect.
  */
@@ -21,12 +23,13 @@ export default function FixedBackgroundImage({
   alt,
   className = "",
 }: FixedBackgroundImageProps) {
-  const [fixedSupported, setFixedSupported] = useState(true);
+  const [useFixed, setUseFixed] = useState(false);
 
   useEffect(() => {
-    const test = document.createElement("div");
-    test.style.backgroundAttachment = "fixed";
-    setFixedSupported(test.style.backgroundAttachment === "fixed");
+    const sync = () => setUseFixed(shouldUseScrollParallax());
+    sync();
+    window.addEventListener("resize", sync, { passive: true });
+    return () => window.removeEventListener("resize", sync);
   }, []);
 
   return (
@@ -35,7 +38,7 @@ export default function FixedBackgroundImage({
       role="img"
       aria-label={alt}
     >
-      {fixedSupported ? (
+      {useFixed ? (
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
@@ -44,7 +47,7 @@ export default function FixedBackgroundImage({
           }}
         />
       ) : (
-        // Mobile fallback where fixed backgrounds are unsupported
+        // Native cover image — no viewport-fixed attachment
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={src}

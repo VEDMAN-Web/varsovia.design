@@ -243,8 +243,16 @@ export function makeIaChildHandlers(hubKey: IaHubKey) {
             locale={locale}
             related={related}
             relatedServices={relatedServices}
-            servicesTitle={hubKey === "locations" ? hub.servicesTitle : undefined}
-            servicesSubtitle={hubKey === "locations" ? hub.servicesSubtitle : undefined}
+            servicesTitle={
+              hubKey === "locations"
+                ? strField(child.servicesTitle, hub.servicesTitle || "", locale)
+                : undefined
+            }
+            servicesSubtitle={
+              hubKey === "locations"
+                ? strField(child.servicesSubtitle, hub.servicesSubtitle || "", locale)
+                : undefined
+            }
           />
         </main>
       </>

@@ -323,7 +323,7 @@ export default function CoreStrengths({ strengths }: { strengths?: ApiCoreStreng
                         : "0 12px 26px rgba(70,40,50,0.16)",
                     }}
                     initial={false}
-                    animate={{ filter: `grayscale(${g.grayscale})` }}
+                    animate={{ filter: g.grayscale > 0.01 ? `grayscale(${g.grayscale})` : "none" }}
                     transition={springTransition}
                   >
                     {spineSide ? (

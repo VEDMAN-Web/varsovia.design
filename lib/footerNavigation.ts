@@ -79,13 +79,53 @@ export function getFooterNavigationForUi(
   t: FooterT,
   tNav: NavT,
   tCat: CatT,
+  locale: string = "en",
 ): FooterNavigationConfig {
   const fromApi = resolveFooterNavigation(site);
-  if (fromApi) {
-    return {
-      ...fromApi,
-      copyright: formatFooterCopyright(fromApi.copyright, new Date().getFullYear()),
+  const nav = fromApi
+    ? {
+        ...fromApi,
+        copyright: formatFooterCopyright(fromApi.copyright, new Date().getFullYear()),
+      }
+    : buildFallbackFooterNavigation(t, tNav, tCat);
+  if (locale === "en") return nav;
+
+  const labelForHref = (href: string, current: string) => {
+    const cur = String(current || "").trim();
+    if (locale === "th" && /[\u0E00-\u0E7F]/.test(cur)) return cur;
+    if (locale === "pl" && /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/.test(cur)) return cur;
+    const mapped: Record<string, string> = {
+      "/journal": t("blog"),
+      "/about": t("aboutUs"),
+      "/contact": t("contactUs"),
+      "/faq": tNav("faq"),
+      "/catalogue": t("catalogue"),
+      "/furniture": tCat("furniture"),
+      "/interior-design?category=Kitchen": tCat("kitchen"),
+      "/interior-design?category=Bedroom": tCat("bedroom"),
+      "/interior-design?category=Bathroom": tCat("bathroom"),
+      "/interior-design?category=Door%20%26%20Windows": tCat("doorWindows"),
+      "/interior-design?category=Whole%20House%20Solutions": tCat("wholeHouse"),
+      "/privacy": t("privacy"),
+      "/terms": t("terms"),
+      "/sitemap.xml": t("sitemap"),
     };
-  }
-  return buildFallbackFooterNavigation(t, tNav, tCat);
+    return mapped[href] || cur;
+  };
+
+  return {
+    ...nav,
+    linkColumns: (nav.linkColumns || []).map((column) => ({
+      ...column,
+      links: (column.links || []).map((link) => ({
+        ...link,
+        label: labelForHref(link.href, link.label),
+      })),
+    })),
+    legalLinks: (nav.legalLinks || []).map((link) => ({
+      ...link,
+      label: labelForHref(link.href, link.label),
+    })),
+    contactHeading: labelForHref("/contact", nav.contactHeading),
+  };
 }

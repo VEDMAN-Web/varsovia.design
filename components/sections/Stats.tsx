@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { motion, useInView } from "framer-motion";
 import SectionShell from "@/components/ui/SectionShell";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
+import { shouldUseScrollParallax } from "@/lib/scrollRuntime";
 
 type Stat = { value: string; label: string };
 
@@ -12,8 +13,6 @@ type StatsProps = {
   stats?: Stat[];
   statsImage?: string;
 };
-
-const PARALLAX_QUERY = "(min-width: 1024px) and (prefers-reduced-motion: no-preference)";
 
 /**
  * Desktop shows a viewport-fixed window: the image holds still while the frame
@@ -27,11 +26,10 @@ function StatsFixedImage({ src, alt }: { src: string; alt: string }) {
   const [parallax, setParallax] = useState(false);
 
   useEffect(() => {
-    const query = window.matchMedia(PARALLAX_QUERY);
-    const sync = () => setParallax(query.matches);
+    const sync = () => setParallax(shouldUseScrollParallax());
     sync();
-    query.addEventListener("change", sync);
-    return () => query.removeEventListener("change", sync);
+    window.addEventListener("resize", sync, { passive: true });
+    return () => window.removeEventListener("resize", sync);
   }, []);
 
   useEffect(() => {
@@ -51,28 +49,41 @@ function StatsFixedImage({ src, alt }: { src: string; alt: string }) {
     };
 
     // Whole-pixel offsets avoid subpixel re-rasterising on Safari
-    const tick = () => {
+    const tickOnce = () => {
+      frameId = 0;
       const offset = Math.round(-frame.getBoundingClientRect().top);
       if (offset !== lastOffset) {
         lastOffset = offset;
         layer.style.transform = `translate3d(0,${offset}px,0)`;
       }
-      frameId = requestAnimationFrame(tick);
     };
+
+    const onScroll = () => {
+      if (!frameId) frameId = requestAnimationFrame(tickOnce);
+    };
+
+    let listening = false;
 
     const stop = () => {
       cancelAnimationFrame(frameId);
       frameId = 0;
+      if (listening) {
+        listening = false;
+        window.removeEventListener("scroll", onScroll);
+      }
     };
 
     resize();
     window.addEventListener("resize", resize, { passive: true });
 
-    // Only track while the frame is on screen
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          if (!frameId) frameId = requestAnimationFrame(tick);
+          if (!listening) {
+            listening = true;
+            window.addEventListener("scroll", onScroll, { passive: true });
+          }
+          tickOnce();
         } else {
           stop();
         }

@@ -3,6 +3,7 @@ import { showcaseTabMessageKey } from "@/lib/showcaseTabI18n";
 import type { SiteContent } from "@/lib/siteTypes";
 import type { MainNavItem, ResolvedNavItem } from "@/lib/mainNavigationTypes";
 import { getNavDropdownSubtitle } from "@/components/layout/navDropdownMeta";
+import type { Locale } from "@/lib/i18n/routing";
 
 function canonicalAboutHref(href: string) {
   const [path, query] = String(href || "").split("?");
@@ -42,6 +43,89 @@ export function resolveMainNavigation(site: SiteContent | null | undefined): Res
     return items.map(mapNavItem);
   }
   return [];
+}
+
+const NAV_LABEL_KEY: Record<string, string> = {
+  home: "home",
+  furniture: "furniture",
+  interior: "interior",
+  showcase: "showcase",
+  company: "company",
+  contact: "contact",
+};
+
+function looksUntranslated(text: string, locale: Locale): boolean {
+  const value = String(text || "").trim();
+  if (!value) return true;
+  if (locale === "th") return !/[\u0E00-\u0E7F]/.test(value);
+  if (locale === "pl") return !/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/.test(value);
+  return false;
+}
+
+function pickNavText(current: string | undefined, localized: string, locale: Locale): string {
+  const cur = String(current || "").trim();
+  const next = String(localized || "").trim();
+  if (!looksUntranslated(cur, locale)) return cur;
+  return next || cur;
+}
+
+type MessageTranslator = ((key: string) => string) & {
+  has?: (key: string) => boolean;
+};
+
+function safeMessage(t: MessageTranslator | NavTranslator, key: string): string {
+  if (!key) return "";
+  const translator = t as MessageTranslator;
+  if (typeof translator.has === "function" && !translator.has(key)) return "";
+  try {
+    const value = translator(key);
+    if (!value || value === key) return "";
+    return value;
+  } catch {
+    return "";
+  }
+}
+
+/** When CMS still has English on /th or /pl, use the live dictionary so chrome matches the locale. */
+export function applyLiveLocaleToNavigation(
+  items: ResolvedNavItem[],
+  locale: Locale,
+  t: NavTranslator,
+  tDrop: NavTranslator,
+  tShowcase: ShowcaseTranslator,
+): ResolvedNavItem[] {
+  if (locale === "en" || !items.length) return items;
+  const drop = (href: string) => getNavDropdownSubtitle(href, tDrop as MessageTranslator) || "";
+  return items.map((item) => {
+    const labelKey = NAV_LABEL_KEY[item.id];
+    const label = pickNavText(item.label, labelKey ? safeMessage(t, labelKey) : "", locale);
+    const menu = item.menu
+      ? {
+          ...item.menu,
+          featured: {
+            ...item.menu.featured,
+            label: pickNavText(
+              item.menu.featured.label,
+              item.id === "showcase" ? safeMessage(tShowcase, "navFeaturedTitle") : "",
+              locale,
+            ),
+            subtitle: pickNavText(
+              item.menu.featured.subtitle,
+              drop(item.menu.featured.href),
+              locale,
+            ),
+          },
+          sectionLabel: pickNavText(item.menu.sectionLabel, safeMessage(t, "byRoom"), locale),
+          links: item.menu.links.map((link) => ({
+            ...link,
+            title: pickNavText(link.title, "", locale),
+            label: pickNavText(link.label, "", locale),
+            subtitle: pickNavText(link.subtitle, drop(link.href), locale),
+          })),
+        }
+      : undefined;
+    return { ...item, label, menu };
+  });
 }
 
 type NavTranslator = (key: string) => string;

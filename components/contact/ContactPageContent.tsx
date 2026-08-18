@@ -10,6 +10,7 @@ import { SECTION_SUBTITLE_CLASS } from "@/components/ui/SectionHeading";
 import { COMPANY_SHELL, SECTION_HEADING_WIDE } from "@/components/company/companyLayoutShared";
 import { fallbackHomeData } from "@/lib/fallbackData";
 import type { SiteContent } from "@/lib/siteTypes";
+import { useTranslations } from "next-intl";
 
 const FALLBACK_IMAGES = fallbackHomeData.site.contactImages;
 
@@ -27,22 +28,23 @@ export default function ContactPageContent({
   site?: SiteContent | null;
   showrooms?: ShowroomRow[];
 }) {
+  const tNav = useTranslations("nav");
+  const tSearch = useTranslations("search");
   const imgs = site?.contactImages;
   const images =
     Array.isArray(imgs) && imgs.length > 0 ? imgs : FALLBACK_IMAGES;
   const section = site?.sectionCopy?.contact;
   const cp = site?.contactPage;
   const title =
-    cp?.heroTitle?.trim() || section?.title?.trim() || "Get In touch";
+    cp?.heroTitle?.trim() || section?.title?.trim() || tNav("getInTouch");
   const subtitle =
     cp?.heroSubtitle?.trim() ||
     section?.subtitle?.trim() ||
-    "Your dream space begins with a simple conversation";
+    tSearch("contactDesc");
 
-  const showroomsTitle = cp?.showroomsTitle?.trim() || "Visit a showroom";
+  const showroomsTitle = cp?.showroomsTitle?.trim() || tSearch("contactTitle");
   const showroomsSubtitle =
-    cp?.showroomsSubtitle?.trim() ||
-    "Experience materials, layouts, and finishes in person at our locations.";
+    cp?.showroomsSubtitle?.trim() || tSearch("contactDesc");
 
   return (
     <div className="bg-[#f7f3f2] pt-[72px] font-outfit">

@@ -32,6 +32,9 @@ export type IaChildPage = {
   sections?: IaContentSection[];
   /** Related projects / articles section heading */
   relatedTitle?: string;
+  /** Location city pages: heading above the services cards. */
+  servicesTitle?: string;
+  servicesSubtitle?: string;
   /** Service children: which location pages should list this service. */
   locationSlugs?: string[];
 };
@@ -137,6 +140,8 @@ function mergeChild(
     metaDescription: mergeStr(s.metaDescription, defChild.metaDescription, locale),
     body: mergeStr(s.body, defChild.body, locale),
     relatedTitle: mergeStr(s.relatedTitle, defChild.relatedTitle, locale),
+    servicesTitle: mergeStr(s.servicesTitle, defChild.servicesTitle, locale),
+    servicesSubtitle: mergeStr(s.servicesSubtitle, defChild.servicesSubtitle, locale),
     hero: mergeHero(s.hero, defChild.hero, locale),
     sections: mergeSections(s.sections, defChild.sections, locale),
     indexable: s.indexable === true,

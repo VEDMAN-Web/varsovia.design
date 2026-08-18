@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/lib/i18n/navigation";
 import type { ReactNode } from "react";
 import BrandLogo from "@/components/layout/BrandLogo";
@@ -205,10 +205,11 @@ export default function Footer({ bio, site }: FooterProps) {
   const t = useTranslations("footer");
   const tNav = useTranslations("nav");
   const tCat = useTranslations("categories");
+  const locale = useLocale();
 
   const footerNav = useMemo(
-    () => getFooterNavigationForUi(site, t, tNav, tCat),
-    [site, t, tNav, tCat],
+    () => getFooterNavigationForUi(site, t, tNav, tCat, locale),
+    [site, t, tNav, tCat, locale],
   );
 
   const email = site?.email?.trim() || FOOTER_CONTACT.email;
