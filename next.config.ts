@@ -65,6 +65,22 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [...iaRedirects, ...legacyInteriorRedirects, ...productPageRedirects];
   },
+  async rewrites() {
+    const uploadOrigin = (
+      process.env.NEXT_PUBLIC_UPLOAD_ORIGIN ||
+      process.env.NEXT_PUBLIC_UPLOAD_PUBLIC_URL ||
+      ""
+    )
+      .trim()
+      .replace(/\/+$/, "");
+    if (!uploadOrigin) return [];
+    return [
+      {
+        source: "/uploads/:path*",
+        destination: `${uploadOrigin}/uploads/:path*`,
+      },
+    ];
+  },
   allowedDevOrigins: ["192.168.1.33", "192.168.1.*", "10.0.0.*"],
   turbopack: {
     root: path.join(__dirname),

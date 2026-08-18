@@ -54,7 +54,7 @@ const NAV_LABEL_KEY: Record<string, string> = {
   contact: "contact",
 };
 
-function looksUntranslated(text: string, locale: Locale): boolean {
+export function looksUntranslated(text: string, locale: Locale): boolean {
   const value = String(text || "").trim();
   if (!value) return true;
   if (locale === "th") return !/[\u0E00-\u0E7F]/.test(value);

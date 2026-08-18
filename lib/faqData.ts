@@ -196,3 +196,21 @@ export function resolveFaqsForTopic(
 
   return localizedStatic.length > 0 ? localizedStatic : FAQ_DATA[topic] || [];
 }
+
+/** Flatten Q&A across topics for FAQPage JSON-LD. */
+export function collectFaqEntities(
+  apiFaqs: Array<{ category?: string; question?: string; answer?: string; _raw?: ApiFaqRow }>,
+  locale: Locale = "en",
+): FaqItem[] {
+  const seen = new Set<string>();
+  const out: FaqItem[] = [];
+  for (const topic of FAQ_TOPICS) {
+    for (const item of resolveFaqsForTopic(topic, apiFaqs, locale)) {
+      const key = item.question.trim().toLowerCase();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      out.push(item);
+    }
+  }
+  return out;
+}

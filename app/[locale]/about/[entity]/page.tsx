@@ -39,6 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     path: `/${locale}/about/${entity}`,
     locale,
     indexable: child.indexable === true || hub?.indexable === true,
+    image: strField(child.hero?.image || hub?.hero?.image, "", locale),
   });
 }
 

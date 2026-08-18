@@ -35,6 +35,11 @@ import {
   resolveMainNavigation,
 } from "@/lib/mainNavigation";
 import { overlayShowcaseMegaMenu } from "@/lib/showcasePageNav";
+import { overlayLocationsMegaMenu } from "@/lib/locationPageNav";
+import {
+  overlayCompanyMegaMenu,
+  overlayContactMegaMenu,
+} from "@/lib/companyPageNav";
 import type { ResolvedNavItem } from "@/lib/mainNavigationTypes";
 import { trackCtaClick } from "@/lib/analytics";
 
@@ -130,12 +135,35 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
         ? applyLiveLocaleToNavigation(fromApi, locale, t, tDrop, tShowcase)
         : buildFallbackMainNavigation(t, tDrop, tShowcase);
     return resolved.map((item) => {
-      if (item.id !== "showcase" || !item.menu) return item;
-      return {
-        ...item,
-        href: "/projects",
-        menu: overlayShowcaseMegaMenu(item.menu, site) ?? item.menu,
-      };
+      if (item.id === "showcase" && item.menu) {
+        return {
+          ...item,
+          href: "/projects",
+          menu: overlayShowcaseMegaMenu(item.menu, site) ?? item.menu,
+        };
+      }
+      if (item.id === "locations" && item.menu) {
+        return {
+          ...item,
+          href: "/locations",
+          menu: overlayLocationsMegaMenu(item.menu, site, locale) ?? item.menu,
+        };
+      }
+      if (item.id === "company" && item.menu) {
+        return {
+          ...item,
+          href: "/about",
+          menu: overlayCompanyMegaMenu(item.menu, site, locale) ?? item.menu,
+        };
+      }
+      if (item.id === "contact" && item.menu) {
+        return {
+          ...item,
+          href: "/contact",
+          menu: overlayContactMegaMenu(item.menu, site, locale) ?? item.menu,
+        };
+      }
+      return item;
     });
   }, [site, locale, t, tDrop, tShowcase]);
   const searchablePages = useSearchablePages();

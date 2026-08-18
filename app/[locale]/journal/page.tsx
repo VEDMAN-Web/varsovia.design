@@ -27,6 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     path: `/${locale}${hubPath("journal")}`,
     locale,
     indexable: hub.indexable === true,
+    image: strField(hub.hero?.image, "", locale),
   });
 }
 

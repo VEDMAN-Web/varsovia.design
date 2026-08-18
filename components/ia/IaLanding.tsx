@@ -299,6 +299,34 @@ function RelatedGrid({
   );
 }
 
+function exploreCopyFallback(hubKey: IaHubKey): { title: string; subtitle: string } | null {
+  if (hubKey === "locations") {
+    return {
+      title: "Our locations",
+      subtitle: "Choose a city to see services and local projects.",
+    };
+  }
+  if (hubKey === "aboutBrand") {
+    return {
+      title: "Our brands",
+      subtitle: "Choose a partner brand to continue.",
+    };
+  }
+  if (hubKey === "completeInteriors") {
+    return {
+      title: "Project types",
+      subtitle: "Villas, condos, hospitality, and developments.",
+    };
+  }
+  if (hubKey === "journal") {
+    return {
+      title: "Explore topics",
+      subtitle: "Kitchens, furniture, materials, and living in Thailand.",
+    };
+  }
+  return null;
+}
+
 function ChildLinkList({
   hubKey,
   items,
@@ -312,16 +340,16 @@ function ChildLinkList({
 }) {
   if (!items.length) return null;
   const withImages = items.some((c) => Boolean(strField(c.image)));
+  const fallback = exploreCopyFallback(hubKey);
   const sectionTitle =
-    hubKey === "locations" &&
-    (!strField(exploreTitle) || strField(exploreTitle) === "Explore")
-      ? "Our locations"
+    fallback && (!strField(exploreTitle) || strField(exploreTitle) === "Explore")
+      ? fallback.title
       : strField(exploreTitle) || "Explore";
   const sectionSubtitle =
-    hubKey === "locations" &&
+    fallback &&
     (!strField(exploreSubtitle) ||
       strField(exploreSubtitle) === "Choose a focus area to continue.")
-      ? "Choose a city to see services and local projects."
+      ? fallback.subtitle
       : strField(exploreSubtitle) || "Choose a focus area to continue.";
   return (
     <FadeInView className={`${COMPANY_SHELL} mt-16 md:mt-20 pb-16 md:pb-24`} delay={0.06}>
@@ -462,11 +490,22 @@ export function IaHubView({
           url: absolutePath(locale, hubPath(hubKey)),
         }
       : null;
+  const collectionItemType =
+    hubKey === "aboutBrand"
+      ? "Brand"
+      : hubKey === "locations"
+        ? "Place"
+        : hubKey === "completeInteriors"
+          ? "Service"
+          : "CreativeWork";
   const collectionLd =
-    hubKey === "locations"
+    hubKey === "locations" ||
+    hubKey === "aboutBrand" ||
+    hubKey === "completeInteriors" ||
+    hubKey === "journal"
       ? {
           "@context": "https://schema.org",
-          "@type": "CollectionPage",
+          "@type": hubKey === "aboutBrand" ? "AboutPage" : "CollectionPage",
           name: title,
           description: subtitle || body || undefined,
           url: absolutePath(locale, hubPath(hubKey)),
@@ -500,7 +539,7 @@ export function IaHubView({
                 name,
                 url,
                 item: {
-                  "@type": "Place",
+                  "@type": collectionItemType,
                   name,
                   url,
                   ...(image ? { image } : {}),
@@ -509,7 +548,28 @@ export function IaHubView({
             }),
           },
         }
-      : null;
+      : hubKey === "forDevelopers"
+        ? {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            name: title,
+            description: subtitle || body || undefined,
+            url: absolutePath(locale, hubPath(hubKey)),
+            ...(absoluteImage(hub.hero?.image)
+              ? { image: absoluteImage(hub.hero?.image) }
+              : {}),
+            isPartOf: {
+              "@type": "WebSite",
+              name: "Varsovia Design",
+              url: getPublicSiteUrl().replace(/\/$/, ""),
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "Varsovia Design",
+              url: getPublicSiteUrl().replace(/\/$/, ""),
+            },
+          }
+        : null;
 
   return (
     <div className={COMPANY_PAGE_BG}>
@@ -600,18 +660,19 @@ export function IaChildView({
     };
   };
 }) {
-  const title = strField(
+  const heading = strField(
     child.hero?.title,
     strField(child.title, child.slug, locale),
     locale,
   );
+  const cardTitle = strField(child.title, heading, locale);
   const subtitle = strField(child.hero?.subtitle, "", locale);
   const eyebrow = strField(child.hero?.eyebrow, "", locale);
   const body = strField(child.body, "", locale);
   const crumbs: Crumb[] = [
     { label: "Home", href: "/" },
     { label: strField(hubTitle, String(hubKey), locale), href: hubPath(hubKey) },
-    { label: title },
+    { label: cardTitle },
   ];
 
   const pageUrl = absolutePath(locale, childPath(hubKey, child.slug));
@@ -641,12 +702,12 @@ export function IaChildView({
           "@context": "https://schema.org",
           "@type": ["LocalBusiness", "InteriorDesigner"],
           "@id": pageUrl ? `${pageUrl}#localbusiness` : undefined,
-          name: `Varsovia Design — ${title}`,
+          name: `Varsovia Design — ${cardTitle}`,
           description: subtitle || body || undefined,
           url: pageUrl,
           areaServed: {
             "@type": "City",
-            name: title,
+            name: cardTitle,
             containedInPlace: {
               "@type": "Country",
               name: "Thailand",
@@ -681,16 +742,53 @@ export function IaChildView({
         }
       : null;
 
+  const brandLd =
+    hubKey === "aboutBrand"
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Brand",
+          name: heading,
+          description: subtitle || body || undefined,
+          url: pageUrl,
+          ...(absoluteImage(child.hero?.image)
+            ? { image: absoluteImage(child.hero?.image) }
+            : {}),
+          parentOrganization: {
+            "@type": "Organization",
+            name: "Varsovia Design",
+            url: siteUrl,
+          },
+        }
+      : null;
+
   const serviceLd =
-    hubKey === "services"
+    hubKey === "services" || hubKey === "completeInteriors"
       ? {
           "@context": "https://schema.org",
           "@type": "Service",
-          name: title,
+          name: heading,
           description: subtitle || body || undefined,
           provider: { "@type": "Organization", name: "Varsovia Design" },
           areaServed: "Thailand",
           url: absolutePath(locale, childPath(hubKey, child.slug)),
+        }
+      : null;
+  const topicLd =
+    hubKey === "journal"
+      ? {
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: heading,
+          description: subtitle || body || undefined,
+          url: absolutePath(locale, childPath(hubKey, child.slug)),
+          ...(absoluteImage(child.hero?.image)
+            ? { image: absoluteImage(child.hero?.image) }
+            : {}),
+          isPartOf: {
+            "@type": "WebSite",
+            name: "Varsovia Design",
+            url: siteUrl,
+          },
         }
       : null;
 
@@ -710,15 +808,27 @@ export function IaChildView({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessLd) }}
         />
       ) : null}
+      {brandLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(brandLd) }}
+        />
+      ) : null}
       {serviceLd ? (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceLd) }}
         />
       ) : null}
+      {topicLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(topicLd) }}
+        />
+      ) : null}
       {!child.hero?.image ? <Breadcrumbs items={crumbs} locale={locale} /> : null}
       <PageHero
-        title={title}
+        title={heading}
         subtitle={subtitle}
         eyebrow={eyebrow}
         image={child.hero?.image}
