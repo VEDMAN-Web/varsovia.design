@@ -1,27 +1,23 @@
 ﻿"use client";
 
-import { ReactLenis, useLenis } from "lenis/react";
-import { useEffect } from "react";
+import Lenis from "lenis";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { usePathname } from "@/lib/i18n/navigation";
 import { clearIntroPending } from "@/lib/introUtils";
-import { shouldSmoothWheel } from "@/lib/scrollRuntime";
+import { shouldUseLuxuryWheel } from "@/lib/scrollRuntime";
 
-const LENIS_OPTIONS = {
-  // Native first; SmoothScrollPolicy turns wheel easing on for capable desktops.
-  smoothWheel: false,
-  syncTouch: false,
-  lerp: 0.2,
-  duration: 0.8,
-  wheelMultiplier: 1,
-  touchMultiplier: 1,
-  gestureOrientation: "vertical" as const,
-  anchors: { offset: -88 },
-  stopInertiaOnNavigate: true,
-  autoToggle: false,
-  autoRaf: false,
-  overscroll: true,
-  allowNestedScroll: true,
-};
+const LenisContext = createContext<Lenis | null>(null);
+
+export function useOptionalLenis() {
+  return useContext(LenisContext);
+}
 
 function RouteChangeCleanup() {
   const pathname = usePathname();
@@ -35,10 +31,7 @@ function RouteChangeCleanup() {
   return null;
 }
 
-function lenisNeedsRaf(lenis: {
-  isScrolling: boolean | string;
-  velocity: number;
-}) {
+function lenisIsEasing(lenis: Lenis) {
   return (
     lenis.isScrolling === "smooth" ||
     (typeof lenis.velocity === "number" && Math.abs(lenis.velocity) > 0.04)
@@ -46,27 +39,33 @@ function lenisNeedsRaf(lenis: {
 }
 
 /**
- * Lenis only eases desktop wheel/trackpad. Touch stays on native OS scrolling
- * (the compositor path Google measures for INP / mobile smoothness).
- * RAF runs only while a wheel ease is in flight — never a perpetual loop.
+ * Luxury wheel easing on capable desktops only.
+ * Phones/tablets keep native OS momentum (Google-grade compositor path).
+ * Lenis is not mounted into the React tree — creating it never remounts the app.
+ * RAF runs only while a wheel ease is in flight.
  */
-function SmoothScrollPolicy() {
-  const lenis = useLenis();
+function LuxuryWheelProvider({ children }: { children: ReactNode }) {
+  const [lenis, setLenis] = useState<Lenis | null>(null);
+  const instanceRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
-    if (!lenis) return;
-
     let rafId = 0;
     let running = false;
 
+    const stopRaf = () => {
+      running = false;
+      cancelAnimationFrame(rafId);
+      rafId = 0;
+    };
+
     const loop = (time: number) => {
-      if (!shouldSmoothWheel()) {
-        running = false;
-        lenis.options.smoothWheel = false;
+      const instance = instanceRef.current;
+      if (!instance) {
+        stopRaf();
         return;
       }
-      lenis.raf(time);
-      if (lenisNeedsRaf(lenis)) {
+      instance.raf(time);
+      if (lenisIsEasing(instance)) {
         rafId = requestAnimationFrame(loop);
       } else {
         running = false;
@@ -74,51 +73,80 @@ function SmoothScrollPolicy() {
     };
 
     const kickRaf = () => {
-      if (!shouldSmoothWheel() || running) return;
+      if (!instanceRef.current || running) return;
       running = true;
       rafId = requestAnimationFrame(loop);
     };
 
-    const apply = () => {
-      const enable = shouldSmoothWheel();
-      lenis.options.smoothWheel = enable;
-      document.documentElement.dataset.smoothScroll = enable ? "lenis" : "native";
-      if (!enable) {
-        running = false;
-        cancelAnimationFrame(rafId);
-        rafId = 0;
-      }
+    const destroy = () => {
+      if (!instanceRef.current) return;
+      stopRaf();
+      window.removeEventListener("wheel", kickRaf);
+      instanceRef.current.off("scroll", kickRaf);
+      instanceRef.current.destroy();
+      instanceRef.current = null;
+      setLenis(null);
+      document.documentElement.dataset.smoothScroll = "native";
     };
 
-    apply();
+    const create = () => {
+      if (instanceRef.current) return;
+      const instance = new Lenis({
+        wrapper: window,
+        smoothWheel: true,
+        syncTouch: false,
+        lerp: 0.11,
+        duration: 1.1,
+        wheelMultiplier: 1,
+        touchMultiplier: 1,
+        gestureOrientation: "vertical",
+        anchors: { offset: -88 },
+        stopInertiaOnNavigate: true,
+        autoToggle: false,
+        autoRaf: false,
+        overscroll: true,
+        allowNestedScroll: true,
+      });
+      instance.on("scroll", kickRaf);
+      instanceRef.current = instance;
+      setLenis(instance);
+      document.documentElement.dataset.smoothScroll = "lenis";
+      window.addEventListener("wheel", kickRaf, { passive: true });
+    };
+
+    const sync = () => {
+      if (shouldUseLuxuryWheel()) create();
+      else destroy();
+    };
+
+    sync();
 
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const coarse = window.matchMedia("(pointer: coarse)");
-    motion.addEventListener("change", apply);
-    coarse.addEventListener("change", apply);
-    window.addEventListener("resize", apply, { passive: true });
-    window.addEventListener("wheel", kickRaf, { passive: true });
+    const hover = window.matchMedia("(hover: none)");
+    motion.addEventListener("change", sync);
+    coarse.addEventListener("change", sync);
+    hover.addEventListener("change", sync);
+    window.addEventListener("resize", sync, { passive: true });
 
     return () => {
-      running = false;
-      cancelAnimationFrame(rafId);
-      motion.removeEventListener("change", apply);
-      coarse.removeEventListener("change", apply);
-      window.removeEventListener("resize", apply);
-      window.removeEventListener("wheel", kickRaf);
+      motion.removeEventListener("change", sync);
+      coarse.removeEventListener("change", sync);
+      hover.removeEventListener("change", sync);
+      window.removeEventListener("resize", sync);
+      destroy();
       document.documentElement.removeAttribute("data-smooth-scroll");
     };
-  }, [lenis]);
+  }, []);
 
-  return null;
+  return <LenisContext.Provider value={lenis}>{children}</LenisContext.Provider>;
 }
 
 export default function SmoothScroll({ children }: { children: React.ReactNode }) {
   return (
-    <ReactLenis root autoRaf={false} options={LENIS_OPTIONS}>
-      <SmoothScrollPolicy />
+    <LuxuryWheelProvider>
       <RouteChangeCleanup />
       {children}
-    </ReactLenis>
+    </LuxuryWheelProvider>
   );
 }

@@ -34,6 +34,27 @@ type ProductsProps = {
   products?: Product[];
 };
 
+/** Home Our Products is a 3-card teaser. Phone = 1 col, tablet = 2, desktop = 3. */
+const HOME_PRODUCT_LIMIT = 3;
+
+function pickHomeProducts(products?: Product[]): Product[] {
+  const visible = (products || []).filter(
+    (p) => (p as Product & { visible?: boolean }).visible !== false,
+  );
+  const featured = visible.filter(
+    (p) => (p as Product & { featured?: boolean }).featured === true,
+  );
+  const source = featured.length > 0 ? featured : visible;
+  return [...source]
+    .sort((a, b) => {
+      const ao = Number((a as Product & { order?: number }).order ?? 0);
+      const bo = Number((b as Product & { order?: number }).order ?? 0);
+      if (ao !== bo) return ao - bo;
+      return String(a._id).localeCompare(String(b._id));
+    })
+    .slice(0, HOME_PRODUCT_LIMIT);
+}
+
 function interiorListingHref(category?: string) {
   const c = category?.trim();
   if (!c) return "/interior-design";
@@ -78,9 +99,7 @@ export default function Products({ products }: ProductsProps) {
   const itemVariant = reduceMotion ? reducedScaleFadeItem : scaleFadeItem;
   const ctaVariant = reduceMotion ? reducedFadeUpItem : fadeUpItem;
 
-  const displayProducts = (products || [])
-    .filter((p) => (p as Product & { visible?: boolean }).visible !== false)
-    .slice(0, 3);
+  const displayProducts = pickHomeProducts(products);
 
   if (displayProducts.length === 0) return null;
 

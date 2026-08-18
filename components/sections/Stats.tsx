@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { motion, useInView } from "framer-motion";
 import SectionShell from "@/components/ui/SectionShell";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
-import { shouldUseScrollParallax } from "@/lib/scrollRuntime";
 
 type Stat = { value: string; label: string };
 
@@ -15,114 +14,24 @@ type StatsProps = {
 };
 
 /**
- * Desktop shows a viewport-fixed window: the image holds still while the frame
- * scrolls over it. Mobile and tablet render the image statically — the scroll-linked
- * offset stutters during touch momentum, and `background-attachment: fixed` renders
- * as a zoomed static crop there anyway.
+ * Static cover image — no scroll-linked offset (that fights native momentum).
  */
-function StatsFixedImage({ src, alt }: { src: string; alt: string }) {
-  const frameRef = useRef<HTMLDivElement>(null);
-  const layerRef = useRef<HTMLDivElement>(null);
-  const [parallax, setParallax] = useState(false);
-
-  useEffect(() => {
-    const sync = () => setParallax(shouldUseScrollParallax());
-    sync();
-    window.addEventListener("resize", sync, { passive: true });
-    return () => window.removeEventListener("resize", sync);
-  }, []);
-
-  useEffect(() => {
-    const frame = frameRef.current;
-    const layer = layerRef.current;
-    if (!parallax || !frame || !layer) return;
-
-    let frameId = 0;
-    let lastOffset = NaN;
-
-    const resize = () => {
-      const rect = frame.getBoundingClientRect();
-      layer.style.width = `${window.innerWidth}px`;
-      layer.style.height = `${window.innerHeight}px`;
-      layer.style.left = `${-rect.left}px`;
-      lastOffset = NaN;
-    };
-
-    // Whole-pixel offsets avoid subpixel re-rasterising on Safari
-    const tickOnce = () => {
-      frameId = 0;
-      const offset = Math.round(-frame.getBoundingClientRect().top);
-      if (offset !== lastOffset) {
-        lastOffset = offset;
-        layer.style.transform = `translate3d(0,${offset}px,0)`;
-      }
-    };
-
-    const onScroll = () => {
-      if (!frameId) frameId = requestAnimationFrame(tickOnce);
-    };
-
-    let listening = false;
-
-    const stop = () => {
-      cancelAnimationFrame(frameId);
-      frameId = 0;
-      if (listening) {
-        listening = false;
-        window.removeEventListener("scroll", onScroll);
-      }
-    };
-
-    resize();
-    window.addEventListener("resize", resize, { passive: true });
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          if (!listening) {
-            listening = true;
-            window.addEventListener("scroll", onScroll, { passive: true });
-          }
-          tickOnce();
-        } else {
-          stop();
-        }
-      },
-      { rootMargin: "100px" },
-    );
-    observer.observe(frame);
-
-    return () => {
-      stop();
-      observer.disconnect();
-      window.removeEventListener("resize", resize);
-      layer.style.cssText = "";
-    };
-  }, [parallax]);
-
+function StatsImage({ src, alt }: { src: string; alt: string }) {
   return (
     <div
-      ref={frameRef}
-      className="stats-image-frame relative mx-auto h-[min(52vw,280px)] min-h-[200px] w-full max-w-full overflow-hidden sm:h-[300px] md:h-[400px] lg:h-[440px]"
+      className="relative mx-auto h-[min(52vw,280px)] min-h-[200px] w-full max-w-full overflow-hidden sm:h-[300px] md:h-[400px] lg:h-[440px]"
       role="img"
       aria-label={alt}
     >
-      <div
-        ref={layerRef}
-        className={`absolute top-0 left-0 h-full w-full ${
-          parallax ? "[backface-visibility:hidden] [contain:paint] will-change-transform" : ""
-        }`}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={src}
-          alt=""
-          aria-hidden="true"
-          draggable={false}
-          decoding="async"
-          className="h-full w-full object-cover object-center select-none"
-        />
-      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+        decoding="async"
+        className="h-full w-full object-cover object-center select-none"
+      />
     </div>
   );
 }
@@ -208,7 +117,7 @@ export default function Stats({ stats, statsImage }: StatsProps) {
       </SectionShell>
 
       <SectionShell className="mt-12 md:mt-16">
-        <StatsFixedImage src={imageSrc} alt={t("statsImageAlt")} />
+        <StatsImage src={imageSrc} alt={t("statsImageAlt")} />
       </SectionShell>
     </section>
   );

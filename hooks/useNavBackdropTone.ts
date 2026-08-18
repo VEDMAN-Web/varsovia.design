@@ -1,49 +1,65 @@
 "use client";
 
 import { RefObject, useEffect, useState } from "react";
-import { rafThrottle } from "@/lib/scrollRuntime";
+import { usePathname } from "@/lib/i18n/navigation";
 
 /**
- * Frosted header over dark heroes. Samples `[data-nav-backdrop]` bands only —
- * no elementFromPoint / getComputedStyle walks on every Lenis frame.
+ * Frosted header over dark heroes. IntersectionObserver on `[data-nav-backdrop]`
+ * — no scroll handler, no getBoundingClientRect on every frame.
  */
 export function useNavBackdropTone(headerRef: RefObject<HTMLElement | null>) {
+  const pathname = usePathname();
   const [overDark, setOverDark] = useState(false);
 
   useEffect(() => {
     const header = headerRef.current;
     if (!header) return;
 
-    let last = false;
+    const intersecting = new Set<Element>();
+    let observer: IntersectionObserver | null = null;
 
-    const sample = () => {
-      const rect = header.getBoundingClientRect();
-      const y = Math.min(window.innerHeight - 2, Math.max(0, rect.bottom + 4));
-      const bands = document.querySelectorAll("[data-nav-backdrop]");
+    const publish = () => {
       let dark = false;
-      for (let i = 0; i < bands.length; i += 1) {
-        const r = bands[i].getBoundingClientRect();
-        if (r.top <= y && r.bottom >= y) {
-          dark = bands[i].getAttribute("data-nav-backdrop") === "dark";
-          break;
-        }
-      }
-      if (dark !== last) {
-        last = dark;
-        setOverDark(dark);
-      }
+      intersecting.forEach((el) => {
+        if (el.getAttribute("data-nav-backdrop") === "dark") dark = true;
+      });
+      setOverDark(dark);
     };
 
-    const onScroll = rafThrottle(sample);
-    sample();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
+    const connect = () => {
+      observer?.disconnect();
+      intersecting.clear();
+
+      const headerBottom = Math.max(8, Math.round(header.getBoundingClientRect().bottom));
+      const bottomGap = Math.max(0, window.innerHeight - headerBottom - 1);
+
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) intersecting.add(entry.target);
+            else intersecting.delete(entry.target);
+          }
+          publish();
+        },
+        {
+          root: null,
+          rootMargin: `-${headerBottom}px 0px -${bottomGap}px 0px`,
+          threshold: 0,
+        },
+      );
+
+      document.querySelectorAll("[data-nav-backdrop]").forEach((el) => observer?.observe(el));
+      publish();
+    };
+
+    connect();
+    window.addEventListener("resize", connect, { passive: true });
 
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      observer?.disconnect();
+      window.removeEventListener("resize", connect);
     };
-  }, [headerRef]);
+  }, [headerRef, pathname]);
 
   return overDark;
 }

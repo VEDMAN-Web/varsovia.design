@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useLenis } from "lenis/react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import { useOptionalLenis } from "@/components/providers/SmoothScroll";
+import { useScrolledPast } from "@/hooks/useScrolledPast";
 
 const SHOW_AFTER_PX = 420;
 
@@ -44,20 +45,13 @@ function ScrollTopIcon() {
 
 export default function HomeScrollToTop() {
   const t = useTranslations("common");
-  const lenis = useLenis();
+  const lenis = useOptionalLenis();
   const reduceMotion = useReducedMotion();
-  const [visible, setVisible] = useState(false);
+  const visible = useScrolledPast(SHOW_AFTER_PX);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const update = () => {
-      const y = window.scrollY;
-      const next = y > SHOW_AFTER_PX;
-      setVisible((prev) => (prev === next ? prev : next));
-    };
-
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    return () => window.removeEventListener("scroll", update);
+    setMounted(true);
   }, []);
 
   function scrollToTop() {
@@ -67,6 +61,8 @@ export default function HomeScrollToTop() {
     }
     window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
   }
+
+  if (!mounted) return null;
 
   return (
     <AnimatePresence>
@@ -86,18 +82,8 @@ export default function HomeScrollToTop() {
           }
           whileHover={reduceMotion ? undefined : { scale: 1.06 }}
           whileTap={reduceMotion ? undefined : { scale: 0.94 }}
-          className="group fixed bottom-6 right-4 z-40 flex size-10 cursor-pointer items-center justify-center rounded-full border border-[#6a414d]/18 bg-white/92 shadow-[0_8px_28px_rgba(106,65,77,0.14)] touch-manipulation sm:bottom-8 sm:right-6 md:size-11 lg:backdrop-blur-md"
+          className="group fixed bottom-6 right-4 z-40 flex size-10 cursor-pointer items-center justify-center rounded-full border border-[#6a414d]/18 bg-white shadow-[0_8px_28px_rgba(106,65,77,0.14)] touch-manipulation sm:bottom-8 sm:right-6 md:size-11"
         >
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-full border border-dashed border-[#6a414d]/28 motion-safe:animate-[spin_16s_linear_infinite]"
-          />
-
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-[3px] rounded-full bg-[#6a414d]/[0.04] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-          />
-
           <span className="relative z-[1] flex items-center justify-center">
             <ScrollTopIcon />
           </span>

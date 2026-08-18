@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "lenis/dist/lenis.css";
 
 :root {
   --maroon: #6b2c3a;
@@ -140,11 +139,12 @@
 }
 
 html {
-  overflow-x: hidden;
+  overflow-x: clip;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) transparent;
   font-family: var(--font-outfit), sans-serif;
+  scroll-behavior: auto;
 }
 
 html::-webkit-scrollbar {
@@ -175,11 +175,26 @@ html::-webkit-scrollbar-corner {
   background: transparent;
 }
 
-/* Native OS scrolling on phones; Lenis only eases desktop wheel when enabled */
-html,
+/* Lenis (desktop wheel only) — inlined so Tailwind does not have to resolve node_modules CSS */
 html.lenis,
-html[data-smooth-scroll="native"] {
+html.lenis body {
+  height: auto;
+}
+
+html.lenis {
   scroll-behavior: auto;
+}
+
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+
+.lenis [data-lenis-prevent],
+.lenis [data-lenis-prevent-wheel],
+.lenis [data-lenis-prevent-touch],
+.lenis [data-lenis-prevent-vertical],
+.lenis [data-lenis-prevent-horizontal] {
+  overscroll-behavior: contain;
 }
 
 @media (prefers-reduced-motion: reduce) {

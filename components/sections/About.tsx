@@ -1,13 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
-import {
-  motion,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-  type Variants,
-} from "framer-motion";
+import { useState } from "react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { useTranslations } from "next-intl";
 import {
   SECTION_BLOCK_CLASS,
@@ -27,7 +21,6 @@ import {
   VIEWPORT_ONCE,
 } from "@/lib/motionPresets";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
-import { shouldUseScrollParallax } from "@/lib/scrollRuntime";
 import {
   ABOUT_COLLAGE_ASPECT,
   ABOUT_COLLAGE_TILE_CLASS,
@@ -35,75 +28,6 @@ import {
 } from "@/components/sections/aboutLayoutShared";
 
 const FALLBACK_ABOUT_IMAGES = [...MEDIA.about];
-
-function ScrollShift({
-  enabled,
-  targetRef,
-  input,
-  output,
-  className,
-  children,
-  onMouseLeave,
-}: {
-  enabled: boolean;
-  targetRef: RefObject<HTMLElement | null>;
-  input: number[];
-  output: number[];
-  className?: string;
-  children: ReactNode;
-  onMouseLeave?: () => void;
-}) {
-  if (!enabled) {
-    return (
-      <div className={className} onMouseLeave={onMouseLeave}>
-        {children}
-      </div>
-    );
-  }
-  return (
-    <ScrollShiftActive
-      targetRef={targetRef}
-      input={input}
-      output={output}
-      className={className}
-      onMouseLeave={onMouseLeave}
-    >
-      {children}
-    </ScrollShiftActive>
-  );
-}
-
-function ScrollShiftActive({
-  targetRef,
-  input,
-  output,
-  className,
-  children,
-  onMouseLeave,
-}: {
-  targetRef: RefObject<HTMLElement | null>;
-  input: number[];
-  output: number[];
-  className?: string;
-  children: ReactNode;
-  onMouseLeave?: () => void;
-}) {
-  const { scrollYProgress } = useScroll({
-    target: targetRef,
-    offset: ["start end", "end start"],
-  });
-  const y = useTransform(scrollYProgress, input, output);
-
-  return (
-    <motion.div
-      style={{ y }}
-      className={`will-change-transform ${className ?? ""}`}
-      onMouseLeave={onMouseLeave}
-    >
-      {children}
-    </motion.div>
-  );
-}
 
 type AboutProps = {
   title?: string;
@@ -126,12 +50,6 @@ export default function About({
   const tSite = useTranslations("siteFallback");
   const [hovered, setHovered] = useState<number | null>(null);
   const reduceMotion = useReducedMotion();
-  const [parallax, setParallax] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    setParallax(shouldUseScrollParallax());
-  }, []);
 
   const defaultParagraphs = tSite("aboutText").split(/\n+/).filter(Boolean);
   const paragraphs = text ? text.split(/\n+/).filter(Boolean) : defaultParagraphs;
@@ -150,7 +68,6 @@ export default function About({
 
   return (
     <section
-      ref={sectionRef}
       id="about"
       className={`bg-[#fdf2f0] ${SITE_SECTION_PADDING_Y} !pt-[4.5rem] sm:!pt-[5.5rem] md:!pt-[7.5rem]`}
     >
@@ -172,11 +89,7 @@ export default function About({
         </motion.div>
 
         <div className="mt-10 grid w-full items-center gap-10 sm:mt-12 lg:mt-16 lg:grid-cols-[1.38fr_1fr] lg:gap-x-12 xl:gap-x-20">
-          <ScrollShift
-            enabled={Boolean(parallax && !reduceMotion)}
-            targetRef={sectionRef}
-            input={[0, 0.45, 1]}
-            output={[32, 0, -20]}
+          <div
             className={`relative mx-auto ${ABOUT_COLLAGE_ASPECT} w-full max-w-[640px] min-w-0 lg:mx-0 lg:max-w-none`}
             onMouseLeave={() => setHovered(null)}
           >
@@ -219,52 +132,44 @@ export default function About({
                 </motion.button>
               );
             })}
-          </ScrollShift>
+          </div>
 
-          <ScrollShift
-            enabled={Boolean(parallax && !reduceMotion)}
-            targetRef={sectionRef}
-            input={[0, 0.5, 1]}
-            output={[20, 0, -12]}
+          <motion.div
             className="w-full min-w-0 lg:pt-10"
+            initial="hidden"
+            whileInView="visible"
+            viewport={VIEWPORT_ONCE}
+            variants={staggerContainer(0.12, 0.15)}
           >
-            <motion.div
-              className="w-full min-w-0"
-              initial="hidden"
-              whileInView="visible"
-              viewport={VIEWPORT_ONCE}
-              variants={staggerContainer(0.12, 0.15)}
-            >
-              {paragraphs.map((p, i) => (
-                <motion.p
-                  key={p.slice(0, 32)}
-                  variants={textItem}
-                  custom={i}
-                  className="font-outfit mb-4 text-[clamp(1rem,1.6vw,1.25rem)] font-normal leading-[1.5] text-[#251b1e] sm:mb-5 sm:leading-[30px]"
-                >
-                  {p}
-                </motion.p>
-              ))}
-
-              <motion.a
-                href={ctaHref || "#projects"}
+            {paragraphs.map((p, i) => (
+              <motion.p
+                key={p.slice(0, 32)}
                 variants={textItem}
-                className="font-outfit group mt-2 inline-flex items-center gap-1 text-[1.25rem] font-medium text-[#cf5374]"
-                whileHover={reduceMotion ? undefined : { x: 3 }}
-                transition={{ duration: 0.25, ease: REVEAL_EASE }}
+                custom={i}
+                className="font-outfit mb-4 text-[clamp(1rem,1.6vw,1.25rem)] font-normal leading-[1.5] text-[#251b1e] sm:mb-5 sm:leading-[30px]"
               >
-                <span className="underline decoration-[#cf5374]/70 underline-offset-4 transition-colors group-hover:text-[#cf5374] group-hover:decoration-[#cf5374]">
-                  {ctaLabel || t("aboutLearnMore")}
-                </span>
-                <span
-                  aria-hidden
-                  className="inline-block translate-x-0 transition-transform duration-300 group-hover:translate-x-0.5"
-                >
-                  →
-                </span>
-              </motion.a>
-            </motion.div>
-          </ScrollShift>
+                {p}
+              </motion.p>
+            ))}
+
+            <motion.a
+              href={ctaHref || "#projects"}
+              variants={textItem}
+              className="font-outfit group mt-2 inline-flex items-center gap-1 text-[1.25rem] font-medium text-[#cf5374]"
+              whileHover={reduceMotion ? undefined : { x: 3 }}
+              transition={{ duration: 0.25, ease: REVEAL_EASE }}
+            >
+              <span className="underline decoration-[#cf5374]/70 underline-offset-4 transition-colors group-hover:text-[#cf5374] group-hover:decoration-[#cf5374]">
+                {ctaLabel || t("aboutLearnMore")}
+              </span>
+              <span
+                aria-hidden
+                className="inline-block translate-x-0 transition-transform duration-300 group-hover:translate-x-0.5"
+              >
+                →
+              </span>
+            </motion.a>
+          </motion.div>
         </div>
       </SectionShell>
     </section>

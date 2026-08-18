@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
@@ -64,6 +64,21 @@ export default function Partners({ partners = [] }: { partners?: Partner[] }) {
   const reduceMotion = useReducedMotion();
 
   const logos = useMemo((): PartnerLogo[] => buildLogosFromApi(partners), [partners]);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track || reduceMotion) return;
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        track.style.animationPlayState = entry.isIntersecting ? "running" : "paused";
+      },
+      { rootMargin: "80px" },
+    );
+    io.observe(track);
+    return () => io.disconnect();
+  }, [reduceMotion, logos.length]);
 
   if (logos.length === 0) {
     return null;
@@ -84,7 +99,7 @@ export default function Partners({ partners = [] }: { partners?: Partner[] }) {
           whileInView="visible"
           viewport={VIEWPORT_ONCE}
         >
-          <div className="partners-marquee-track flex w-max gap-10 md:gap-16">
+          <div ref={trackRef} className="partners-marquee-track flex w-max gap-10 md:gap-16">
             <PartnerLogoStrip logos={logos} />
             <PartnerLogoStrip logos={logos} duplicate />
           </div>

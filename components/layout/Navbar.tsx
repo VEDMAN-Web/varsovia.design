@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence } from "framer-motion";
-import { useLenis } from "lenis/react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChevronDown, Menu, Search, X } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/lib/i18n/navigation";
@@ -22,13 +21,14 @@ import {
 import { getNavDropdownSubtitle } from "@/components/layout/navDropdownMeta";
 import NavSearchResults from "@/components/layout/NavSearchResults";
 import { useSiteSearch } from "@/hooks/useSiteSearch";
+import { useOptionalLenis } from "@/components/providers/SmoothScroll";
 import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import { locales, type Locale } from "@/lib/i18n/routing";
 import { DEFAULT_SITE_IMAGE_PATHS } from "@/lib/defaultSiteImages";
 import { resolveMediaUrl } from "@/lib/mediaAssets";
 import type { SearchResultType } from "@/lib/searchTypes";
 import { useNavBackdropTone } from "@/hooks/useNavBackdropTone";
-import { rafThrottle } from "@/lib/scrollRuntime";
+import { useScrolledPast } from "@/hooks/useScrolledPast";
 import {
   applyLiveLocaleToNavigation,
   buildFallbackMainNavigation,
@@ -120,7 +120,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   const locale = useLocale() as Locale;
   const pathname = usePathname();
   const router = useRouter();
-  const lenis = useLenis();
+  const lenis = useOptionalLenis();
   const site = useSiteSettings();
   const navItems = useMemo(() => {
     const fromApi = resolveMainNavigation(site);
@@ -132,7 +132,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   const searchablePages = useSearchablePages();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
-  const [scrolled, setScrolled] = useState(false);
+  const scrolled = useScrolledPast(8);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [langOpen, setLangOpen] = useState(false);
   const [searchHover, setSearchHover] = useState(false);
@@ -200,16 +200,6 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
     }
     document.addEventListener("pointerdown", onPointerDown);
     return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, []);
-
-  useEffect(() => {
-    const onScroll = rafThrottle(() => {
-      const next = window.scrollY > 8;
-      setScrolled((prev) => (prev === next ? prev : next));
-    });
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
@@ -389,11 +379,11 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
       ref={navRef}
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-out ${
         mobileOpen
-          ? "border-b border-white/50 bg-white/90 shadow-[0_4px_20px_rgba(0,0,0,0.06)] lg:backdrop-blur-sm"
+          ? "border-b border-white/50 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.06)]"
           : frostedBar
             ? strongFrost
-              ? "border-b border-white/40 bg-white/95 shadow-[0_4px_28px_rgba(0,0,0,0.12)] lg:bg-white/88 lg:backdrop-blur-sm lg:backdrop-saturate-110"
-              : "border-b border-white/45 bg-white/95 shadow-[0_4px_20px_rgba(0,0,0,0.08)] lg:bg-white/78 lg:backdrop-blur-sm lg:backdrop-saturate-105"
+              ? "border-b border-white/40 bg-white/95 shadow-[0_4px_28px_rgba(0,0,0,0.12)]"
+              : "border-b border-white/45 bg-white/95 shadow-[0_4px_20px_rgba(0,0,0,0.08)]"
             : "border-b border-transparent bg-transparent shadow-none"
       }`}
     >
@@ -663,8 +653,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
 
       {mobileOpen && (
         <div
-          className="scrollbar-brand max-h-[calc(100dvh-102px)] overflow-y-auto overscroll-contain border-t border-maroon/10 bg-white/96 px-4 py-5 pr-3 backdrop-blur-sm [-webkit-overflow-scrolling:touch] xl:hidden"
-          data-lenis-prevent
+          className="scrollbar-brand max-h-[calc(100dvh-102px)] overflow-y-auto overscroll-contain border-t border-maroon/10 bg-white px-4 py-5 pr-3 [-webkit-overflow-scrolling:touch] xl:hidden"
         >
           <div className="mb-4 flex items-center rounded-full border border-[#e5e5e5] bg-[#f7f5f2] pl-4 pr-1.5 shadow-sm">
             <input

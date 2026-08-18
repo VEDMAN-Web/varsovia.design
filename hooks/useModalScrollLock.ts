@@ -1,7 +1,7 @@
 "use client";
 
 import { RefObject, useEffect } from "react";
-import { useLenis } from "lenis/react";
+import { useOptionalLenis } from "@/components/providers/SmoothScroll";
 
 function getScrollableAncestor(
   node: Node | null,
@@ -28,14 +28,14 @@ function isVerticallyScrollable(el: HTMLElement) {
   return el.scrollHeight > el.clientHeight + 1;
 }
 
-/** Lock page scroll (incl. Lenis) while a modal is open; allow nested scroll inside the dialog */
+/** Lock page scroll while a modal is open; allow nested scroll inside the dialog */
 export function useModalScrollLock(
   open: boolean,
   dialogRef: RefObject<HTMLElement | null>,
   scrollRootRef?: RefObject<HTMLElement | null>,
   options?: { overlay?: boolean },
 ) {
-  const lenis = useLenis();
+  const lenis = useOptionalLenis();
   const overlay = options?.overlay ?? false;
 
   useEffect(() => {
