@@ -548,12 +548,12 @@ function projectsDocs() {
 
 function partnersDocs() {
   return [
-    { name: "Fischer", logo: "/partners/figma/fischer.png", website: "", order: 1 },
-    { name: "Bostik", logo: "/partners/figma/bostik.png", website: "", order: 2 },
-    { name: "Egger", logo: "/partners/figma/egger.png", website: "", order: 3 },
-    { name: "Blum", logo: "/partners/figma/blum.png", website: "", order: 4 },
-    { name: "Jowat", logo: "/partners/figma/jowat.png", website: "", order: 5 },
-    { name: "Partner emblem", logo: "/partners/figma/emblem.png", website: "", order: 6 },
+    { name: "Fischer", logo: "/partners/fischer-mask.svg", website: "", order: 1 },
+    { name: "Bostik", logo: "/partners/bostik-mask.svg", website: "", order: 2 },
+    { name: "Egger", logo: "/partners/egger-mask.svg", website: "", order: 3 },
+    { name: "Blum", logo: "/partners/blum.svg", website: "", order: 4 },
+    { name: "Jowat", logo: "/partners/jowat-mask.svg", website: "", order: 5 },
+    { name: "Partner emblem", logo: "/partners/partner-emblem-mask.svg", website: "", order: 6 },
   ];
 }
 

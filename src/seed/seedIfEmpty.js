@@ -148,6 +148,25 @@ async function migrateFooterNavigation() {
   }
 }
 
+async function migratePartnerLogos() {
+  const { partnersDocs } = require("./seedData");
+  const byName = new Map(
+    partnersDocs().map((row) => [String(row.name).trim().toLowerCase(), row.logo]),
+  );
+  const byOrder = new Map(partnersDocs().map((row) => [Number(row.order), row.logo]));
+  const rows = await Partner.find().select("name logo order").lean();
+  for (const row of rows) {
+    const logo = String(row.logo || "");
+    const stale = /\/partners\/figma\//i.test(logo) || /\/partners\/[^/]+\.png$/i.test(logo);
+    if (!stale) continue;
+    const name = String(row.name?.en || row.name || "").trim().toLowerCase();
+    const next = byName.get(name) || byOrder.get(Number(row.order)) || "";
+    if (!next || next === logo) continue;
+    await Partner.updateOne({ _id: row._id }, { $set: { logo: next } });
+    console.log(`Partner logo migrated: ${name || row._id} -> ${next}`);
+  }
+}
+
 async function seedIfEmpty() {
   await migrateProjectCategories();
   await migrateProjectFilterMetadata();
@@ -156,6 +175,7 @@ async function seedIfEmpty() {
   await migrateMainNavigation();
   await migrateFooterNavigation();
   await migratePageCmsDefaults();
+  await migratePartnerLogos();
 
   if (await needsCanonicalSync()) {
     console.log("Applying canonical seed (empty or incomplete data detected)...");
@@ -163,6 +183,7 @@ async function seedIfEmpty() {
     await migrateProjectCategories();
     await migrateProjectFilterMetadata();
     await migrateProjectInteriorDetail();
+    await migratePartnerLogos();
     return;
   }
 
@@ -174,3 +195,4 @@ module.exports.syncCanonicalSeed = syncCanonicalSeed;
 module.exports.migrateProjectCategories = migrateProjectCategories;
 module.exports.migrateProjectFilterMetadata = migrateProjectFilterMetadata;
 module.exports.migrateProjectInteriorDetail = migrateProjectInteriorDetail;
+module.exports.migratePartnerLogos = migratePartnerLogos;

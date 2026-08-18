@@ -239,6 +239,7 @@ async function main() {
   for (const ep of [
     "/projects?locale=en&limit=3",
     "/products?locale=en&limit=3",
+    "/partners?locale=en&limit=6",
     "/showrooms?locale=en&limit=3",
     "/faqs?locale=en&limit=3",
     "/catalogues?locale=en&limit=3",
