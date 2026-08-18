@@ -125,9 +125,7 @@
   "sort": {
     "allOption": "All",
     "newest": "Newest To Oldest",
-    "oldest": "Oldest To Newest",
-    "priceHigh": "Price High to Low",
-    "priceLow": "Price Low to High"
+    "oldest": "Oldest To Newest"
   },
   "categories": {
     "all": "All",

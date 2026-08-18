@@ -70,7 +70,12 @@ const nextConfig: NextConfig = {
     root: path.join(__dirname),
   },
   images: {
-    remotePatterns: getImageRemotePatterns(),
+    remotePatterns: [
+      { protocol: "https", hostname: "images.pexels.com", pathname: "/**" },
+      { protocol: "https", hostname: "www.pexels.com", pathname: "/**" },
+      { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
+      ...getImageRemotePatterns(),
+    ],
   },
 };
 

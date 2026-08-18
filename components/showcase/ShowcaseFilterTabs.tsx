@@ -23,7 +23,7 @@ export default function ShowcaseFilterTabs({
   function selectTab(tab: ShowcaseTab) {
     onTabChange(tab);
     const params = new URLSearchParams(searchParams.toString());
-    if (tab === "Home case") {
+    if (tab === "All") {
       params.delete("tab");
     } else {
       params.set("tab", tab);

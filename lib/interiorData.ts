@@ -28,7 +28,6 @@ export type InteriorItem = {
   isNew: boolean;
   createdAt: string;
   order?: number;
-  price: number;
   shape: string;
   style: string;
   color: string;
@@ -41,7 +40,11 @@ export type InteriorDetailProject = {
   slug?: string;
   title: string;
   detailTitle: string;
+  /** Catalogue card copy — not the detail intro. */
   description: string;
+  /** Paragraph under the H1. Empty = section hidden. */
+  detailDescription?: string;
+  location?: string;
   coverImage: string;
   gallery: string[];
   category?: string;
@@ -50,14 +53,12 @@ export type InteriorDetailProject = {
   narrativeTwo?: string;
 };
 
+/** Kept for mock/seed copy only — never inject this onto a CMS project page. */
 export const INTERIOR_DETAIL_DEFAULT_DESCRIPTION =
   "This modern kitchen was designed to create a warm, elegant, and highly functional space for everyday living. Featuring a spacious island, premium finishes, integrated appliances, and clean architectural lines, the design balances aesthetics with practicality. Every detail was carefully considered to maximize storage, improve workflow, and create a welcoming environment for cooking, dining, and entertaining.";
 
-/** Detail page header intro (Figma): long paragraph under bold title — never the listing one-liner. */
 export function resolveInteriorDetailIntro(detailDescription?: string): string {
-  const detail = detailDescription?.trim() ?? "";
-  if (detail.length >= 100) return detail;
-  return INTERIOR_DETAIL_DEFAULT_DESCRIPTION;
+  return String(detailDescription || "").trim();
 }
 
 export const INTERIOR_NARRATIVE_ONE =
@@ -66,30 +67,22 @@ export const INTERIOR_NARRATIVE_ONE =
 export const INTERIOR_NARRATIVE_TWO =
   "Through thoughtful space planning, premium finishes, and integrated fixtures, we transformed this space with seamless functionality and lasting quality.";
 
-/** Single block below gallery slider (Figma) — used when CMS narratives are empty */
 export const INTERIOR_DETAIL_BODY_FALLBACK = `${INTERIOR_NARRATIVE_ONE.replace(/\s+$/, "")} ${INTERIOR_NARRATIVE_TWO.replace(/^\s+/, "")}`.trim();
 
 /**
- * One paragraph for detail body: merges `narrativeOne` + `narrativeTwo` from CMS.
- * Duplicate segments are collapsed; optional fallback when both fields are empty.
+ * Merge CMS body fields. Never substitutes placeholder kitchen copy.
  */
 export function buildInteriorDetailBody(
   narrativeOne?: string,
   narrativeTwo?: string,
-  options?: { useFallback?: boolean },
+  _options?: { useFallback?: boolean },
 ): string {
   const one = narrativeOne?.trim() ?? "";
   const two = narrativeTwo?.trim() ?? "";
-  let merged = "";
   if (one && two) {
-    merged = one === two ? one : `${one.replace(/\s+$/, "")} ${two.replace(/^\s+/, "")}`.trim();
-  } else {
-    merged = one || two;
+    return one === two ? one : `${one.replace(/\s+$/, "")} ${two.replace(/^\s+/, "")}`.trim();
   }
-  if (!merged && options?.useFallback) {
-    return INTERIOR_DETAIL_BODY_FALLBACK;
-  }
-  return normalizeDetailBodyParagraph(merged);
+  return one || two;
 }
 
 /** Collapse exact duplicate half (common in CMS / Figma placeholder). */
@@ -320,18 +313,6 @@ function readFilterString(
   return typeof fromMock === "string" ? fromMock : "";
 }
 
-function readPrice(
-  item: Record<string, unknown>,
-  mockItem: InteriorItem | undefined,
-  source: NormalizeInteriorSource,
-) {
-  if (source === "api") {
-    return typeof item.price === "number" && Number.isFinite(item.price) ? item.price : 0;
-  }
-  if (typeof item.price === "number" && Number.isFinite(item.price)) return item.price;
-  return mockItem?.price ?? 0;
-}
-
 export const CATEGORY_SUBCATEGORIES: Partial<
   Record<Exclude<InteriorCategory, "All">, readonly string[]>
 > = {
@@ -428,7 +409,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     ],
     isNew: true,
     createdAt: "2026-06-01",
-    price: 285000,
     shape: "U Shape",
     style: "Modern",
     color: "Black",
@@ -451,7 +431,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     ],
     isNew: true,
     createdAt: "2026-05-28",
-    price: 265000,
     shape: "L Shape",
     style: "Traditional",
     color: "Wood Tone",
@@ -466,7 +445,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: "/Interior-kitchen/kitchen2.png",
     isNew: true,
     createdAt: "2026-05-20",
-    price: 320000,
     shape: "Island",
     style: "Modern",
     color: "White",
@@ -481,7 +459,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: "/Interior-kitchen/kitchen2.png",
     isNew: true,
     createdAt: "2026-04-12",
-    price: 198000,
     shape: "Straight",
     style: "Modern",
     color: "Gray",
@@ -496,7 +473,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: "/Interior-kitchen/kitchen2.png",
     isNew: true,
     createdAt: "2026-03-18",
-    price: 215000,
     shape: "Galley",
     style: "Traditional",
     color: "Brown",
@@ -511,7 +487,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: "/Interior-kitchen/kitchen2.png",
     isNew: true,
     createdAt: "2026-06-10",
-    price: 345000,
     shape: "Island",
     style: "Modern",
     color: "Black",
@@ -527,7 +502,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(6),
     isNew: true,
     createdAt: "2026-05-15",
-    price: 175000,
     shape: "",
     style: "Modern",
     color: "Beige",
@@ -543,7 +517,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(7),
     isNew: false,
     createdAt: "2026-02-22",
-    price: 210000,
     shape: "",
     style: "Traditional",
     color: "Wood Tone",
@@ -559,7 +532,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(8),
     isNew: false,
     createdAt: "2026-01-30",
-    price: 185000,
     shape: "",
     style: "Modern",
     color: "Gray",
@@ -575,7 +547,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(9),
     isNew: true,
     createdAt: "2026-06-05",
-    price: 295000,
     shape: "",
     style: "Modern",
     color: "Dark",
@@ -591,7 +562,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(10),
     isNew: true,
     createdAt: "2026-05-02",
-    price: 95000,
     shape: "",
     style: "Modern",
     color: "White",
@@ -607,7 +577,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(11),
     isNew: false,
     createdAt: "2026-03-08",
-    price: 125000,
     shape: "",
     style: "Traditional",
     color: "Stone Tone",
@@ -623,7 +592,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(0),
     isNew: false,
     createdAt: "2026-02-01",
-    price: 72000,
     shape: "",
     style: "Modern",
     color: "Gray",
@@ -639,7 +607,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(1),
     isNew: true,
     createdAt: "2026-04-25",
-    price: 45000,
     shape: "",
     style: "Modern",
     color: "Black",
@@ -655,7 +622,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(2),
     isNew: false,
     createdAt: "2026-01-14",
-    price: 38000,
     shape: "",
     style: "Traditional",
     color: "Wood Tone",
@@ -671,7 +637,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(3),
     isNew: true,
     createdAt: "2026-05-30",
-    price: 52000,
     shape: "",
     style: "Modern",
     color: "White",
@@ -686,7 +651,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(4),
     isNew: true,
     createdAt: "2026-06-12",
-    price: 850000,
     shape: "",
     style: "Modern",
     color: "Wood Tone",
@@ -701,7 +665,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(5),
     isNew: false,
     createdAt: "2026-03-22",
-    price: 720000,
     shape: "",
     style: "Traditional",
     color: "Beige",
@@ -716,7 +679,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(6),
     isNew: false,
     createdAt: "2026-02-10",
-    price: 580000,
     shape: "",
     style: "Modern",
     color: "Gray",
@@ -731,7 +693,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(7),
     isNew: true,
     createdAt: "2026-04-02",
-    price: 68000,
     shape: "",
     style: "Modern",
     color: "Gray",
@@ -746,7 +707,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(8),
     isNew: false,
     createdAt: "2026-01-20",
-    price: 92000,
     shape: "",
     style: "Traditional",
     color: "Wood Tone",
@@ -761,7 +721,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(9),
     isNew: true,
     createdAt: "2026-05-08",
-    price: 54000,
     shape: "",
     style: "Modern",
     color: "Dark",
@@ -776,7 +735,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(10),
     isNew: false,
     createdAt: "2026-03-01",
-    price: 42000,
     shape: "",
     style: "Modern",
     color: "Champagne",
@@ -791,7 +749,6 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
     image: img(11),
     isNew: true,
     createdAt: "2026-06-08",
-    price: 78000,
     shape: "",
     style: "Traditional",
     color: "Brown",
@@ -803,16 +760,12 @@ export const INTERIOR_ITEMS: InteriorItem[] = [
 export type SortOption =
   | "all"
   | "newest"
-  | "oldest"
-  | "price-high"
-  | "price-low";
+  | "oldest";
 
 export const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "all", label: "All" },
   { value: "newest", label: "Newest To Oldest" },
   { value: "oldest", label: "Oldest To Newest" },
-  { value: "price-high", label: "High to Low Price" },
-  { value: "price-low", label: "Low to High Price" },
 ];
 
 function matchesList(selected: string[], value: string | undefined) {
@@ -857,12 +810,6 @@ export function filterAndSortItems(
       list = [...list].sort(
         (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
-      break;
-    case "price-high":
-      list = [...list].sort((a, b) => b.price - a.price);
-      break;
-    case "price-low":
-      list = [...list].sort((a, b) => a.price - b.price);
       break;
     default:
       break;
@@ -934,7 +881,6 @@ export function normalizeInteriorProject(
     description,
     category,
     subcategory: readFilterString(item, "subcategory", mockItem, source),
-    price: readPrice(item, mockItem, source),
     shape: readFilterString(item, "shape", mockItem, source),
     style: readFilterString(item, "style", mockItem, source),
     color: readFilterString(item, "color", mockItem, source),
@@ -973,8 +919,7 @@ function isInteriorCatalogItem(item: Record<string, unknown>) {
       item.style ||
       item.color ||
       item.material ||
-      item.finish ||
-      item.price,
+      item.finish,
   );
 }
 
@@ -1039,18 +984,22 @@ export function getInteriorProjectFromFallback(
 
     const normalized = normalizeInteriorProject(rec, 0, locale, { source: "api" });
     const coverImage = normalized.coverImage as string;
+    const galleryRaw = Array.isArray(rec.gallery)
+      ? rec.gallery.map((url) => String(url || "").trim()).filter(Boolean)
+      : [];
     return {
       _id: String(normalized._id),
       slug,
       title: String(normalized.title),
       detailTitle: String(normalized.title),
       description: String(normalized.description ?? ""),
+      detailDescription: "",
       coverImage,
-      gallery: buildInteriorGallery(coverImage),
+      gallery: galleryRaw,
       category: normalized.category as string | undefined,
       isNew: Boolean(normalized.isNew),
-      narrativeOne: INTERIOR_NARRATIVE_ONE,
-      narrativeTwo: INTERIOR_NARRATIVE_TWO,
+      narrativeOne: "",
+      narrativeTwo: "",
     };
   }
   return null;
@@ -1061,7 +1010,7 @@ export function getInteriorProjectById(idOrSlug: string): InteriorDetailProject 
   if (!item) return null;
 
   const coverImage = resolveInteriorImage(item.image, item.gallery, item.image, 0);
-  const gallery = buildInteriorGallery(coverImage, item.gallery);
+  const gallery = (item.gallery || []).map((url) => String(url || "").trim()).filter(Boolean);
   const slug = interiorDetailSlug({ _id: item.id, title: item.title });
 
   return {
@@ -1069,15 +1018,14 @@ export function getInteriorProjectById(idOrSlug: string): InteriorDetailProject 
     slug,
     title: item.title,
     detailTitle: item.detailTitle || item.title,
-    description: resolveInteriorDetailIntro(
-      item.detailDescription || item.description,
-    ),
+    description: item.description,
+    detailDescription: item.detailDescription || "",
     coverImage,
     gallery,
     category: item.category,
     isNew: item.isNew,
-    narrativeOne: INTERIOR_NARRATIVE_ONE,
-    narrativeTwo: INTERIOR_NARRATIVE_TWO,
+    narrativeOne: "",
+    narrativeTwo: "",
   };
 }
 
@@ -1100,7 +1048,7 @@ export function getRelatedInteriorProjects(
         slug: interiorDetailSlug({ _id: item.id, title: item.title }),
         title: item.title,
         detailTitle: item.detailTitle || item.title,
-        description: item.detailDescription || item.description,
+        description: item.description,
         coverImage,
         gallery: buildInteriorGallery(coverImage, item.gallery),
         category: item.category,

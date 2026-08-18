@@ -153,6 +153,8 @@ export type SiteContent = {
     metaDescription?: string;
     heroTitle?: string;
     heroSubtitle?: string;
+    /** Mega-menu section label — live “BY REGION & TYPE”. */
+    navSectionLabel?: string;
     indexable?: boolean;
   };
   interiorCatalogMode?: "hybrid" | "api";

@@ -131,18 +131,25 @@ function mergeChild(
   locale: Locale = "en",
 ): IaChildPage {
   const s: Partial<IaChildPage> = savedChild ?? {};
+  const title = mergeStr(s.title, defChild.title, locale);
+  const hero = mergeHero(s.hero, defChild.hero, locale) || {};
+  const seedTitle = str(defChild.title, locale);
+  const seedHeroTitle = str(defChild.hero?.title, locale);
+  if (title && title !== seedTitle && (!hero.title || hero.title === seedHeroTitle)) {
+    hero.title = title;
+  }
   return {
     ...defChild,
     ...s,
     slug: defChild.slug,
-    title: mergeStr(s.title, defChild.title, locale),
+    title,
     metaTitle: mergeStr(s.metaTitle, defChild.metaTitle, locale),
     metaDescription: mergeStr(s.metaDescription, defChild.metaDescription, locale),
     body: mergeStr(s.body, defChild.body, locale),
     relatedTitle: mergeStr(s.relatedTitle, defChild.relatedTitle, locale),
     servicesTitle: mergeStr(s.servicesTitle, defChild.servicesTitle, locale),
     servicesSubtitle: mergeStr(s.servicesSubtitle, defChild.servicesSubtitle, locale),
-    hero: mergeHero(s.hero, defChild.hero, locale),
+    hero,
     sections: mergeSections(s.sections, defChild.sections, locale),
     indexable: s.indexable === true,
     order: s.order ?? defChild.order ?? 0,
@@ -184,15 +191,19 @@ export function getIaPages(
     const savedChildren = Array.isArray(saved.children) ? saved.children : [];
     const bySlug = new Map(
       savedChildren
-        .filter((c) => c && typeof c.slug === "string" && c.slug)
-        .map((c) => [c.slug, c]),
+        .map((c) => {
+          const slug = String(c?.slug || "").trim();
+          return slug ? [slug, { ...c, slug }] as const : null;
+        })
+        .filter((entry): entry is readonly [string, IaChildPage] => Boolean(entry)),
     );
     const children = (def.children || []).map((defChild) =>
       mergeChild(defChild, bySlug.get(defChild.slug), loc),
     );
     for (const s of savedChildren) {
-      if (s?.slug && !children.some((c) => c.slug === s.slug)) {
-        children.push(mergeChild({ slug: s.slug }, s, loc));
+      const slug = String(s?.slug || "").trim();
+      if (slug && !children.some((c) => c.slug === slug)) {
+        children.push(mergeChild({ slug }, { ...s, slug }, loc));
       }
     }
     out[key] = {

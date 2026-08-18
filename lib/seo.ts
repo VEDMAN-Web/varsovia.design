@@ -6,6 +6,21 @@ const SITE_NAME = "Varsovia Design";
 const DEFAULT_DESCRIPTION =
   "Premium modular kitchens and interiors — timeless design, expert craftsmanship, and spaces built to last.";
 
+/** CMS Google title is used as typed — do not append the brand twice. */
+export function brandDocumentTitle(title: string): string {
+  const trimmed = String(title || "").trim();
+  if (!trimmed) return SITE_NAME;
+  const suffix = ` | ${SITE_NAME}`;
+  if (
+    trimmed === SITE_NAME ||
+    trimmed.endsWith(suffix) ||
+    trimmed.endsWith(` - ${SITE_NAME}`)
+  ) {
+    return trimmed;
+  }
+  return `${trimmed}${suffix}`;
+}
+
 export function pageMetadata({
   title,
   description = DEFAULT_DESCRIPTION,
@@ -40,15 +55,17 @@ export function pageMetadata({
     locales.map((l) => [l, `${baseUrl}/${l}${pathWithoutLocale === "/" ? "" : pathWithoutLocale}`]),
   );
 
+  const documentTitle = brandDocumentTitle(title);
+
   const metadata: Metadata = {
-    title: `${title} | ${SITE_NAME}`,
+    title: documentTitle,
     description,
     alternates: {
       canonical: url,
       languages,
     },
     openGraph: {
-      title: `${title} | ${SITE_NAME}`,
+      title: documentTitle,
       description,
       url,
       siteName: SITE_NAME,
@@ -57,7 +74,7 @@ export function pageMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} | ${SITE_NAME}`,
+      title: documentTitle,
       description,
     },
   };

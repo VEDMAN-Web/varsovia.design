@@ -5,7 +5,7 @@ import { Link } from "@/lib/i18n/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { InteriorDetailProject } from "@/lib/interiorData";
-import { buildInteriorDetailBody, getInteriorBackHref, INTERIOR_DETAIL_BODY_FALLBACK } from "@/lib/interiorData";
+import { getInteriorBackHref } from "@/lib/interiorData";
 import type { Locale } from "@/lib/i18n/routing";
 import ShowcaseProductCard from "@/components/ui/ShowcaseProductCard";
 import { interiorDetailPath } from "@/lib/interiorRoutes";
@@ -74,25 +74,26 @@ function uniqueGalleryImages(cover: string, gallery: string[]) {
   const seen = new Set<string>();
   const out: string[] = [];
   const push = (raw: string) => {
-    const url = resolveMediaUrl(raw, FALLBACK);
-    if (seen.has(url)) return;
+    const src = String(raw || "").trim();
+    if (!src) return;
+    const url = resolveMediaUrl(src, src);
+    if (!url || seen.has(url)) return;
     seen.add(url);
-    out.push(raw);
+    out.push(src);
   };
-  if (cover) push(cover);
+  push(cover);
   for (const item of gallery) push(item);
-  if (out.length === 0) out.push(FALLBACK);
   return out;
 }
 
 function InteriorDetailGallerySlider({
   images,
   title,
-  bodyText,
+  paragraphs,
 }: {
   images: string[];
   title: string;
-  bodyText: string;
+  paragraphs: string[];
 }) {
   const slides = useMemo(
     () => images.map((raw) => resolveMediaUrl(raw, FALLBACK)),
@@ -122,7 +123,9 @@ function InteriorDetailGallerySlider({
   }, [slides]);
 
   const canSlide = slides.length > 1;
-  const body = bodyText.trim();
+  const bodyParas = paragraphs.map((p) => p.trim()).filter(Boolean);
+
+  if (!slides.length && !bodyParas.length) return null;
 
   return (
     <section
@@ -130,6 +133,8 @@ function InteriorDetailGallerySlider({
       aria-label={`${title} gallery`}
       aria-roledescription="carousel"
     >
+      {slides.length ? (
+        <>
       <div className={`w-full ${INTERIOR_DETAIL_GALLERY_RADIUS} bg-[#ebe4e2]`}>
         <div className={INTERIOR_DETAIL_GALLERY_ASPECT}>
           {slides.map((src, i) => {
@@ -137,7 +142,7 @@ function InteriorDetailGallerySlider({
             return (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                key={src}
+                key={`${src}-${i}`}
                 src={src}
                 alt={`${title} — image ${i + 1} of ${slides.length}`}
                 draggable={false}
@@ -167,16 +172,23 @@ function InteriorDetailGallerySlider({
           </button>
         </div>
       ) : null}
+        </>
+      ) : null}
 
-      {body ? (
+      {bodyParas.map((para, i) => (
         <p
+          key={i}
           className={`${INTERIOR_DETAIL_BODY_CLASS} ${
-            canSlide ? INTERIOR_DETAIL_BODY_AFTER_SLIDER : "mt-8 sm:mt-9 md:mt-10"
+            i === 0
+              ? canSlide || slides.length
+                ? INTERIOR_DETAIL_BODY_AFTER_SLIDER
+                : "mt-8 sm:mt-9 md:mt-10"
+              : "mt-4 sm:mt-5"
           }`}
         >
-          {body}
+          {para}
         </p>
-      ) : null}
+      ))}
     </section>
   );
 }
@@ -220,13 +232,12 @@ function YouMayLikeSection({
 export default function InteriorDetail({ project }: Props) {
   const locale = useLocale() as Locale;
   const [related, setRelated] = useState<InteriorDetailProject[]>([]);
-
-  const detailBody = useMemo(() => {
-    const fromCms = buildInteriorDetailBody(project.narrativeOne, project.narrativeTwo, {
-      useFallback: false,
-    });
-    return fromCms || INTERIOR_DETAIL_BODY_FALLBACK;
-  }, [project.narrativeOne, project.narrativeTwo]);
+  const heading = (project.detailTitle || project.title || "").trim();
+  const intro = (project.detailDescription || "").trim();
+  const location = (project.location || "").trim();
+  const bodyParas = [project.narrativeOne, project.narrativeTwo]
+    .map((p) => String(p || "").trim())
+    .filter(Boolean);
 
   useEffect(() => {
     import("@/lib/api").then(({ fetchProjects }) => {
@@ -247,6 +258,7 @@ export default function InteriorDetail({ project }: Props) {
             coverImage: resolveMediaUrl(p.coverImage, MEDIA.interior[0]),
             detailTitle: p.detailTitle || p.title,
             description: p.description || "",
+            detailDescription: p.detailDescription || "",
             gallery: p.gallery?.length ? p.gallery : [],
             narrativeOne: p.narrativeOne || "",
             narrativeTwo: p.narrativeTwo || "",
@@ -260,11 +272,7 @@ export default function InteriorDetail({ project }: Props) {
   }, [project._id, project.category, locale]);
 
   const sliderImages = useMemo(
-    () =>
-      uniqueGalleryImages(
-        project.coverImage || FALLBACK,
-        project.gallery?.length ? project.gallery : [project.coverImage, ...MEDIA.interior.slice(0, 4)],
-      ),
+    () => uniqueGalleryImages(project.coverImage || "", project.gallery || []),
     [project.coverImage, project.gallery],
   );
 
@@ -272,15 +280,19 @@ export default function InteriorDetail({ project }: Props) {
 
   return (
     <div className="overflow-x-hidden" style={{ backgroundColor: INTERIOR_DETAIL_PAGE_BG }}>
+      {project.coverImage ? (
       <div className={INTERIOR_DETAIL_HERO_OUTER}>
         <ImageHeroBand
-          image={resolveMediaUrl(project.coverImage || FALLBACK, FALLBACK)}
-          alt={project.detailTitle}
+          image={resolveMediaUrl(project.coverImage, project.coverImage)}
+          alt={heading}
           sectionClassName={INTERIOR_DETAIL_HERO_CLASS}
           overlayClassName="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-[#f9f6f4]/45"
           navBackdrop="dark"
         />
       </div>
+      ) : (
+        <div className="h-[72px] sm:h-[102px]" />
+      )}
 
       <div
         className={`${INTERIOR_DETAIL_SHELL} pb-14 pt-9 sm:pb-16 sm:pt-10 md:pb-20 md:pt-12 lg:pb-24 lg:pt-14`}
@@ -295,8 +307,11 @@ export default function InteriorDetail({ project }: Props) {
               </Link>
 
               <header className={INTERIOR_DETAIL_HEADER_BLOCK}>
-                <h1 className={INTERIOR_DETAIL_TITLE_CLASS}>{project.detailTitle}</h1>
-                <p className={INTERIOR_DETAIL_INTRO_CLASS}>{project.description}</p>
+                {heading ? <h1 className={INTERIOR_DETAIL_TITLE_CLASS}>{heading}</h1> : null}
+                {location ? (
+                  <p className="mt-2 font-outfit text-[14px] text-[#8a6b73]">{location}</p>
+                ) : null}
+                {intro ? <p className={INTERIOR_DETAIL_INTRO_CLASS}>{intro}</p> : null}
               </header>
             </div>
           </PagePanelReveal>
@@ -305,8 +320,8 @@ export default function InteriorDetail({ project }: Props) {
             <div className={INTERIOR_DETAIL_HEADER_TO_SLIDER}>
               <InteriorDetailGallerySlider
                 images={sliderImages}
-                title={project.detailTitle}
-                bodyText={detailBody}
+                title={heading}
+                paragraphs={bodyParas}
               />
             </div>
           </FadeInView>

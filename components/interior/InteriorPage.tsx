@@ -74,7 +74,6 @@ type ApiProject = {
   order?: number;
   category?: string;
   subcategory?: string;
-  price?: number;
   shape?: string;
   style?: string;
   color?: string;
@@ -86,6 +85,8 @@ type ApiProject = {
 
 type Props = {
   initialCategory?: InteriorCategory;
+  /** Nested under IaHubView — skip listing H1 and navbar offset. */
+  embedded?: boolean;
 };
 
 function categoryFromQuery(value: string | null | undefined, fallback: InteriorCategory): InteriorCategory {
@@ -125,7 +126,7 @@ function FilterIcon({ className = "" }: { className?: string }) {
   );
 }
 
-export default function InteriorPage({ initialCategory = "All" }: Props) {
+export default function InteriorPage({ initialCategory = "All", embedded = false }: Props) {
   const locale = useLocale();
   const site = useSiteSettings();
   const catalogMode = site?.interiorCatalogMode || "hybrid";
@@ -262,12 +263,6 @@ export default function InteriorPage({ initialCategory = "All" }: Props) {
           (a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
         );
         break;
-      case "price-high":
-        list = [...list].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
-        break;
-      case "price-low":
-        list = [...list].sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
-        break;
     }
     return list;
   }, [projects, category, subcategory, subcategoryOptions, sortBy, filters]);
@@ -285,8 +280,6 @@ export default function InteriorPage({ initialCategory = "All" }: Props) {
         { value: "all" as SortOption, label: tSort("allOption") },
         { value: "newest" as SortOption, label: tSort("newest") },
         { value: "oldest" as SortOption, label: tSort("oldest") },
-        { value: "price-high" as SortOption, label: tSort("priceHigh") },
-        { value: "price-low" as SortOption, label: tSort("priceLow") },
       ] satisfies { value: SortOption; label: string }[],
     [tSort],
   );
@@ -307,9 +300,10 @@ export default function InteriorPage({ initialCategory = "All" }: Props) {
   }
 
   return (
-    <div className="bg-[#f7f3f2]">
-      <section className="pt-[72px] sm:pt-[102px]">
-        <PageShell className={INTERIOR_LISTING_HERO_PAD}>
+    <div className={embedded ? "" : "bg-[#f7f3f2]"}>
+      <section className={embedded ? "" : "pt-[72px] sm:pt-[102px]"}>
+        <PageShell className={embedded ? "pb-0 pt-0" : INTERIOR_LISTING_HERO_PAD}>
+          {embedded ? null : (
           <AnimatePresence mode="wait">
             <motion.div
               key={category}
@@ -330,6 +324,7 @@ export default function InteriorPage({ initialCategory = "All" }: Props) {
               />
             </motion.div>
           </AnimatePresence>
+          )}
 
           {subcategoryOptions && (
             <div className="overflow-hidden">

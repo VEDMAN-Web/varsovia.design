@@ -1,6 +1,7 @@
 import { pickLocalized } from "@/lib/i18n/pickLocalized";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 import type { Locale } from "@/lib/i18n/routing";
+import { padShowcaseGallery } from "@/components/showcase/showcaseGalleryLayoutShared";
 
 export const SHOWCASE_TABS = [
   "All",
@@ -24,7 +25,7 @@ export const SHOWCASE_CATEGORY_META: Record<
 > = {
   All: {
     title: "Our Showcase",
-    subtitle: "Every Space, Every Story",
+    subtitle: "Every space, every story",
   },
   "Home case": {
     title: "Home Case",
@@ -187,10 +188,11 @@ export function mapApiShowcaseToProject(
     MEDIA.interior[0],
   );
   const galleryRaw = Array.isArray(row.gallery) ? row.gallery : [];
-  const gallery =
-    galleryRaw.length > 0
-      ? galleryRaw.map((url) => resolveMediaUrl(String(url), image))
-      : [image];
+  const galleryResolved = galleryRaw.map((url) => {
+    const value = String(url || "").trim();
+    return value ? resolveMediaUrl(value, image) : "";
+  });
+  const gallery = padShowcaseGallery(galleryResolved, image);
 
   return {
     id,

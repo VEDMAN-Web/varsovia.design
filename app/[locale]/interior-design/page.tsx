@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import InteriorPage from "@/components/interior/InteriorPage";
 import Navbar from "@/components/layout/Navbar";
+import { IaHubView } from "@/components/ia/IaLanding";
 import { fetchSite } from "@/lib/api";
-import { getIaHub, strField } from "@/lib/iaPages";
+import { getIaHub, hubPath, strField } from "@/lib/iaPages";
 import type { Locale } from "@/lib/i18n/routing";
 import { pageMetadata } from "@/lib/seo";
 import { setRequestLocale } from "next-intl/server";
@@ -17,26 +18,35 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const site = await fetchSite(locale as Locale);
   const hub = getIaHub(site, "interiorDesign", locale);
   return pageMetadata({
-    title: strField(hub?.metaTitle || hub?.hero?.title, "Interior Design", locale),
+    title: strField(hub?.metaTitle, strField(hub?.hero?.title, "Interior Design", locale), locale),
     description: strField(
-      hub?.metaDescription || hub?.hero?.subtitle || hub?.body,
-      "Interior design projects and catalogue from Varsovia Design.",
+      hub?.metaDescription,
+      strField(hub?.hero?.subtitle, "", locale),
       locale,
     ),
-    path: `/${locale}/interior-design`,
+    path: `/${locale}${hubPath("interiorDesign")}`,
     locale,
     indexable: hub?.indexable === true,
   });
 }
 
-/** Canonical interior-design hub — catalog UI; hero/SEO from pages.interiorDesign CMS. */
+/** Same CMS stack as Furniture: banner → intro → blocks → Explore (project catalogue). */
 export default async function InteriorDesignCatalogPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const site = await fetchSite(locale as Locale);
+  const hub = getIaHub(site, "interiorDesign", locale);
   return (
     <>
       <Navbar />
-      <InteriorPage />
+      <main>
+        <IaHubView
+          hubKey="interiorDesign"
+          hub={hub}
+          locale={locale}
+          exploreSlot={<InteriorPage embedded />}
+        />
+      </main>
     </>
   );
 }

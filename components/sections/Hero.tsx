@@ -40,6 +40,7 @@ export default function Hero({
     <section
       id="home"
       data-nav-backdrop="dark"
+      data-preloader-bg="true"
       className="relative h-[100svh] min-h-[460px] w-full overflow-hidden sm:min-h-[520px] md:min-h-[560px]"
     >
       <div className="absolute inset-0">

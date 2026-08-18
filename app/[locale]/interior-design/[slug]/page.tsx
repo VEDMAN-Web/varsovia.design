@@ -39,16 +39,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     fetchSite(locale as Locale).catch(() => null),
   ]);
   const title =
-    typeof project?.title === "string"
-      ? project.title
-      : typeof (project as { detailTitle?: string } | null)?.detailTitle === "string"
-        ? String((project as { detailTitle?: string }).detailTitle)
-        : "Interior";
+    (typeof project?.detailTitle === "string" && project.detailTitle.trim()) ||
+    (typeof project?.title === "string" && project.title.trim()) ||
+    "Interior";
   const hub = getIaHub(site, "interiorDesign", locale);
+  const metaDescription =
+    (typeof project?.detailDescription === "string" && project.detailDescription.trim()) ||
+    (typeof project?.description === "string" && project.description.trim()) ||
+    undefined;
   return pageMetadata({
     title,
-    description:
-      typeof project?.description === "string" ? project.description : undefined,
+    description: metaDescription,
     path: `/${locale}/interior-design/${slug}`,
     locale,
     indexable: hub?.indexable === true,

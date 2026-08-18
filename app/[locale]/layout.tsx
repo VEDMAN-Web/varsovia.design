@@ -21,7 +21,7 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-/** Refresh CMS-driven layout data every 15s (ISR). fetchSite uses no-store in dev. */
+/** Layout may statically wrap locale routes; fetchSite always uses cache: 'no-store'. */
 export const revalidate = 15;
 
 export async function generateMetadata({ params }: Pick<Props, "params">): Promise<Metadata> {
@@ -73,7 +73,7 @@ export default async function LocaleLayout({ children, params }: Props) {
       />
       <SmoothScroll>
         <SiteSettingsProvider site={site}>
-          <SiteIntroShell heroImage={site?.heroImage}>
+          <SiteIntroShell>
             {children}
             <FooterWrapper site={site} />
           </SiteIntroShell>

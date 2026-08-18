@@ -9,7 +9,15 @@ import {
   portalEndScale,
   wingPortalCenter,
 } from "@/components/preloader/preloaderLogo";
-import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
+import { usePathname } from "@/lib/i18n/navigation";
+import { resolveMediaUrl } from "@/lib/mediaAssets";
+import {
+  pickPreloaderBackground,
+  readMountedPageHeroSrc,
+  resolvePreloaderBackground,
+  storePreloaderBackground,
+} from "@/lib/preloaderBackground";
 
 /** Hold on white + wing window, then portal zoom */
 export const PRELOADER_HOLD = 1;
@@ -18,14 +26,16 @@ export const PRELOADER_ZOOM = 1.35;
 const MASK_ID = "varsovia-wing-portal-mask";
 const OVERLAY = "#ffffff";
 const PORTAL_EASE = "cubic-bezier(0.76, 0, 0.2, 1)";
-const FALLBACK_HERO = MEDIA.hero;
+const TRANSPARENT_PIXEL =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 
 type HomePreloaderProps = {
   show: boolean;
   onComplete: () => void;
-  /** Fired when portal zoom begins — mount page under overlay */
+  /** Fired when the destination page should mount under the overlay */
   onPrepare?: () => void;
   heroImage?: string;
+  pathname?: string;
 };
 
 function readViewport() {
@@ -35,6 +45,10 @@ function readViewport() {
 
 function preloadHero(src: string) {
   return new Promise<void>((resolve) => {
+    if (!src || src.startsWith("data:")) {
+      resolve();
+      return;
+    }
     const link = document.createElement("link");
     link.rel = "preload";
     link.as = "image";
@@ -125,19 +139,28 @@ function animateHeroKenBurns(
   });
 }
 
-export default function HomePreloader({ show, onComplete, onPrepare, heroImage }: HomePreloaderProps) {
+export default function HomePreloader({
+  show,
+  onComplete,
+  onPrepare,
+  heroImage,
+  pathname = "/",
+}: HomePreloaderProps) {
   const reducedMotion = useReducedMotion();
   const finishedRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
   const onPrepareRef = useRef(onPrepare);
+  const pathnameRef = useRef(pathname);
   const [viewport, setViewport] = useState({ w: 0, h: 0 });
   const [heroReady, setHeroReady] = useState(false);
   const portalRef = useRef<SVGGElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   onCompleteRef.current = onComplete;
   onPrepareRef.current = onPrepare;
-  const imageSrc = resolveMediaUrl(heroImage, FALLBACK_HERO);
+  pathnameRef.current = pathname;
+  const imageSrc = heroImage ? resolveMediaUrl(heroImage, heroImage) : "";
 
   useLayoutEffect(() => {
     const sync = () => setViewport(readViewport());
@@ -148,6 +171,10 @@ export default function HomePreloader({ show, onComplete, onPrepare, heroImage }
 
   useEffect(() => {
     let cancelled = false;
+    if (!imageSrc) {
+      setHeroReady(true);
+      return;
+    }
     setHeroReady(false);
     preloadHero(imageSrc).then(() => {
       if (!cancelled) setHeroReady(true);
@@ -191,9 +218,25 @@ export default function HomePreloader({ show, onComplete, onPrepare, heroImage }
     hero.style.transform = "scale(1)";
     portal.setAttribute("transform", `scale(${PRELOADER_INITIAL_SCALE})`);
 
+    const applyLiveHero = async () => {
+      const live = readMountedPageHeroSrc();
+      if (!live) return;
+      storePreloaderBackground(pathnameRef.current, live);
+      const img = imgRef.current;
+      const resolved = resolveMediaUrl(live, live);
+      if (!img || !resolved) return;
+      const current = img.currentSrc || img.src;
+      if (current === resolved) return;
+      await preloadHero(resolved);
+      if (abort.signal.aborted) return;
+      img.src = resolved;
+    };
+
     const run = async () => {
       try {
-        // Fonts ready avoids FOUT under the portal handoff
+        // Mount destination page under overlay so its first-screen photo can fill the wing
+        onPrepareRef.current?.();
+
         if (document.fonts?.ready) {
           try {
             await Promise.race([
@@ -208,12 +251,25 @@ export default function HomePreloader({ show, onComplete, onPrepare, heroImage }
           if (abort.signal.aborted) return;
         }
 
-        if (!reducedMotion) {
-          await wait(PRELOADER_HOLD * 1000, abort.signal);
+        const holdMs = reducedMotion ? 0 : PRELOADER_HOLD * 1000;
+        const stealDeadline = Math.max(120, Math.min(holdMs || 180, 420));
+        const stealUntil = performance.now() + stealDeadline;
+        while (performance.now() < stealUntil) {
+          if (abort.signal.aborted) return;
+          if (readMountedPageHeroSrc()) {
+            await applyLiveHero();
+            break;
+          }
+          await wait(32, abort.signal);
         }
 
-        // Mount destination page under overlay while zoom runs
-        onPrepareRef.current?.();
+        const holdLeft = holdMs - stealDeadline;
+        if (holdLeft > 0) {
+          await wait(holdLeft, abort.signal);
+        }
+        if (abort.signal.aborted) return;
+
+        await applyLiveHero();
 
         await Promise.all([
           animatePortalHole(portal, PRELOADER_INITIAL_SCALE, targetScale, zoomMs, abort.signal),
@@ -248,7 +304,8 @@ export default function HomePreloader({ show, onComplete, onPrepare, heroImage }
       {/* Hero — fixed full bleed; revealed through growing vector wing hole */}
       <div ref={heroRef} className="absolute inset-0 will-change-transform">
         <img
-          src={imageSrc}
+          ref={imgRef}
+          src={imageSrc || TRANSPARENT_PIXEL}
           alt=""
           className="h-full w-full object-cover object-center"
           aria-hidden="true"
@@ -287,8 +344,16 @@ export default function HomePreloader({ show, onComplete, onPrepare, heroImage }
   );
 }
 
-export function HomePreloaderGate({ heroImage }: { heroImage?: string }) {
+export function HomePreloaderGate() {
   const { showPreloader, finishIntro, prepareIntro } = useIntro();
+  const pathname = usePathname();
+  const site = useSiteSettings();
+  const fromRoute = resolvePreloaderBackground(pathname, site);
+  const [heroImage, setHeroImage] = useState(fromRoute);
+
+  useLayoutEffect(() => {
+    setHeroImage(pickPreloaderBackground(pathname, site));
+  }, [pathname, site, fromRoute]);
 
   return (
     <HomePreloader
@@ -296,6 +361,7 @@ export function HomePreloaderGate({ heroImage }: { heroImage?: string }) {
       onComplete={finishIntro}
       onPrepare={prepareIntro}
       heroImage={heroImage}
+      pathname={pathname}
     />
   );
 }

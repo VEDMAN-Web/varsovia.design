@@ -70,11 +70,12 @@ export function buildLocalizedSiteFallback(locale?: string): SiteContent {
     },
     projectsPage: {
       indexable: false,
-      metaTitle: "Projects",
+      metaTitle: "Our Showcase | Varsovia Design",
       metaDescription:
-        "Explore Varsovia Design projects across kitchens, bedrooms, and whole-home interiors.",
-      heroTitle: "Our Projects",
+        "Varsovia Design showcase — homes and projects by region and type.",
+      heroTitle: "Our Showcase",
       heroSubtitle: "Every space, every story",
+      navSectionLabel: "By Region & Type",
     },
     contactImages: [...MEDIA.contact],
     footerBio: s.footerBio,

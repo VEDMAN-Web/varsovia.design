@@ -36,7 +36,7 @@ function resolveActiveShowcaseTab(tabParam: string | null): ShowcaseTab {
   if (tabParam && SHOWCASE_TABS.includes(tabParam as ShowcaseTab)) {
     return tabParam as ShowcaseTab;
   }
-  return "Home case";
+  return "All";
 }
 
 function ShowcaseListingInner() {

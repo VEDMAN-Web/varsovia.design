@@ -14,12 +14,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const site = await fetchSite(locale as Locale);
   const pp = site.projectsPage || {};
+  const allMeta = (site.showcaseMeta || []).find((row) => String(row.tabKey) === "All");
   return pageMetadata({
-    title: String(pp.metaTitle || "Projects").slice(0, 60),
-    description: String(
-      pp.metaDescription ||
-        "Explore Varsovia Design projects across kitchens, bedrooms, and whole-home interiors.",
-    ).slice(0, 160),
+    title: String(pp.metaTitle || allMeta?.title || "Our Showcase").slice(0, 60),
+    description: String(pp.metaDescription || allMeta?.subtitle || pp.heroSubtitle || "").slice(0, 160),
     path: `/${locale}/projects`,
     locale,
     indexable: pp.indexable === true,

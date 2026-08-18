@@ -15,11 +15,8 @@ type Props = { params: Promise<{ locale: string; id: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, id } = await params;
   const site = await fetchSite(locale as Locale).catch(() => null);
-  const staticProject = getShowcaseProjectById(id);
-  const apiProject = staticProject
-    ? null
-    : await fetchShowcaseById(id, locale as Locale).catch(() => null);
-  const project = staticProject || apiProject;
+  const apiProject = await fetchShowcaseById(id, locale as Locale).catch(() => null);
+  const project = apiProject || getShowcaseProjectById(id);
   const title = project?.title ? String(project.title) : "Project";
   return pageMetadata({
     title,
@@ -34,14 +31,14 @@ export default async function ProjectDetailPage({ params }: Props) {
   const { locale, id } = await params;
   setRequestLocale(locale);
 
-  const staticProject = getShowcaseProjectById(id);
-  if (staticProject) {
-    return <ShowcaseDetailContent project={staticProject} />;
-  }
-
   const apiProject = await fetchShowcaseById(id, locale as Locale);
   if (apiProject) {
     return <ShowcaseDetailContent project={apiProject} />;
+  }
+
+  const staticProject = getShowcaseProjectById(id);
+  if (staticProject) {
+    return <ShowcaseDetailContent project={staticProject} />;
   }
 
   notFound();

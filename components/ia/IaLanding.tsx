@@ -1,4 +1,5 @@
-import Image from "next/image";
+import type { ReactNode } from "react";
+import CmsImage from "@/components/ui/CmsImage";
 import CompanyHero from "@/components/company/CompanyHero";
 import CompanySectionHeading from "@/components/company/CompanySectionHeading";
 import FadeInView from "@/components/company/FadeInView";
@@ -125,9 +126,10 @@ function FullBleedHero({
   return (
     <header
       data-nav-backdrop="dark"
+      data-preloader-bg="true"
       className="relative h-[min(62vh,680px)] min-h-[420px] w-full overflow-hidden sm:min-h-[480px]"
     >
-      <Image
+      <CmsImage
         src={image}
         alt=""
         fill
@@ -247,22 +249,14 @@ function PageHero({
   );
 }
 
-function BodyCopy({ body, emptyHint }: { body: string; emptyHint: string }) {
-  if (body) {
-    return (
-      <FadeInView className={`${COMPANY_SHELL} mt-10 md:mt-14`}>
-        <div className="mx-auto max-w-3xl text-center whitespace-pre-wrap font-outfit text-[16px] leading-[1.75] text-[#4a3a3e] md:text-[17px]">
-          {body}
-        </div>
-      </FadeInView>
-    );
-  }
+function BodyCopy({ body }: { body: string }) {
+  if (!body) return null;
   return (
-    <div className={`${COMPANY_SHELL} mt-10`}>
-      <p className="mx-auto max-w-2xl text-center font-outfit text-[15px] text-[#8a6b73]">
-        {emptyHint}
-      </p>
-    </div>
+    <FadeInView className={`${COMPANY_SHELL} mt-10 md:mt-14`}>
+      <div className="mx-auto max-w-3xl text-center whitespace-pre-wrap font-outfit text-[16px] leading-[1.75] text-[#4a3a3e] md:text-[17px]">
+        {body}
+      </div>
+    </FadeInView>
   );
 }
 
@@ -284,7 +278,7 @@ function RelatedGrid({
               <Link href={item.href} className="group block">
                 {item.image ? (
                   <div className="relative mb-4 aspect-[4/3] overflow-hidden">
-                    <Image
+                    <CmsImage
                       src={item.image}
                       alt={item.title}
                       fill
@@ -353,7 +347,7 @@ function ChildLinkList({
                 >
                   {image ? (
                     <div className="relative mb-4 aspect-[4/3] overflow-hidden">
-                      <Image
+                      <CmsImage
                         src={image}
                         alt={title}
                         fill
@@ -427,11 +421,14 @@ export function IaHubView({
   hubKey,
   hub,
   locale,
+  exploreSlot,
 }: {
   hubKey: IaHubKey;
   hub: IaHubPage;
   locale: string;
   related?: { id: string; title: string; href: string; image?: string }[];
+  /** Replaces Explore child cards (Interior catalogue, Journal grid, etc.). */
+  exploreSlot?: ReactNode;
 }) {
   const title = strField(hub.hero?.title, hub.slug || "Page", locale);
   const subtitle = strField(hub.hero?.subtitle, "", locale);
@@ -466,32 +463,36 @@ export function IaHubView({
         subtitle={subtitle}
         eyebrow={eyebrow}
         image={hub.hero?.image}
-        ctaLabel={hub.hero?.ctaLabel}
-        ctaHref={hub.hero?.ctaHref}
+        ctaLabel={strField(hub.hero?.ctaLabel, "", locale)}
+        ctaHref={strField(hub.hero?.ctaHref, "/contact", locale)}
       />
-      {hub.hero?.image ? (
-        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: title }]} locale={locale} />
-      ) : null}
-      <BodyCopy
-        body={body}
-        emptyHint={
-          hub.indexable
-            ? "Content for this section can be edited in Admin → Varsovia → Site Settings."
-            : "Content for this section can be edited in Admin → Varsovia → Site Settings. This page is currently noindex until content is ready."
-        }
-      />
+      <BodyCopy body={body} />
       <IaContentSections sections={hub.sections} hubKey={hubKey} />
-      <ChildLinkList
-        hubKey={hubKey}
-        exploreTitle={hub.exploreTitle}
-        exploreSubtitle={hub.exploreSubtitle}
-        items={children.map((c) => ({
-          slug: c.slug,
-          title: strField(c.hero?.title, strField(c.title, c.slug, locale), locale),
-          image: strField(c.hero?.image, "", locale),
-          subtitle: strField(c.hero?.subtitle, "", locale),
-        }))}
-      />
+      {exploreSlot ? (
+        <div className="pb-4 md:pb-8">
+          <FadeInView className={`${COMPANY_SHELL} mt-16 md:mt-20`} delay={0.06}>
+            <CompanySectionHeading
+              title={strField(hub.exploreTitle, "Explore", locale)}
+              subtitle={strField(hub.exploreSubtitle, "", locale)}
+              subtitleSentenceCase={false}
+              className="mb-8 md:mb-10"
+            />
+          </FadeInView>
+          {exploreSlot}
+        </div>
+      ) : (
+        <ChildLinkList
+          hubKey={hubKey}
+          exploreTitle={hub.exploreTitle}
+          exploreSubtitle={hub.exploreSubtitle}
+          items={children.map((c) => ({
+            slug: c.slug,
+            title: strField(c.title, strField(c.hero?.title, c.slug, locale), locale),
+            image: strField(c.hero?.image, "", locale),
+            subtitle: strField(c.hero?.subtitle, "", locale),
+          }))}
+        />
+      )}
     </div>
   );
 }
@@ -582,14 +583,11 @@ export function IaChildView({
         subtitle={subtitle}
         eyebrow={eyebrow}
         image={child.hero?.image}
-        ctaLabel={child.hero?.ctaLabel}
-        ctaHref={child.hero?.ctaHref}
+        ctaLabel={strField(child.hero?.ctaLabel, "", locale)}
+        ctaHref={strField(child.hero?.ctaHref, "/contact", locale)}
       />
       {child.hero?.image ? <Breadcrumbs items={crumbs} locale={locale} /> : null}
-      <BodyCopy
-        body={body}
-        emptyHint="Add copy in Admin → Varsovia → Site Settings. Page remains noindex until marked indexable."
-      />
+      <BodyCopy body={body} />
       <IaContentSections sections={child.sections} hubKey={hubKey} />
       <ServiceLinkList
         items={relatedServices || []}

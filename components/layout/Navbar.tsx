@@ -34,6 +34,7 @@ import {
   buildFallbackMainNavigation,
   resolveMainNavigation,
 } from "@/lib/mainNavigation";
+import { overlayShowcaseMegaMenu } from "@/lib/showcasePageNav";
 import type { ResolvedNavItem } from "@/lib/mainNavigationTypes";
 import { trackCtaClick } from "@/lib/analytics";
 
@@ -124,10 +125,18 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
   const site = useSiteSettings();
   const navItems = useMemo(() => {
     const fromApi = resolveMainNavigation(site);
-    if (fromApi.length > 0) {
-      return applyLiveLocaleToNavigation(fromApi, locale, t, tDrop, tShowcase);
-    }
-    return buildFallbackMainNavigation(t, tDrop, tShowcase);
+    const resolved =
+      fromApi.length > 0
+        ? applyLiveLocaleToNavigation(fromApi, locale, t, tDrop, tShowcase)
+        : buildFallbackMainNavigation(t, tDrop, tShowcase);
+    return resolved.map((item) => {
+      if (item.id !== "showcase" || !item.menu) return item;
+      return {
+        ...item,
+        href: "/projects",
+        menu: overlayShowcaseMegaMenu(item.menu, site) ?? item.menu,
+      };
+    });
   }, [site, locale, t, tDrop, tShowcase]);
   const searchablePages = useSearchablePages();
   const [mobileOpen, setMobileOpen] = useState(false);

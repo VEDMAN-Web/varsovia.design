@@ -1,4 +1,4 @@
-const DEV_API_URL = "http://localhost:5000/api";
+const DEV_API_URL = "http://localhost:5001/api";
 const DEV_SITE_URL = "http://localhost:3000";
 
 function trimTrailingSlash(url: string) {
@@ -80,6 +80,8 @@ export function getImageRemotePatterns(): Array<{
     pathname?: string;
   }> = [
     { protocol: "https", hostname: "images.unsplash.com" },
+    { protocol: "https", hostname: "images.pexels.com" },
+    { protocol: "https", hostname: "www.pexels.com" },
     { protocol: "https", hostname: "res.cloudinary.com" },
     { protocol: "https", hostname: "**.onrender.com" },
     { protocol: "https", hostname: "**.amazonaws.com" },
@@ -107,4 +109,26 @@ export function getImageRemotePatterns(): Array<{
   }
 
   return patterns;
+}
+
+/** True when next/image will accept this src without throwing unconfigured-host. */
+export function isAllowedNextImageSrc(src: string): boolean {
+  if (!src) return false;
+  if (src.startsWith("/") || src.startsWith("data:") || src.startsWith("blob:")) return true;
+  try {
+    const u = new URL(src);
+    if (u.hostname === "localhost" || u.hostname === "127.0.0.1") return true;
+    const protocol = u.protocol === "http:" ? "http" : u.protocol === "https:" ? "https" : null;
+    if (!protocol) return false;
+    return getImageRemotePatterns().some((p) => {
+      if (p.protocol !== protocol) return false;
+      if (p.hostname.startsWith("**.")) {
+        const suffix = p.hostname.slice(2);
+        return u.hostname === suffix || u.hostname.endsWith(`.${suffix}`);
+      }
+      return u.hostname === p.hostname;
+    });
+  } catch {
+    return false;
+  }
 }

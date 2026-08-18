@@ -20,12 +20,9 @@ export const API_URL = getPublicApiUrl();
 
 const LIST_PAGE_SIZE = 100;
 
-/** CMS site payload — fresh in dev; short ISR window in production. */
+/** CMS site payload — always fresh so Furniture / IA edits show on the live site. */
 function siteFetchInit(): RequestInit {
-  if (process.env.NODE_ENV !== "production") {
-    return { cache: "no-store" };
-  }
-  return { next: { revalidate: 15 } };
+  return { cache: "no-store" };
 }
 
 async function parseApiResponse(res: Response) {
@@ -373,6 +370,7 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
         ),
         heroTitle: pickSiteCopy(src.heroTitle, loc, fbPp.heroTitle ?? ""),
         heroSubtitle: pickSiteCopy(src.heroSubtitle, loc, fbPp.heroSubtitle ?? ""),
+        navSectionLabel: pickSiteCopy(src.navSectionLabel, loc, fbPp.navSectionLabel ?? ""),
       };
     })(),
     designTools:
@@ -680,7 +678,7 @@ function normalizeProjectCover(project: Record<string, unknown>) {
 
 export async function fetchProjects(locale?: Locale): Promise<ApiProject[]> {
   try {
-    const rows = onlyVisibleRows(await fetchAllListItems("/projects", locale, { next: { revalidate: 30 } }));
+    const rows = onlyVisibleRows(await fetchAllListItems("/projects", locale, { cache: "no-store" }));
     return rows.map((row) => normalizeProjectCover(row as Record<string, unknown>)) as ApiProject[];
   } catch {
     const { fallbackHomeData } = await import("./fallbackData");
@@ -816,29 +814,41 @@ export async function fetchFAQs(locale?: Locale): Promise<Record<string, unknown
   }
 }
 
+function cmsImageList(raw: unknown, cover?: string): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  const push = (value: unknown) => {
+    const s = typeof value === "string" ? value.trim() : "";
+    if (!s) return;
+    const resolved = resolveMediaUrl(s, s);
+    if (!resolved || seen.has(resolved)) return;
+    seen.add(resolved);
+    out.push(s);
+  };
+  push(cover);
+  if (Array.isArray(raw)) {
+    for (const item of raw) push(item);
+  }
+  return out;
+}
+
 export async function fetchProjectById(idOrSlug: string, locale?: Locale) {
-  const { getInteriorProjectById, resolveInteriorDetailIntro } = await import("./interiorData");
+  const { getInteriorProjectById } = await import("./interiorData");
   const { interiorDetailSlug } = await import("./interiorRoutes");
 
   try {
     const res = await fetch(withLocale(`${API_URL}/projects/${encodeURIComponent(idOrSlug)}`, locale), {
       headers: localeHeaders(locale),
-      next: { revalidate: 30 },
+      cache: "no-store",
     });
     if (res.ok) {
       const body = await res.json();
       const apiProject = unwrapApiData<Record<string, unknown>>(body);
-      const cover = resolveMediaUrl(
-        (apiProject.coverImage || apiProject.image) as string | undefined,
-        MEDIA.interior[0],
-      );
-      const galleryRaw = Array.isArray(apiProject.gallery) ? apiProject.gallery : [];
-      const gallery =
-        galleryRaw.length > 0
-          ? galleryRaw.map((url) => resolveMediaUrl(String(url), cover))
-          : [cover, cover, cover];
+      const coverRaw = String(apiProject.coverImage || apiProject.image || "").trim();
+      const cover = coverRaw ? resolveMediaUrl(coverRaw, coverRaw) : "";
+      const gallery = cmsImageList(apiProject.gallery, coverRaw);
 
-      const title = pickLocalizedString(apiProject.title, locale, "Interior Project");
+      const title = pickLocalizedString(apiProject.title, locale, "");
       const mongoId = String(apiProject._id ?? idOrSlug);
       const slugField = typeof apiProject.slug === "string" ? apiProject.slug : undefined;
 
@@ -846,10 +856,10 @@ export async function fetchProjectById(idOrSlug: string, locale?: Locale) {
         _id: mongoId,
         slug: interiorDetailSlug({ slug: slugField, _id: mongoId, title }),
         title,
-        detailTitle: pickLocalizedString(apiProject.detailTitle, locale, title),
-        description: resolveInteriorDetailIntro(
-          pickLocalizedString(apiProject.detailDescription, locale, ""),
-        ),
+        detailTitle: pickLocalizedString(apiProject.detailTitle, locale, "") || title,
+        description: pickLocalizedString(apiProject.description, locale, ""),
+        detailDescription: pickLocalizedString(apiProject.detailDescription, locale, ""),
+        location: pickLocalizedString(apiProject.location, locale, ""),
         coverImage: cover,
         gallery,
         category: apiProject.category as string | undefined,
@@ -868,17 +878,11 @@ export async function fetchProjectById(idOrSlug: string, locale?: Locale) {
       (p) => p._id === idOrSlug || p.slug === idOrSlug,
     ) as ApiProject | undefined;
     if (apiProject) {
-      const cover = resolveMediaUrl(
-        apiProject.coverImage || apiProject.image,
-        MEDIA.interior[0],
-      );
-      const gallery =
-        apiProject.gallery && apiProject.gallery.length > 0
-          ? apiProject.gallery.map((url: string) => resolveMediaUrl(url, cover))
-          : [cover, cover, cover];
-
       const apiRec = apiProject as Record<string, unknown>;
-      const title = pickLocalizedString(apiProject.title, locale, "Interior Project");
+      const coverRaw = String(apiProject.coverImage || apiProject.image || "").trim();
+      const cover = coverRaw ? resolveMediaUrl(coverRaw, coverRaw) : "";
+      const gallery = cmsImageList(apiProject.gallery, coverRaw);
+      const title = pickLocalizedString(apiProject.title, locale, "");
       const mongoId = String(apiProject._id ?? idOrSlug);
       return {
         _id: mongoId,
@@ -888,10 +892,10 @@ export async function fetchProjectById(idOrSlug: string, locale?: Locale) {
           title,
         }),
         title,
-        detailTitle: pickLocalizedString(apiRec.detailTitle, locale, title),
-        description: resolveInteriorDetailIntro(
-          pickLocalizedString(apiRec.detailDescription, locale, ""),
-        ),
+        detailTitle: pickLocalizedString(apiRec.detailTitle, locale, "") || title,
+        description: pickLocalizedString(apiProject.description, locale, ""),
+        detailDescription: pickLocalizedString(apiRec.detailDescription, locale, ""),
+        location: pickLocalizedString(apiRec.location, locale, ""),
         coverImage: cover,
         gallery,
         category: apiProject.category,
@@ -945,7 +949,7 @@ export async function fetchShowrooms(locale?: Locale) {
 
 export async function fetchShowcases(locale?: Locale) {
   try {
-    return onlyVisibleRows(await fetchAllListItems("/showcases", locale, { next: { revalidate: 30 } })) as {
+    return onlyVisibleRows(await fetchAllListItems("/showcases", locale, { cache: "no-store" })) as {
       _id: string;
       title: string;
       category: string;
@@ -970,7 +974,7 @@ export async function fetchShowcaseById(id: string, locale?: Locale) {
   try {
     const res = await fetch(withLocale(`${API_URL}/showcases/${encodeURIComponent(id)}`, locale), {
       headers: localeHeaders(locale),
-      next: { revalidate: 30 },
+      cache: "no-store",
     });
     if (res.ok) {
       const body = await parseApiResponse(res);

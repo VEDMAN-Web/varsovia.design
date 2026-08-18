@@ -33,6 +33,7 @@ export default function ImageHeroBand({
   return (
     <section
       {...(navBackdrop ? { "data-nav-backdrop": navBackdrop } : {})}
+      data-preloader-bg="true"
       className={sectionClassName}
     >
       <div className="absolute inset-0 overflow-hidden">

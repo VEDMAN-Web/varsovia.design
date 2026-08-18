@@ -132,7 +132,7 @@ type NavTranslator = (key: string) => string;
 type ShowcaseTranslator = (key: string) => string;
 
 function showcaseHref(tab: ShowcaseTab) {
-  if (tab === "Home case") return "/projects";
+  if (tab === "All") return "/projects";
   return `/projects?tab=${encodeURIComponent(tab)}`;
 }
 
@@ -256,7 +256,7 @@ export function buildFallbackMainNavigation(
       menuKind: "showcaseMega",
       menu: {
         featured: {
-          href: "/projects?tab=All",
+          href: "/projects",
           label: tShowcase("navFeaturedTitle"),
           subtitle: tShowcase("navEverySpace"),
         },
