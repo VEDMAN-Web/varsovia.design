@@ -308,7 +308,7 @@ function productsDocs() {
       features: [{ text: "Warm oak finishes" }, { text: "Handle-less fronts" }],
       specs: [{ label: "Material", value: "Oak veneer" }],
       category: "Minimalist",
-      featured: true,
+      featured: false,
       order: 4,
     },
     {
@@ -321,7 +321,7 @@ function productsDocs() {
       features: [{ text: "High-gloss and matte options" }],
       specs: [{ label: "Style", value: "Contemporary" }],
       category: "Contemporary",
-      featured: true,
+      featured: false,
       order: 5,
     },
     {
@@ -334,7 +334,7 @@ function productsDocs() {
       features: [{ text: "Walnut cabinetry" }, { text: "Brass hardware accents" }],
       specs: [{ label: "Style", value: "Luxury" }],
       category: "Luxury",
-      featured: true,
+      featured: false,
       order: 6,
     },
     {
@@ -347,7 +347,7 @@ function productsDocs() {
       features: [{ text: "Light oak and white fronts" }],
       specs: [{ label: "Style", value: "Scandinavian" }],
       category: "Kitchen",
-      featured: true,
+      featured: false,
       order: 7,
     },
     {
@@ -360,7 +360,7 @@ function productsDocs() {
       features: [{ text: "Open shelving systems" }],
       specs: [{ label: "Style", value: "Industrial" }],
       category: "Kitchen",
-      featured: true,
+      featured: false,
       order: 8,
     },
     {
@@ -373,7 +373,7 @@ function productsDocs() {
       features: [{ text: "Shaker door profiles" }],
       specs: [{ label: "Style", value: "Classic" }],
       category: "Kitchen",
-      featured: true,
+      featured: false,
       order: 9,
     },
   ];
