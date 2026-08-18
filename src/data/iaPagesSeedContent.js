@@ -104,7 +104,9 @@ function child({
     metaDescription: L(
       clip(
         metaDescription ||
-          `${title} by Varsovia Design — premium interiors and furniture craftsmanship across Thailand.`,
+          (subtitle
+            ? `${title} by Varsovia Design — ${subtitle}`
+            : `${title} by Varsovia Design — premium interiors and furniture craftsmanship across Thailand.`),
         160,
       ),
     ),
@@ -602,6 +604,8 @@ const pages = {
     metaDescription:
       "Varsovia Design in Koh Samui, Phuket, Bangkok, Pattaya, Hua Hin, and Chiang Mai — local projects and services.",
     body: "We work where our clients live and build — island villas, coastal homes, and city apartments. Explore a market to see services and related projects for that area.",
+    exploreTitle: "Our locations",
+    exploreSubtitle: "Choose a city to see services and local projects.",
     sections: storyPair(
       {
         heading: "Where our clients live and build",
