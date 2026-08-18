@@ -30,14 +30,24 @@ function isEmptyLoc(value) {
   return !locText(value);
 }
 
-/** Prefer saved copy per locale; fall back to defaults when saved is blank. */
+/** Prefer saved copy per locale; fill remaining tabs from the live seed. */
 function mergeLoc(saved, def) {
   const d = def && typeof def === "object" ? def : { en: "", th: "", pl: "" };
   const s = saved && typeof saved === "object" ? saved : {};
+  const en = String(s.en || "").trim() || String(d.en || "").trim();
+  const take = (loc) => {
+    const savedLoc = String(s[loc] || "").trim();
+    if (savedLoc && savedLoc !== en) return savedLoc;
+    const defLoc = String(d[loc] || "").trim();
+    const defEn = String(d.en || "").trim();
+    if (defLoc && defLoc !== defEn) return defLoc;
+    if (savedLoc) return savedLoc;
+    return defLoc;
+  };
   return {
-    en: String(s.en || "").trim() || String(d.en || "").trim(),
-    th: String(s.th || "").trim() || String(d.th || "").trim(),
-    pl: String(s.pl || "").trim() || String(d.pl || "").trim(),
+    en,
+    th: take("th"),
+    pl: take("pl"),
   };
 }
 
@@ -109,6 +119,8 @@ function localizeChild(item, resolveLocalized, locale) {
     metaDescription: resolveLocalized(item.metaDescription, locale),
     body: resolveLocalized(item.body, locale),
     relatedTitle: resolveLocalized(item.relatedTitle, locale),
+    servicesTitle: resolveLocalized(item.servicesTitle, locale),
+    servicesSubtitle: resolveLocalized(item.servicesSubtitle, locale),
     hero: localizeHero(item.hero, resolveLocalized, locale),
     sections: localizeSections(item.sections, resolveLocalized, locale),
     indexable: item.indexable === true,
@@ -162,6 +174,8 @@ function mergeChild(defChild, savedChild) {
     metaDescription: mergeLoc(s.metaDescription, defChild.metaDescription),
     body: mergeLoc(s.body, defChild.body),
     relatedTitle: mergeLoc(s.relatedTitle, defChild.relatedTitle),
+    servicesTitle: mergeLoc(s.servicesTitle, defChild.servicesTitle),
+    servicesSubtitle: mergeLoc(s.servicesSubtitle, defChild.servicesSubtitle),
     hero: mergeHero(s.hero, defChild.hero),
     sections: mergeSections(s.sections, defChild.sections),
     indexable: s.indexable === true,

@@ -94,6 +94,8 @@ function child({
   locationSlugs,
   sections,
   relatedTitle,
+  servicesTitle,
+  servicesSubtitle,
 }) {
   return {
     slug,
@@ -115,7 +117,9 @@ function child({
     },
     body: L(body || ""),
     sections: Array.isArray(sections) ? sections : [],
-    relatedTitle: L(relatedTitle || ""),
+    relatedTitle: L(relatedTitle || "Related projects"),
+    servicesTitle: L(servicesTitle || "Services in this location"),
+    servicesSubtitle: L(servicesSubtitle || "How we support homes and projects here."),
     indexable: false,
     order,
     ...(locationSlugs ? { locationSlugs } : {}),
