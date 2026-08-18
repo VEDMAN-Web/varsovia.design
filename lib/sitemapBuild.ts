@@ -37,7 +37,6 @@ type IndexablePage = {
 function indexableRoutes(site: Awaited<ReturnType<typeof fetchSite>> | null): IndexablePage[] {
   return [
     { path: "", indexable: site?.homeSeo?.indexable, priority: 1, freq: "weekly" },
-    { path: "/about", indexable: site?.aboutPageSettings?.indexable, priority: 0.8, freq: "weekly" },
     { path: "/contact", indexable: site?.contactPage?.indexable, priority: 0.8, freq: "weekly" },
     { path: "/faq", indexable: site?.faqPage?.indexable, priority: 0.8, freq: "weekly" },
     {
@@ -106,6 +105,7 @@ export async function buildSitemapBucket(
       }
       for (const child of hub?.children || []) {
         if (child.indexable === true && child.slug) {
+          if (hubKey === "aboutBrand" && child.slug === "varsovia") continue;
           routes.push(
             ...localeEntries(base, childPath(hubKey, child.slug), 0.65, "monthly"),
           );

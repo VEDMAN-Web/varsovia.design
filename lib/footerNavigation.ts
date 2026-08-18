@@ -4,7 +4,16 @@ import type { FooterNavigationConfig } from "@/lib/footerNavigationTypes";
 export function resolveFooterNavigation(site: SiteContent | null | undefined): FooterNavigationConfig | null {
   const nav = site?.footerNavigation;
   if (!nav?.linkColumns?.length) return null;
-  return nav;
+  return {
+    ...nav,
+    linkColumns: nav.linkColumns.map((column) => ({
+      ...column,
+      links: (column.links || []).map((link) => ({
+        ...link,
+        href: link.href === "/about/varsovia" ? "/about" : link.href,
+      })),
+    })),
+  };
 }
 
 type FooterT = (key: string, values?: Record<string, string | number>) => string;

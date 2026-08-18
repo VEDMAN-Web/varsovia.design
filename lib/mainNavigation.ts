@@ -4,14 +4,35 @@ import type { SiteContent } from "@/lib/siteTypes";
 import type { MainNavItem, ResolvedNavItem } from "@/lib/mainNavigationTypes";
 import { getNavDropdownSubtitle } from "@/components/layout/navDropdownMeta";
 
+function canonicalAboutHref(href: string) {
+  const [path, query] = String(href || "").split("?");
+  if (path === "/about/varsovia") {
+    return query ? `/about?${query}` : "/about";
+  }
+  return href;
+}
+
 function mapNavItem(item: MainNavItem): ResolvedNavItem {
+  const menu = item.menu
+    ? {
+        ...item.menu,
+        featured: {
+          ...item.menu.featured,
+          href: canonicalAboutHref(item.menu.featured.href),
+        },
+        links: item.menu.links.map((link) => ({
+          ...link,
+          href: canonicalAboutHref(link.href),
+        })),
+      }
+    : undefined;
   return {
     id: item.id,
     label: item.label,
-    href: item.href,
+    href: canonicalAboutHref(item.href),
     hasArrow: item.menuKind !== "none",
     menuKind: item.menuKind,
-    menu: item.menu,
+    menu,
   };
 }
 
@@ -178,12 +199,12 @@ export function buildFallbackMainNavigation(
     {
       id: "company",
       label: t("company"),
-      href: "/about/varsovia",
+      href: "/about",
       hasArrow: true,
       menuKind: "showcaseMega",
       menu: {
         featured: {
-          href: "/about/varsovia",
+          href: "/about",
           label: t("aboutVarsovia"),
           subtitle: drop("/about", "Our story & vision"),
         },

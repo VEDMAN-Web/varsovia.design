@@ -2945,14 +2945,14 @@
     },
     "hero": {
       "title": {
-        "en": "About",
-        "th": "About",
-        "pl": "About"
+        "en": "Varsovia",
+        "th": "Varsovia",
+        "pl": "Varsovia"
       },
       "subtitle": {
-        "en": "Varsovia Design and the brands we build with.",
-        "th": "Varsovia Design and the brands we build with.",
-        "pl": "Varsovia Design and the brands we build with."
+        "en": "Design-led interiors and furniture, crafted for Thai living.",
+        "th": "Design-led interiors and furniture, crafted for Thai living.",
+        "pl": "Design-led interiors and furniture, crafted for Thai living."
       },
       "image": "/home/about-1.jpg",
       "ctaLabel": {

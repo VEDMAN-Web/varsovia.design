@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import { IaChildView } from "@/components/ia/IaLanding";
 import { fetchSite } from "@/lib/api";
@@ -17,6 +17,9 @@ type Props = { params: Promise<{ locale: string; entity: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, entity: raw } = await params;
   const entity = decodeURIComponent(String(raw || "")).trim();
+  if (entity.toLowerCase() === "varsovia") {
+    redirect(`/${locale}/about`);
+  }
   const site = await fetchSite(locale as Locale);
   const hub = getIaHub(site, "aboutBrand", locale);
   const child = getIaChild(site, "aboutBrand", entity, locale);
@@ -42,6 +45,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function AboutEntityPage({ params }: Props) {
   const { locale, entity: raw } = await params;
   const entity = decodeURIComponent(String(raw || "")).trim();
+  if (entity.toLowerCase() === "varsovia") {
+    redirect(`/${locale}/about`);
+  }
   setRequestLocale(locale);
   const site = await fetchSite(locale as Locale);
   const hub = getIaHub(site, "aboutBrand", locale);
