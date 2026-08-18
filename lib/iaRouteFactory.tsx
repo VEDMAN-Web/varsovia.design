@@ -23,9 +23,98 @@ import type { Locale } from "@/lib/i18n/routing";
 import { pageMetadata } from "@/lib/seo";
 import { setRequestLocale } from "next-intl/server";
 import { resolveBlogs } from "@/lib/companyData";
+import { getPublicSiteUrl } from "@/lib/publicEnv";
 
 function locTitle(value: unknown, fallback: string, locale: Locale | string = "en") {
   return strField(value, fallback, locale);
+}
+
+const CITY_ADDRESS: Record<
+  string,
+  {
+    addressLocality: string;
+    addressRegion?: string;
+    postalCode?: string;
+  }
+> = {
+  "koh-samui": {
+    addressLocality: "Ko Samui",
+    addressRegion: "Surat Thani",
+    postalCode: "84330",
+  },
+  phuket: { addressLocality: "Phuket", addressRegion: "Phuket", postalCode: "83000" },
+  bangkok: { addressLocality: "Bangkok", addressRegion: "Bangkok" },
+  pattaya: {
+    addressLocality: "Pattaya",
+    addressRegion: "Chon Buri",
+    postalCode: "20150",
+  },
+  "hua-hin": {
+    addressLocality: "Hua Hin",
+    addressRegion: "Prachuap Khiri Khan",
+  },
+  "chiang-mai": {
+    addressLocality: "Chiang Mai",
+    addressRegion: "Chiang Mai",
+  },
+};
+
+function officeAddressForSlug(
+  site: {
+    footerOffices?: Array<{ label?: string; address?: string }>;
+    address?: string;
+  },
+  slug: string,
+) {
+  const meta = CITY_ADDRESS[slug] || {
+    addressLocality: slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+  };
+  const offices = Array.isArray(site.footerOffices) ? site.footerOffices : [];
+  const needles: Record<string, string[]> = {
+    "koh-samui": ["samui"],
+    phuket: ["phuket"],
+    pattaya: ["pattaya"],
+    bangkok: ["bangkok"],
+    "hua-hin": ["hua hin", "huahin"],
+    "chiang-mai": ["chiang mai", "chiangmai"],
+  };
+  const keys = needles[slug] || [slug.replace(/-/g, " ")];
+  const found = offices.find((office) => {
+    const blob = `${office.label || ""} ${office.address || ""}`.toLowerCase();
+    return keys.some((key) => blob.includes(key));
+  });
+  const streetAddress = String(found?.address || "").trim();
+  return {
+    ...(streetAddress ? { streetAddress } : {}),
+    addressLocality: meta.addressLocality,
+    ...(meta.addressRegion ? { addressRegion: meta.addressRegion } : {}),
+    ...(meta.postalCode ? { postalCode: meta.postalCode } : {}),
+    addressCountry: "TH",
+  };
+}
+
+function sameAsLinks(site: {
+  facebookUrl?: string;
+  instagramUrl?: string;
+  whatsappUrl?: string;
+  xUrl?: string;
+}) {
+  return [
+    site.facebookUrl,
+    site.instagramUrl,
+    site.whatsappUrl,
+    site.xUrl,
+  ]
+    .map((url) => String(url || "").trim())
+    .filter((url) => /^https?:\/\//i.test(url));
+}
+
+function absoluteMediaUrl(path: string) {
+  const raw = String(path || "").trim();
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return raw;
+  const base = getPublicSiteUrl().replace(/\/$/, "");
+  return `${base}${raw.startsWith("/") ? raw : `/${raw}`}`;
 }
 
 type RelatedItem = { id: string; title: string; href: string; image?: string };
@@ -74,6 +163,7 @@ export function makeIaHubHandlers(hubKey: IaHubKey) {
       path: `/${locale}${hubPath(hubKey)}`,
       locale,
       indexable: hub.indexable === true,
+      image: locTitle(hub.hero?.image, "", locale),
     });
   }
 
@@ -118,6 +208,7 @@ export function makeIaChildHandlers(hubKey: IaHubKey) {
       path: `/${locale}${childPath(hubKey, slug)}`,
       locale,
       indexable: child.indexable === true,
+      image: locTitle(child.hero?.image, "", locale),
     });
   }
 
@@ -251,6 +342,17 @@ export function makeIaChildHandlers(hubKey: IaHubKey) {
             servicesSubtitle={
               hubKey === "locations"
                 ? strField(child.servicesSubtitle, hub.servicesSubtitle || "", locale)
+                : undefined
+            }
+            contact={
+              hubKey === "locations"
+                ? {
+                    telephone: String(site.contactPhone || site.phone || "").trim() || undefined,
+                    email: String(site.email || "").trim() || undefined,
+                    address: officeAddressForSlug(site, slug),
+                    image: absoluteMediaUrl(strField(child.hero?.image, "", locale)) || undefined,
+                    sameAs: sameAsLinks(site),
+                  }
                 : undefined
             }
           />

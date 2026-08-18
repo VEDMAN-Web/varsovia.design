@@ -6,6 +6,14 @@ const SITE_NAME = "Varsovia Design";
 const DEFAULT_DESCRIPTION =
   "Premium modular kitchens and interiors — timeless design, expert craftsmanship, and spaces built to last.";
 
+function toAbsoluteShareImage(baseUrl: string, image?: string): string | undefined {
+  const raw = String(image || "").trim();
+  if (!raw) return undefined;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  const path = raw.startsWith("/") ? raw : `/${raw}`;
+  return `${baseUrl}${path}`;
+}
+
 /** CMS Google title is used as typed — do not append the brand twice. */
 export function brandDocumentTitle(title: string): string {
   const trimmed = String(title || "").trim();
@@ -27,6 +35,7 @@ export function pageMetadata({
   path = "",
   locale,
   indexable = false,
+  image,
 }: {
   title: string;
   description?: string;
@@ -34,6 +43,8 @@ export function pageMetadata({
   path?: string;
   locale?: string;
   indexable?: boolean;
+  /** Absolute or site-relative hero image for Open Graph / Twitter. */
+  image?: string;
 }): Metadata {
   const baseUrl = getPublicSiteUrl().replace(/\/$/, "");
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
@@ -56,6 +67,7 @@ export function pageMetadata({
   );
 
   const documentTitle = brandDocumentTitle(title);
+  const ogImage = toAbsoluteShareImage(baseUrl, image);
 
   const metadata: Metadata = {
     title: documentTitle,
@@ -71,11 +83,13 @@ export function pageMetadata({
       siteName: SITE_NAME,
       type: "website",
       locale: locale || undefined,
+      ...(ogImage ? { images: [{ url: ogImage }] } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: documentTitle,
       description,
+      ...(ogImage ? { images: [ogImage] } : {}),
     },
   };
 

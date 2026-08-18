@@ -312,9 +312,17 @@ function ChildLinkList({
 }) {
   if (!items.length) return null;
   const withImages = items.some((c) => Boolean(strField(c.image)));
-  const sectionTitle = strField(exploreTitle) || "Explore";
+  const sectionTitle =
+    hubKey === "locations" &&
+    (!strField(exploreTitle) || strField(exploreTitle) === "Explore")
+      ? "Our locations"
+      : strField(exploreTitle) || "Explore";
   const sectionSubtitle =
-    strField(exploreSubtitle) || "Choose a focus area to continue.";
+    hubKey === "locations" &&
+    (!strField(exploreSubtitle) ||
+      strField(exploreSubtitle) === "Choose a focus area to continue.")
+      ? "Choose a city to see services and local projects."
+      : strField(exploreSubtitle) || "Choose a focus area to continue.";
   return (
     <FadeInView className={`${COMPANY_SHELL} mt-16 md:mt-20 pb-16 md:pb-24`} delay={0.06}>
       <CompanySectionHeading
@@ -417,6 +425,14 @@ function ServiceLinkList({
   );
 }
 
+function absoluteImage(path?: string) {
+  const raw = String(path || "").trim();
+  if (!raw) return undefined;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  const base = getPublicSiteUrl().replace(/\/$/, "");
+  return `${base}${raw.startsWith("/") ? raw : `/${raw}`}`;
+}
+
 export function IaHubView({
   hubKey,
   hub,
@@ -446,9 +462,63 @@ export function IaHubView({
           url: absolutePath(locale, hubPath(hubKey)),
         }
       : null;
+  const collectionLd =
+    hubKey === "locations"
+      ? {
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: title,
+          description: subtitle || body || undefined,
+          url: absolutePath(locale, hubPath(hubKey)),
+          ...(absoluteImage(hub.hero?.image)
+            ? { image: absoluteImage(hub.hero?.image) }
+            : {}),
+          isPartOf: {
+            "@type": "WebSite",
+            name: "Varsovia Design",
+            url: getPublicSiteUrl().replace(/\/$/, ""),
+          },
+          publisher: {
+            "@type": "Organization",
+            name: "Varsovia Design",
+            url: getPublicSiteUrl().replace(/\/$/, ""),
+          },
+          mainEntity: {
+            "@type": "ItemList",
+            numberOfItems: children.length,
+            itemListElement: children.map((child, index) => {
+              const name = strField(
+                child.title,
+                strField(child.hero?.title, child.slug, locale),
+                locale,
+              );
+              const url = absolutePath(locale, childPath(hubKey, child.slug));
+              const image = absoluteImage(strField(child.hero?.image, "", locale));
+              return {
+                "@type": "ListItem",
+                position: index + 1,
+                name,
+                url,
+                item: {
+                  "@type": "Place",
+                  name,
+                  url,
+                  ...(image ? { image } : {}),
+                },
+              };
+            }),
+          },
+        }
+      : null;
 
   return (
     <div className={COMPANY_PAGE_BG}>
+      {collectionLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionLd) }}
+        />
+      ) : null}
       {serviceLd ? (
         <script
           type="application/ld+json"
@@ -506,6 +576,7 @@ export function IaChildView({
   relatedServices,
   servicesTitle,
   servicesSubtitle,
+  contact,
 }: {
   hubKey: IaHubKey;
   hubTitle: string;
@@ -515,6 +586,19 @@ export function IaChildView({
   relatedServices?: { id: string; title: string; href: string }[];
   servicesTitle?: string;
   servicesSubtitle?: string;
+  contact?: {
+    telephone?: string;
+    email?: string;
+    image?: string;
+    sameAs?: string[];
+    address?: {
+      streetAddress?: string;
+      addressLocality?: string;
+      addressRegion?: string;
+      postalCode?: string;
+      addressCountry?: string;
+    };
+  };
 }) {
   const title = strField(
     child.hero?.title,
@@ -530,15 +614,70 @@ export function IaChildView({
     { label: title },
   ];
 
+  const pageUrl = absolutePath(locale, childPath(hubKey, child.slug));
+  const siteUrl = getPublicSiteUrl().replace(/\/$/, "");
+  const addr = contact?.address;
+  const hasAddress = Boolean(
+    addr &&
+      (addr.streetAddress ||
+        addr.addressLocality ||
+        addr.addressRegion ||
+        addr.postalCode),
+  );
+  const offers = (relatedServices || [])
+    .filter((item) => item.title && item.href)
+    .map((item) => ({
+      "@type": "Offer",
+      itemOffered: {
+        "@type": "Service",
+        name: item.title,
+        url: absolutePath(locale, item.href),
+      },
+    }));
+
   const localBusinessLd =
     hubKey === "locations"
       ? {
           "@context": "https://schema.org",
-          "@type": "LocalBusiness",
+          "@type": ["LocalBusiness", "InteriorDesigner"],
+          "@id": pageUrl ? `${pageUrl}#localbusiness` : undefined,
           name: `Varsovia Design — ${title}`,
           description: subtitle || body || undefined,
-          areaServed: title,
-          url: absolutePath(locale, childPath(hubKey, child.slug)),
+          url: pageUrl,
+          areaServed: {
+            "@type": "City",
+            name: title,
+            containedInPlace: {
+              "@type": "Country",
+              name: "Thailand",
+            },
+          },
+          parentOrganization: {
+            "@type": "Organization",
+            name: "Varsovia Design",
+            url: siteUrl,
+          },
+          ...(contact?.image ? { image: contact.image } : {}),
+          ...(contact?.telephone ? { telephone: contact.telephone } : {}),
+          ...(contact?.email ? { email: contact.email } : {}),
+          ...(contact?.sameAs && contact.sameAs.length
+            ? { sameAs: contact.sameAs }
+            : {}),
+          ...(hasAddress && addr
+            ? {
+                address: {
+                  "@type": "PostalAddress",
+                  ...(addr.streetAddress ? { streetAddress: addr.streetAddress } : {}),
+                  ...(addr.addressLocality
+                    ? { addressLocality: addr.addressLocality }
+                    : {}),
+                  ...(addr.addressRegion ? { addressRegion: addr.addressRegion } : {}),
+                  ...(addr.postalCode ? { postalCode: addr.postalCode } : {}),
+                  addressCountry: addr.addressCountry || "TH",
+                },
+              }
+            : {}),
+          ...(offers.length ? { makesOffer: offers } : {}),
         }
       : null;
 

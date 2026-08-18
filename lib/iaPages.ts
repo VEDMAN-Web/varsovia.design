@@ -76,6 +76,18 @@ function mergeStr(saved: unknown, def: unknown, locale: Locale = "en"): string {
   return str(saved, locale) || str(def, locale);
 }
 
+function isStaleLocationMeta(value: unknown): boolean {
+  const blob =
+    typeof value === "string"
+      ? value
+      : value && typeof value === "object"
+        ? Object.values(value as Record<string, unknown>)
+            .map((v) => String(v || ""))
+            .join(" ")
+        : "";
+  return /premium interiors and furniture craftsmanship across Thailand/i.test(blob);
+}
+
 function mergeHero(
   saved: IaHero | undefined,
   def: IaHero | undefined,
@@ -144,7 +156,9 @@ function mergeChild(
     slug: defChild.slug,
     title,
     metaTitle: mergeStr(s.metaTitle, defChild.metaTitle, locale),
-    metaDescription: mergeStr(s.metaDescription, defChild.metaDescription, locale),
+    metaDescription: isStaleLocationMeta(s.metaDescription)
+      ? mergeStr("", defChild.metaDescription, locale)
+      : mergeStr(s.metaDescription, defChild.metaDescription, locale),
     body: mergeStr(s.body, defChild.body, locale),
     relatedTitle: mergeStr(s.relatedTitle, defChild.relatedTitle, locale),
     servicesTitle: mergeStr(s.servicesTitle, defChild.servicesTitle, locale),
