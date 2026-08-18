@@ -18,7 +18,7 @@ function showcaseLink(title, subtitle, href) {
 }
 
 const SHOWCASE_NAV_LINKS = [
-  showcaseLink("Home Case", "Spaces Designed to Inspire", "/projects"),
+  showcaseLink("Home Case", "Spaces Designed to Inspire", "/projects?tab=Home%20case"),
   showcaseLink("North America", "Bold Design, Modern Living", "/projects?tab=North%20America"),
   showcaseLink("South America", "Vibrant Spaces, Warm Character", "/projects?tab=South%20America"),
   showcaseLink("Africa", "Rooted in Culture, Rich in Design", "/projects?tab=Africa"),
@@ -100,7 +100,7 @@ const DEFAULT_MAIN_NAVIGATION = {
       menu: {
         featuredLabel: loc("Our Showcase"),
         featuredSubtitle: loc("Every space, every story"),
-        featuredHref: "/projects?tab=All",
+        featuredHref: "/projects",
         sectionLabel: loc("By region & type"),
         links: SHOWCASE_NAV_LINKS,
       },

@@ -74,19 +74,6 @@ function getInteriorCatalogValidationErrors(doc) {
   requireString(doc, "material", "Material", errors);
   requireString(doc, "finish", "Finish", errors);
 
-  if (
-    doc.price === undefined ||
-    doc.price === null ||
-    typeof doc.price !== "number" ||
-    Number.isNaN(doc.price) ||
-    doc.price < 0
-  ) {
-    errors.push({
-      field: "price",
-      message: "Price (number ≥ 0) is required when interior catalog is enabled.",
-    });
-  }
-
   if (category === "Kitchen") {
     requireString(doc, "shape", "Shape", errors);
     requireString(doc, "style", "Style", errors);
@@ -104,7 +91,7 @@ function getInteriorCatalogFieldSpec() {
   return {
     categories: PROJECT_CATEGORIES,
     interiorCatalogDefault: true,
-    commonRequired: ["title", "category", "coverImage", "color", "material", "finish", "price"],
+    commonRequired: ["title", "category", "coverImage", "color", "material", "finish"],
     requiredByCategory: {
       Kitchen: ["shape", "style"],
       Bedroom: ["subcategory"],

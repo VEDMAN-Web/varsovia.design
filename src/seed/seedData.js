@@ -409,7 +409,6 @@ function projectsDocs() {
       color: "Wood Tone",
       material: "Lacquer",
       finish: "Matte",
-      price: 285000,
     },
     {
       title: "Skyline Apartment",
@@ -431,7 +430,6 @@ function projectsDocs() {
       color: "Gray",
       material: "Melamine",
       finish: "Matte",
-      price: 245000,
     },
     {
       title: "Warm Walnut",
@@ -453,7 +451,6 @@ function projectsDocs() {
       color: "Brown",
       material: "Thermofoil",
       finish: "Matte",
-      price: 268000,
     },
     {
       title: "Ivory Luxe",
@@ -471,7 +468,6 @@ function projectsDocs() {
       color: "White",
       material: "Lacquer",
       finish: "Matte",
-      price: 198000,
     },
     {
       title: "Graphite Studio",
@@ -489,7 +485,6 @@ function projectsDocs() {
       color: "Gray",
       material: "Glass",
       finish: "Matte",
-      price: 165000,
     },
     {
       title: "Coastal Oak",
@@ -507,7 +502,6 @@ function projectsDocs() {
       color: "Wood Tone",
       material: "Thermofoil",
       finish: "Matte",
-      price: 142000,
     },
     {
       title: "Midnight Suite",
@@ -524,7 +518,6 @@ function projectsDocs() {
       color: "Dark",
       material: "Lacquer",
       finish: "Matte",
-      price: 520000,
     },
     {
       title: "Open Living",
@@ -541,7 +534,6 @@ function projectsDocs() {
       color: "Beige",
       material: "Glass",
       finish: "Matte",
-      price: 88000,
     },
   ];
 }
@@ -747,7 +739,18 @@ function showroomsDocs() {
 
 function showcasesDocs() {
   const SHOWCASE_CATEGORIES = ["Home case", "Commercial Project", "Europe", "Asia", "North America", "Middle East"];
-  const images = [L.project1, L.project2, L.project3, L.project4, L.project5, L.project6];
+  const images = [
+    L.project1,
+    L.project2,
+    L.project3,
+    L.project4,
+    L.project5,
+    L.project6,
+    L.project7,
+    L.project8,
+    "/Interior-kitchen/kitchen1.png",
+    "/Interior-kitchen/kitchen2.png",
+  ];
   const docs = [];
   SHOWCASE_CATEGORIES.forEach((cat, ci) => {
     for (let i = 0; i < 4; i++) {
@@ -760,7 +763,7 @@ function showcasesDocs() {
         typeLabel: "Type",
         typeValue: ci % 2 === 0 ? "Villa(1 Floor)" : "Apartment",
         supplyArea: "Kitchen, Bedroom, Living Room",
-        gallery: [img, images[(ci * 4 + i + 1) % images.length], images[(ci * 4 + i + 2) % images.length]],
+        gallery: Array.from({ length: 10 }, (_, j) => images[(ci * 4 + i + j) % images.length]),
         order: ci * 4 + i + 1,
       });
     }

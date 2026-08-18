@@ -284,13 +284,26 @@ async function getFooterNavigationSpecHandler(req, res) {
 
 async function updateSite(req, res) {
   try {
-    const { key: _key, _id: _id2, __v, ...update } = req.body;
-    const site = await SiteContent.findOneAndUpdate({ key: "main" }, update, {
-      new: true,
-      upsert: true,
-    });
+    const { mergeIaPages, mergeSavedIaPages } = require("../data/iaPagesDefaults");
+    const { key: _key, _id: _id2, __v, pages: pagesPatch, ...rest } = req.body;
+    let site = await SiteContent.findOne({ key: "main" });
+    if (!site) site = new SiteContent({ key: "main" });
+
+    for (const [field, value] of Object.entries(rest)) {
+      site.set(field, value);
+    }
+
+    if (pagesPatch && typeof pagesPatch === "object" && !Array.isArray(pagesPatch)) {
+      site.pages = mergeSavedIaPages(site.pages, pagesPatch);
+      site.markModified("pages");
+    }
+
+    await site.save();
     invalidateInquiryFormCache();
-    return sendSuccess(res, site, { req });
+
+    const payload = site.toObject ? site.toObject() : site;
+    payload.pages = mergeIaPages(payload.pages);
+    return sendSuccess(res, payload, { req });
   } catch (error) {
     return sendError(res, 400, { message: error.message });
   }

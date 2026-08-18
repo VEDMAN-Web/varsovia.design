@@ -13,7 +13,6 @@ const PROJECT_FILTER_KEYS = [
   "color",
   "material",
   "finish",
-  "price",
   "isNew",
 ];
 
@@ -80,8 +79,7 @@ async function migrateProjectFilterMetadata() {
       const empty =
         cur === undefined ||
         cur === null ||
-        cur === "" ||
-        (key === "price" && (cur === 0 || cur === undefined));
+        cur === "";
       if (empty) patch[key] = doc[key];
     }
     if (Object.keys(patch).length === 0) continue;

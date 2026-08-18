@@ -27,7 +27,6 @@ const projectSchema = new mongoose.Schema(
     color: { type: String, default: "" },
     material: { type: String, default: "" },
     finish: { type: String, default: "" },
-    price: { type: Number, default: 0 },
     isNew: { type: Boolean, default: false },
     order: { type: Number, default: 0 },
     visible: { type: Boolean, default: true },

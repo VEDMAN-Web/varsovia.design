@@ -174,7 +174,6 @@ const projectSchema = z.object({
   color:           z.string().max(100).trim().optional(),
   material:        z.string().max(100).trim().optional(),
   finish:          z.string().max(100).trim().optional(),
-  price:           z.number().min(0).optional(),
   isNew:           z.boolean().optional(),
   order:           z.number().int().min(0).optional(),
   visible:         z.boolean().optional(),
@@ -445,6 +444,7 @@ const siteUpdateSchema = z.object({
     metaDescription: localizedString.optional(),
     heroTitle: localizedString.optional(),
     heroSubtitle: localizedString.optional(),
+    navSectionLabel: localizedString.optional(),
   }).nullish(),
   aboutPageSettings:      z.object({
     indexable: z.boolean().optional(),

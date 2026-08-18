@@ -18,6 +18,19 @@ const IA_HUB_PATHS = {
   aboutBrand: "/about",
 };
 
+function asSlug(value) {
+  return String(value || "").trim();
+}
+
+function asLocMap(value) {
+  if (typeof value === "string") {
+    const text = value.trim();
+    return text ? { en: text, th: "", pl: "" } : { en: "", th: "", pl: "" };
+  }
+  if (value && typeof value === "object" && !Array.isArray(value)) return value;
+  return {};
+}
+
 function locText(value) {
   if (typeof value === "string") return value.trim();
   if (value && typeof value === "object") {
@@ -32,8 +45,8 @@ function isEmptyLoc(value) {
 
 /** Prefer saved copy per locale; fill remaining tabs from the live seed. */
 function mergeLoc(saved, def) {
-  const d = def && typeof def === "object" ? def : { en: "", th: "", pl: "" };
-  const s = saved && typeof saved === "object" ? saved : {};
+  const d = asLocMap(def);
+  const s = asLocMap(saved);
   const en = String(s.en || "").trim() || String(d.en || "").trim();
   const take = (loc) => {
     const savedLoc = String(s[loc] || "").trim();
@@ -165,18 +178,29 @@ function localizeIaPages(pages, resolveLocalized, locale) {
 
 function mergeChild(defChild, savedChild) {
   const s = savedChild && typeof savedChild === "object" ? savedChild : {};
+  const title = mergeLoc(s.title, defChild.title);
+  const hero = mergeHero(s.hero, defChild.hero);
+  const seedTitle = locText(defChild?.title);
+  const seedHeroTitle = locText(defChild?.hero?.title);
+  const cardTitle = locText(title);
+  const heroTitle = locText(hero?.title);
+  // Card / nav title is what editors change in the panel list. Live H1 reads
+  // hero.title, which stays on seed unless we copy a customized card title across.
+  if (cardTitle && cardTitle !== seedTitle && (!heroTitle || heroTitle === seedHeroTitle)) {
+    hero.title = title;
+  }
   return {
     ...defChild,
     ...s,
     slug: defChild.slug,
-    title: mergeLoc(s.title, defChild.title),
+    title,
     metaTitle: mergeLoc(s.metaTitle, defChild.metaTitle),
     metaDescription: mergeLoc(s.metaDescription, defChild.metaDescription),
     body: mergeLoc(s.body, defChild.body),
     relatedTitle: mergeLoc(s.relatedTitle, defChild.relatedTitle),
     servicesTitle: mergeLoc(s.servicesTitle, defChild.servicesTitle),
     servicesSubtitle: mergeLoc(s.servicesSubtitle, defChild.servicesSubtitle),
-    hero: mergeHero(s.hero, defChild.hero),
+    hero,
     sections: mergeSections(s.sections, defChild.sections),
     indexable: s.indexable === true,
     order: s.order ?? defChild.order ?? 0,
@@ -200,15 +224,19 @@ function mergeIaPages(current) {
     const savedChildren = Array.isArray(saved.children) ? saved.children : [];
     const bySlug = new Map(
       savedChildren
-        .filter((c) => c && typeof c.slug === "string" && c.slug)
-        .map((c) => [c.slug, c]),
+        .map((c) => {
+          const slug = asSlug(c && typeof c === "object" ? c.slug : "");
+          return slug ? [slug, { ...c, slug }] : null;
+        })
+        .filter(Boolean),
     );
     const children = (defHub.children || []).map((defChild) =>
       mergeChild(defChild, bySlug.get(defChild.slug)),
     );
     for (const s of savedChildren) {
-      if (s?.slug && !children.some((c) => c.slug === s.slug)) {
-        children.push(s);
+      const slug = asSlug(s && typeof s === "object" ? s.slug : "");
+      if (slug && !children.some((c) => c.slug === slug)) {
+        children.push({ ...s, slug });
       }
     }
     out[hubKey] = {
@@ -231,9 +259,42 @@ function mergeIaPages(current) {
   return out;
 }
 
+function normalizeSavedChild(child) {
+  if (!child || typeof child !== "object" || Array.isArray(child)) return null;
+  const slug = asSlug(child.slug);
+  if (!slug) return null;
+  return { ...child, slug };
+}
+
+/**
+ * Partial CMS PUT { pages: { furniture: { children } } } must merge into the
+ * stored tree. Replacing `pages` wholesale drops sibling hubs or children.
+ */
+function mergeSavedIaPages(current, patch) {
+  const cur = current && typeof current === "object" && !Array.isArray(current) ? current : {};
+  const p = patch && typeof patch === "object" && !Array.isArray(patch) ? patch : {};
+  const out = { ...cur };
+  for (const [hubKey, patchHub] of Object.entries(p)) {
+    if (!patchHub || typeof patchHub !== "object" || Array.isArray(patchHub)) continue;
+    const prev =
+      cur[hubKey] && typeof cur[hubKey] === "object" && !Array.isArray(cur[hubKey])
+        ? cur[hubKey]
+        : {};
+    const nextHub = { ...prev, ...patchHub };
+    if (Array.isArray(patchHub.children)) {
+      nextHub.children = patchHub.children.map(normalizeSavedChild).filter(Boolean);
+    } else if (Array.isArray(prev.children)) {
+      nextHub.children = prev.children;
+    }
+    out[hubKey] = nextHub;
+  }
+  return out;
+}
+
 module.exports = {
   DEFAULT_IA_PAGES,
   IA_HUB_PATHS,
   localizeIaPages,
   mergeIaPages,
+  mergeSavedIaPages,
 };

@@ -140,7 +140,7 @@ function section(heading, text, image, imagePosition, layout) {
 function storyPair(a, b) {
   return [
     section(a.heading, a.text, a.image, a.imagePosition || "left", a.layout || "band"),
-    section(b.heading, b.text, b.image, b.imagePosition || "right", b.layout || "spotlight"),
+    section(b.heading, b.text, b.image, b.imagePosition || "right", b.layout || "band"),
   ];
 }
 
