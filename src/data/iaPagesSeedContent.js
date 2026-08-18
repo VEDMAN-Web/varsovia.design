@@ -364,6 +364,8 @@ const pages = {
     metaTitle: "Complete Interiors | Varsovia Design",
     metaDescription:
       "Full interior programmes for villas, condos, hotels & resorts, and developer projects with Varsovia Design.",
+    exploreTitle: "Project types",
+    exploreSubtitle: "Villas, condos, hospitality, and developments.",
     body: "Complete interiors means one accountable partner from concept through installation — design, furniture, and finish coordinated so projects stay coherent from the first drawing to handover.",
     sections: storyPair(
       {
@@ -776,6 +778,8 @@ const pages = {
     metaTitle: "Journal | Varsovia Design",
     metaDescription:
       "Varsovia Journal — guides on kitchens, furniture, materials, interior design, villas, and Thailand living.",
+    exploreTitle: "Explore topics",
+    exploreSubtitle: "Kitchens, furniture, materials, and living in Thailand.",
     body: "Our journal collects practical design notes and project stories — written to help homeowners and partners make clearer decisions.",
     sections: storyPair(
       {
@@ -794,6 +798,7 @@ const pages = {
         slug: "kitchens",
         title: "Kitchens",
         order: 0,
+        relatedTitle: "Articles in this topic",
         image: IMG.k2,
         subtitle: "Planning notes and kitchen stories from Varsovia projects.",
         body: "Layouts, materials, and detailing for kitchens that work in tropical homes.",
@@ -810,6 +815,7 @@ const pages = {
         slug: "furniture",
         title: "Furniture",
         order: 1,
+        relatedTitle: "Articles in this topic",
         image: IMG.p1,
         subtitle: "How we think about fitted furniture and freestanding pieces.",
         body: "From wardrobes to dining — articles on choosing furniture that lasts.",
@@ -826,6 +832,7 @@ const pages = {
         slug: "materials",
         title: "Materials",
         order: 2,
+        relatedTitle: "Articles in this topic",
         image: IMG.c3,
         subtitle: "Finishes and surfaces suited to Thai climate and daily use.",
         body: "Guides to materials that look refined and perform in humidity and light.",
@@ -842,6 +849,7 @@ const pages = {
         slug: "interior-design",
         title: "Interior Design",
         order: 3,
+        relatedTitle: "Articles in this topic",
         image: IMG.f1,
         subtitle: "Process and ideas behind Varsovia interiors.",
         body: "How we approach flow, light, and atmosphere room by room.",
@@ -858,6 +866,7 @@ const pages = {
         slug: "villa-guides",
         title: "Villa Guides",
         order: 4,
+        relatedTitle: "Articles in this topic",
         image: IMG.s1,
         subtitle: "Design advice for villas and outdoor-connected living.",
         body: "Practical notes for villa owners planning interiors with gardens and terraces.",
@@ -874,6 +883,7 @@ const pages = {
         slug: "thailand-living",
         title: "Thailand Living",
         order: 5,
+        relatedTitle: "Articles in this topic",
         image: IMG.s2,
         subtitle: "Living well in Thailand — climate, ritual, and home.",
         body: "Stories and tips for homes that feel comfortable year-round in Thailand.",
@@ -898,6 +908,8 @@ const pages = {
     metaDescription:
       "About Varsovia Design, and partner brands Livo and Oppolia — craftsmanship and interiors for Thailand.",
     body: "Varsovia Design creates interiors and furniture for homes across Thailand. Explore our story and the brand partners that support our quality.",
+    exploreTitle: "Our brands",
+    exploreSubtitle: "Choose a partner brand to continue.",
     sections: storyPair(
       {
         heading: "Design-led craftsmanship",

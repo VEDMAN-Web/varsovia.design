@@ -65,9 +65,9 @@ function findChild(pages, slug) {
 /** Every live city-page field and the admin modal control that owns it. */
 const FIELD_CONTRACT = [
   { panel: "1 · Banner — Card / nav title", path: "title" },
-  { panel: "1 · Banner — Eyebrow (optional)", path: "hero.eyebrow", optional: true },
-  { panel: "1 · Banner — Headline (H1)", path: "hero.title" },
-  { panel: "1 · Banner — Intro line under headline", path: "hero.subtitle" },
+  { panel: "1 · Banner — Tag (optional)", path: "hero.eyebrow", optional: true },
+  { panel: "1 · Banner — Heading (H1)", path: "hero.title" },
+  { panel: "1 · Banner — Description (tagline)", path: "hero.subtitle" },
   { panel: "1 · Banner — Banner photo", path: "hero.image" },
   { panel: "1 · Banner — Button text", path: "hero.ctaLabel" },
   { panel: "1 · Banner — Button link", path: "hero.ctaHref" },
@@ -216,6 +216,7 @@ async function main() {
   } else {
     pass("Public /site has Koh Samui");
     const publicChecks = [
+      ["title", markers.title],
       ["hero.title", markers["hero.title"]],
       ["hero.subtitle", markers["hero.subtitle"]],
       ["hero.ctaLabel", markers["hero.ctaLabel"]],
@@ -246,6 +247,7 @@ async function main() {
     } else {
       pass("Live page HTTP", String(htmlRes.status));
       const htmlChecks = [
+        markers.title,
         markers["hero.title"],
         markers["hero.subtitle"],
         markers["hero.ctaLabel"],
@@ -254,10 +256,31 @@ async function main() {
         markers["sections.0.text"],
         markers.servicesTitle,
         markers.servicesSubtitle,
+        markers.relatedTitle,
       ];
       for (const needle of htmlChecks) {
         if (html.includes(needle)) pass(`Live HTML contains`, needle);
         else fail(`Live HTML contains`, `missing "${needle}" (FE cache or wrong frontend)`);
+      }
+      if (html.includes(markers["hero.title"])) {
+        pass("Live H1 is banner Heading", "Heading text on the city page (hydrated <h1> in the banner)");
+      } else {
+        fail("Live H1 is banner Heading", "Heading field missing from the live document");
+      }
+      if (html.includes("LocalBusiness") && html.includes("InteriorDesigner")) {
+        pass("Live LocalBusiness JSON-LD");
+      } else {
+        fail("Live LocalBusiness JSON-LD", "city page missing LocalBusiness schema");
+      }
+      if (html.includes(`<title>${markers.metaTitle}`) || html.includes(markers.metaTitle)) {
+        pass("Live Google title");
+      } else {
+        fail("Live Google title", `missing "${markers.metaTitle}"`);
+      }
+      if (html.includes(markers.metaDescription)) {
+        pass("Live Google description");
+      } else {
+        fail("Live Google description", `missing "${markers.metaDescription}"`);
       }
     }
   } catch (err) {

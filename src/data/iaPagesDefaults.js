@@ -102,7 +102,7 @@ function localizeHero(heroObj, resolveLocalized, locale) {
     title: resolveLocalized(heroObj.title, locale),
     subtitle: resolveLocalized(heroObj.subtitle, locale),
     ctaLabel: resolveLocalized(heroObj.ctaLabel, locale),
-    image: typeof heroObj.image === "string" ? heroObj.image : "",
+    image: typeof heroObj.image === "string" ? heroObj.image : locText(heroObj.image),
     ctaHref: typeof heroObj.ctaHref === "string" ? heroObj.ctaHref : "",
   };
 }
@@ -114,7 +114,7 @@ function localizeSections(sections, resolveLocalized, locale) {
     .map((s) => ({
       heading: resolveLocalized(s.heading, locale),
       text: resolveLocalized(s.text, locale),
-      image: typeof s.image === "string" ? s.image : "",
+      image: typeof s.image === "string" ? s.image : locText(s.image),
       imagePosition:
         s.imagePosition === "right" || s.imagePosition === "left" ? s.imagePosition : undefined,
       layout:
