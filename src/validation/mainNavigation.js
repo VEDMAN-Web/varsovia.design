@@ -130,14 +130,14 @@ const DEFAULT_MAIN_NAVIGATION = {
     {
       id: "company",
       label: loc("Company"),
-      href: "/about/varsovia",
+      href: "/about",
       menuKind: "showcaseMega",
       enabled: true,
       order: 6,
       menu: {
         featuredLabel: loc("About Varsovia"),
         featuredSubtitle: loc("Our story & vision"),
-        featuredHref: "/about/varsovia",
+        featuredHref: "/about",
         sectionLabel: loc("Discover"),
         links: [
           // Services hub only — not every service child (avoids clashing with Furniture mega)

@@ -20,7 +20,7 @@ const DEFAULT_FOOTER_NAVIGATION = {
       enabled: true,
       links: [
         link("Journal", "/journal"),
-        link("About Us", "/about/varsovia"),
+        link("About Us", "/about"),
         link("Locations", "/locations"),
         link("Services", "/services"),
         link("Contact Us", "/contact"),

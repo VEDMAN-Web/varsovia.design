@@ -883,8 +883,8 @@ const pages = {
 
   aboutBrand: hub({
     slug: "about",
-    title: "About",
-    subtitle: "Varsovia Design and the brands we build with.",
+    title: "Varsovia",
+    subtitle: "Design-led interiors and furniture, crafted for Thai living.",
     image: IMG.a1,
     metaTitle: "About | Varsovia Design",
     metaDescription:
