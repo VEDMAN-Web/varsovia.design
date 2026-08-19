@@ -97,7 +97,37 @@ function localizeHub(raw: unknown, locale = "en") {
     servicesSubtitle: pickLoc(h.servicesSubtitle, locale),
     hero: localizeHero(h.hero, locale),
     sections: localizeSections(h.sections, locale),
+    articleContact: localizeArticleContact(h.articleContact, locale),
+    articleOffer: localizeArticleOffer(h.articleOffer, locale),
     children,
+  };
+}
+
+function localizeArticleContact(raw: unknown, locale = "en") {
+  if (!raw || typeof raw !== "object") return undefined;
+  const b = raw as Record<string, unknown>;
+  return {
+    title: pickLoc(b.title, locale),
+    subtitle: pickLoc(b.subtitle, locale),
+    ctaLabel: pickLoc(b.ctaLabel, locale),
+    ctaHref: typeof b.ctaHref === "string" ? b.ctaHref : "/contact",
+  };
+}
+
+function localizeArticleOffer(raw: unknown, locale = "en") {
+  if (!raw || typeof raw !== "object") return undefined;
+  const b = raw as Record<string, unknown>;
+  return {
+    eyebrow: pickLoc(b.eyebrow, locale),
+    title: pickLoc(b.title, locale),
+    text: pickLoc(b.text, locale),
+    points: Array.isArray(b.points)
+      ? b.points.map((p) => pickLoc(p, locale)).filter(Boolean)
+      : [],
+    ctaLabel: pickLoc(b.ctaLabel, locale),
+    ctaHref: typeof b.ctaHref === "string" ? b.ctaHref : "/contact",
+    image: typeof b.image === "string" ? b.image : "",
+    imageAlt: pickLoc(b.imageAlt, locale),
   };
 }
 

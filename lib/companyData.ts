@@ -773,7 +773,7 @@ function mapCmsBlogSections(raw: unknown, locale: Locale): BlogSection[] {
 
     if (image && text) {
       out.push({
-        type: "split-left",
+        type: row.imagePosition === "right" ? "split-right" : "split-left",
         text,
         image,
         imageAlt: heading || "Blog image",

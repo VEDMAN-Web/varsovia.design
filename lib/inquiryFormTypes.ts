@@ -29,5 +29,9 @@ export type InquiryFormField = {
 export type InquiryFormConfig = {
   version?: number;
   submitLabel?: string;
+  compactTitle?: string;
+  compactSubtitle?: string;
+  compactSubmitLabel?: string;
+  compactPrivacy?: string;
   fields: InquiryFormField[];
 };

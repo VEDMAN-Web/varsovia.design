@@ -48,6 +48,8 @@ export default async function JournalPostPage({ params }: Props) {
   if (!raw) notFound();
   const blog = enrichBlogForDetailPage(raw);
   const related = getRelatedBlogs(blog._id, allBlogs, 3);
+  const site = await fetchSite(locale as Locale).catch(() => null);
+  const hub = getIaHub(site, "journal", locale);
   const base = getPublicSiteUrl().replace(/\/$/, "");
   const articleLd = {
     "@context": "https://schema.org",
@@ -68,7 +70,12 @@ export default async function JournalPostPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleLd) }}
       />
-      <BlogDetailView blog={blog} related={related} />
+      <BlogDetailView
+        blog={blog}
+        related={related}
+        articleContact={hub.articleContact}
+        articleOffer={hub.articleOffer}
+      />
     </>
   );
 }

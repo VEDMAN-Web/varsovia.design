@@ -21,3 +21,14 @@ export const BLOG_DETAIL_CARD_SHADOW =
 
 export const BLOG_DETAIL_CARD_PAD =
   "px-5 py-7 sm:px-8 sm:py-9 md:px-11 md:py-10 lg:px-14 lg:py-12";
+
+/** Footer CTAs under Discover more — Figma blog detail last two bands */
+export const BLOG_DETAIL_CTA_GAP = "mt-12 md:mt-16 lg:mt-[72px]";
+export const BLOG_DETAIL_CTA_STACK = "mt-8 md:mt-10 lg:mt-12";
+export const BLOG_DETAIL_CTA_ROUND =
+  "overflow-hidden rounded-[22px] sm:rounded-[26px] md:rounded-[32px]";
+export const BLOG_DETAIL_CONTACT_BG = "#EFD6DA";
+export const BLOG_DETAIL_OFFER_BG = "#F3E4E6";
+export const BLOG_DETAIL_CTA_BTN =
+  "inline-flex min-h-[48px] items-center justify-center rounded-md bg-[#6a414d] px-7 py-3 font-outfit text-[15px] font-medium leading-none text-white transition-colors duration-200 hover:bg-[#4a1c28] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6a414d]/40 focus-visible:ring-offset-2";
+

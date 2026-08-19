@@ -22,6 +22,8 @@ import {
 import { COMPANY_SHELL } from "@/components/company/companyLayoutShared";
 import { formatBlogDetailMeta } from "@/lib/blogFormat";
 import type { BlogPost } from "@/lib/companyData";
+import type { IaArticleCta, IaArticleOffer } from "@/lib/iaPages";
+import BlogDetailFooterCtas from "@/components/company/BlogDetailFooterCtas";
 
 const BLOG_GRID =
   "grid w-full min-w-0 grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-x-[clamp(1.25rem,3vw,2rem)] sm:gap-y-10 lg:grid-cols-3 lg:gap-x-[clamp(1.5rem,4vw,2.5rem)] lg:gap-y-12";
@@ -29,6 +31,8 @@ const BLOG_GRID =
 type Props = {
   blog: BlogPost;
   related: BlogPost[];
+  articleContact?: IaArticleCta;
+  articleOffer?: IaArticleOffer;
 };
 
 /**
@@ -37,7 +41,12 @@ type Props = {
  * 2. Center overlap card (~88%): author + share → H1 → body sections
  * 3. Related grid in site shell
  */
-export default function BlogDetailView({ blog, related }: Props) {
+export default function BlogDetailView({
+  blog,
+  related,
+  articleContact,
+  articleOffer,
+}: Props) {
   const t = useTranslations("blogListing");
 
   return (
@@ -119,6 +128,8 @@ export default function BlogDetailView({ blog, related }: Props) {
               </div>
             </section>
           )}
+
+          <BlogDetailFooterCtas contact={articleContact} offer={articleOffer} />
         </div>
       </main>
     </>

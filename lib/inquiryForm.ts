@@ -5,6 +5,10 @@ import type { SiteContent } from "./siteTypes";
 export const FALLBACK_INQUIRY_FORM_EN: InquiryFormConfig = {
   version: 1,
   submitLabel: "Submit",
+  compactTitle: "GET IN TOUCH",
+  compactSubtitle: "YOUR DREAM SPACE BEGINS WITH A SIMPLE CONVERSATION",
+  compactSubmitLabel: "Send Inquiry",
+  compactPrivacy: "Your data is safe. We do not share it with third parties.",
   fields: [
     {
       key: "name",
@@ -115,6 +119,10 @@ export function resolveInquiryForm(site: SiteContent | null | undefined): Inquir
     return {
       version: raw.version,
       submitLabel: raw.submitLabel,
+      compactTitle: raw.compactTitle,
+      compactSubtitle: raw.compactSubtitle,
+      compactSubmitLabel: raw.compactSubmitLabel,
+      compactPrivacy: raw.compactPrivacy,
       fields,
     };
   }

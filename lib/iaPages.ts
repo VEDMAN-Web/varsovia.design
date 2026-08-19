@@ -53,6 +53,28 @@ export type IaHubPage = {
   servicesTitle?: string;
   servicesSubtitle?: string;
   children?: IaChildPage[];
+  /** Blog detail footer — Contact Varsovia band */
+  articleContact?: IaArticleCta;
+  /** Blog detail footer — Designed around you / Get Offers band */
+  articleOffer?: IaArticleOffer;
+};
+
+export type IaArticleCta = {
+  title?: string;
+  subtitle?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+};
+
+export type IaArticleOffer = {
+  eyebrow?: string;
+  title?: string;
+  text?: string;
+  points?: string[];
+  ctaLabel?: string;
+  ctaHref?: string;
+  image?: string;
+  imageAlt?: string;
 };
 
 export type IaHubKey = keyof typeof DEFAULT_IA_PAGES;
@@ -102,6 +124,49 @@ function mergeHero(
     image: mergeStr(s.image, d.image, locale),
     ctaLabel: mergeStr(s.ctaLabel, d.ctaLabel, locale),
     ctaHref: mergeStr(s.ctaHref, d.ctaHref, locale) || "/contact",
+  };
+}
+
+function mergeArticleContact(
+  saved: IaArticleCta | undefined,
+  def: IaArticleCta | undefined,
+  locale: Locale = "en",
+): IaArticleCta | undefined {
+  if (!saved && !def) return undefined;
+  const d = def || {};
+  const s = saved || {};
+  return {
+    title: mergeStr(s.title, d.title, locale),
+    subtitle: mergeStr(s.subtitle, d.subtitle, locale),
+    ctaLabel: mergeStr(s.ctaLabel, d.ctaLabel, locale),
+    ctaHref: mergeStr(s.ctaHref, d.ctaHref, locale) || "/contact",
+  };
+}
+
+function mergeArticleOffer(
+  saved: IaArticleOffer | undefined,
+  def: IaArticleOffer | undefined,
+  locale: Locale = "en",
+): IaArticleOffer | undefined {
+  if (!saved && !def) return undefined;
+  const d = def || {};
+  const s = saved || {};
+  const defPoints = Array.isArray(d.points) ? d.points : [];
+  const savedPoints = Array.isArray(s.points) ? s.points : [];
+  const points = (
+    savedPoints.some((p) => str(p, locale))
+      ? savedPoints.map((p, i) => mergeStr(p, defPoints[i], locale))
+      : defPoints.map((p) => str(p, locale))
+  ).filter(Boolean);
+  return {
+    eyebrow: mergeStr(s.eyebrow, d.eyebrow, locale),
+    title: mergeStr(s.title, d.title, locale),
+    text: mergeStr(s.text, d.text, locale),
+    points,
+    ctaLabel: mergeStr(s.ctaLabel, d.ctaLabel, locale),
+    ctaHref: mergeStr(s.ctaHref, d.ctaHref, locale) || "/contact",
+    image: mergeStr(s.image, d.image, locale),
+    imageAlt: mergeStr(s.imageAlt, d.imageAlt, locale),
   };
 }
 
@@ -196,8 +261,10 @@ export function getIaPages(
         exploreSubtitle: str(def.exploreSubtitle, loc),
         servicesTitle: str(def.servicesTitle, loc),
         servicesSubtitle: str(def.servicesSubtitle, loc),
-        hero: mergeHero(def.hero, undefined, loc),
-        sections: mergeSections(def.sections, undefined, loc),
+        hero: mergeHero(undefined, def.hero, loc),
+        sections: mergeSections(undefined, def.sections, loc),
+        articleContact: mergeArticleContact(undefined, def.articleContact, loc),
+        articleOffer: mergeArticleOffer(undefined, def.articleOffer, loc),
         children: (def.children || []).map((c) => mergeChild(c, undefined, loc)),
       };
       continue;
@@ -233,6 +300,8 @@ export function getIaPages(
       servicesSubtitle: mergeStr(saved.servicesSubtitle, def.servicesSubtitle, loc),
       hero: mergeHero(saved.hero, def.hero, loc),
       sections: mergeSections(saved.sections, def.sections, loc),
+      articleContact: mergeArticleContact(saved.articleContact, def.articleContact, loc),
+      articleOffer: mergeArticleOffer(saved.articleOffer, def.articleOffer, loc),
       indexable: saved.indexable === true,
       children,
     };
