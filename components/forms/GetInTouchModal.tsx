@@ -2,16 +2,12 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, Shield, X } from "lucide-react";
+import { Shield, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useModalScrollLock } from "@/hooks/useModalScrollLock";
 import { trackGenerateLead } from "@/lib/analytics";
-import {
-  PHONE_CONFIG,
-  sanitizeNameInput,
-  sanitizePhoneDigits,
-  type PhoneLocaleConfig,
-} from "@/lib/contactFormValidation";
+import { sanitizeNameInput, sanitizePhoneDigits } from "@/lib/contactFormValidation";
+import CountryDialSelect, { defaultDialCountry } from "@/components/forms/CountryDialSelect";
 import { resolveInquiryForm } from "@/lib/inquiryForm";
 import type { Locale } from "@/lib/i18n/routing";
 import { submitContact } from "@/lib/submitContactClient";
@@ -33,7 +29,6 @@ import {
 } from "@/components/forms/getInTouchLayoutShared";
 
 const NAME_RE = /^[\p{L}][\p{L}\s'.-]*$/u;
-const DIAL_LOCALES: Locale[] = ["th", "en", "pl"];
 
 export function opensGetInTouch(href?: string) {
   const raw = String(href || "").trim();
@@ -69,8 +64,7 @@ function ModalBody({ onClose, source }: { onClose: () => void; source: string })
   const nameRef = useRef<HTMLInputElement>(null);
   useModalScrollLock(true, dialogRef, dialogRef);
 
-  const [dialLocale, setDialLocale] = useState<Locale>(locale === "en" ? "th" : locale);
-  const phoneConfig: PhoneLocaleConfig = PHONE_CONFIG[dialLocale] ?? PHONE_CONFIG.en;
+  const [country, setCountry] = useState(() => defaultDialCountry(locale, true));
 
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -112,7 +106,7 @@ function ModalBody({ onClose, source }: { onClose: () => void; source: string })
 
     const digits = whatsapp.replace(/\D/g, "");
     if (!digits) next.whatsapp = t("validation.whatsappRequired");
-    else if (digits.length < phoneConfig.minDigits || digits.length > phoneConfig.maxDigits) {
+    else if (digits.length < 6 || digits.length > 15) {
       next.whatsapp = t("validation.whatsappInvalid");
     }
 
@@ -131,7 +125,7 @@ function ModalBody({ onClose, source }: { onClose: () => void; source: string })
     setErrors({});
     setStatus("loading");
     setServerMessage("");
-    const waValue = `${phoneConfig.dialCode} ${whatsapp.replace(/\D/g, "")}`.trim();
+    const waValue = `${country.dial} ${whatsapp.replace(/\D/g, "")}`.trim();
     try {
       const res = await submitContact({
         name: name.trim(),
@@ -229,38 +223,18 @@ function ModalBody({ onClose, source }: { onClose: () => void; source: string })
           <div
             className={`${GET_IN_TOUCH_FIELD_BOX} ${errors.whatsapp ? "ring-2 ring-red-500/60" : ""}`}
           >
-            <label className="relative flex shrink-0 items-center gap-1.5" htmlFor="get-in-touch-dial">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={phoneConfig.flag} alt="" className="h-[18px] w-[22px] rounded-[2px] object-cover" />
-              <select
-                id="get-in-touch-dial"
-                value={dialLocale}
-                onChange={(e) => {
-                  setDialLocale(e.target.value as Locale);
-                  setWhatsapp("");
-                }}
-                className="absolute inset-0 cursor-pointer opacity-0"
-                aria-label={t("whatsapp")}
-              >
-                {DIAL_LOCALES.map((loc) => (
-                  <option key={loc} value={loc}>
-                    {PHONE_CONFIG[loc].dialCode}
-                  </option>
-                ))}
-              </select>
-              <span className="font-outfit text-[13px] font-medium text-[#251b1e] sm:text-[14px]">
-                {phoneConfig.dialCode}
-              </span>
-              <ChevronDown size={12} className="text-[#6a414d]/70" aria-hidden />
-            </label>
-            <span className="h-4 w-px shrink-0 bg-[#6a414d]/20" aria-hidden />
+            <CountryDialSelect
+              value={country}
+              labelledBy="get-in-touch-whatsapp"
+              onChange={setCountry}
+            />
             <input
               id="get-in-touch-whatsapp"
               name="whatsapp"
               inputMode="numeric"
               autoComplete="tel"
               value={whatsapp}
-              onChange={(e) => setWhatsapp(sanitizePhoneDigits(e.target.value, phoneConfig.maxDigits))}
+              onChange={(e) => setWhatsapp(sanitizePhoneDigits(e.target.value, 15))}
               placeholder={t("getInTouchWhatsappPh")}
               className="min-w-0 flex-1 bg-transparent text-[14px] text-[#251b1e] outline-none placeholder:text-[rgba(37,27,30,0.45)]"
             />

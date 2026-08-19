@@ -3,22 +3,25 @@
 import { RefObject, useEffect } from "react";
 import { useOptionalLenis } from "@/components/providers/SmoothScroll";
 
+function canScrollBox(el: HTMLElement) {
+  const { overflowY, overflowX } = getComputedStyle(el);
+  const canScrollY =
+    (overflowY === "auto" || overflowY === "scroll") &&
+    el.scrollHeight > el.clientHeight + 1;
+  const canScrollX =
+    (overflowX === "auto" || overflowX === "scroll") &&
+    el.scrollWidth > el.clientWidth + 1;
+  return canScrollY || canScrollX;
+}
+
 function getScrollableAncestor(
   node: Node | null,
-  root: HTMLElement
+  root?: HTMLElement | null
 ): HTMLElement | null {
-  let el = node instanceof HTMLElement ? node : null;
-  while (el && el !== root) {
-    const { overflowY, overflowX } = getComputedStyle(el);
-    const canScrollY =
-      (overflowY === "auto" || overflowY === "scroll") &&
-      el.scrollHeight > el.clientHeight + 1;
-    const canScrollX =
-      (overflowX === "auto" || overflowX === "scroll") &&
-      el.scrollWidth > el.clientWidth + 1;
-    if (canScrollY || canScrollX) {
-      return el;
-    }
+  let el = node instanceof HTMLElement ? node : node?.parentElement ?? null;
+  while (el && el !== document.body && el !== document.documentElement) {
+    if (canScrollBox(el)) return el;
+    if (root && el === root) break;
     el = el.parentElement;
   }
   return null;
@@ -66,8 +69,11 @@ export function useModalScrollLock(
     bodyStyle.touchAction = "none";
 
     const onWheel = (e: WheelEvent) => {
-      const dialog = dialogRef.current;
       const target = e.target as Node | null;
+      // Portaled menus (country picker) live outside the dialog — still allow their lists to scroll.
+      if (getScrollableAncestor(target)) return;
+
+      const dialog = dialogRef.current;
       if (!dialog || !target || !dialog.contains(target)) {
         e.preventDefault();
         return;
@@ -75,10 +81,6 @@ export function useModalScrollLock(
 
       const scrollRoot = scrollRootRef?.current;
       if (scrollRoot?.contains(target) && isVerticallyScrollable(scrollRoot)) {
-        return;
-      }
-
-      if (getScrollableAncestor(target, dialog)) {
         return;
       }
 
@@ -86,8 +88,10 @@ export function useModalScrollLock(
     };
 
     const onTouchMove = (e: TouchEvent) => {
-      const dialog = dialogRef.current;
       const target = e.target as Node | null;
+      if (getScrollableAncestor(target)) return;
+
+      const dialog = dialogRef.current;
       if (!dialog || !target || !dialog.contains(target)) {
         e.preventDefault();
         return;
@@ -95,10 +99,6 @@ export function useModalScrollLock(
 
       const scrollRoot = scrollRootRef?.current;
       if (scrollRoot?.contains(target) && isVerticallyScrollable(scrollRoot)) {
-        return;
-      }
-
-      if (getScrollableAncestor(target, dialog)) {
         return;
       }
 

@@ -75,7 +75,7 @@ export function sanitizeInquiryValue(field: InquiryFormField, value: string, pho
     case "place":
       return sanitizePlaceInput(value);
     case "phone":
-      return sanitizePhoneDigits(value, phoneConfig.maxDigits);
+      return sanitizePhoneDigits(value, Math.max(phoneConfig.maxDigits, 15));
     case "whatsapp":
       return sanitizePhoneDigits(value, 15);
     case "textarea":

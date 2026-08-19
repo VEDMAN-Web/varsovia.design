@@ -22,7 +22,9 @@ import {
   MODAL_LABEL,
   type InquiryPurpose,
 } from "@/components/forms/contactFormShared";
+import CountryDialSelect, { defaultDialCountry } from "@/components/forms/CountryDialSelect";
 import { PHONE_CONFIG } from "@/lib/contactFormValidation";
+import type { CountryDialCode } from "@/lib/countryDialCodes";
 import type { Locale } from "@/lib/i18n/routing";
 
 type ContactInquiryFormProps = {
@@ -45,14 +47,25 @@ export default function ContactInquiryForm({
   const locale = useLocale() as Locale;
   const site = useSiteSettings();
   const inquiryForm = useMemo(() => resolveInquiryForm(site), [site]);
-  const phoneConfig = PHONE_CONFIG[locale] ?? PHONE_CONFIG.en;
+  const defaultCountry = useMemo(() => defaultDialCountry(locale), [locale]);
+  const phoneConfig = {
+    ...(PHONE_CONFIG[locale] ?? PHONE_CONFIG.en),
+    minDigits: 6,
+    maxDigits: 15,
+    dialCode: defaultCountry.dial,
+  };
   const rows = useMemo(() => groupInquiryFields(inquiryForm.fields), [inquiryForm.fields]);
 
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [values, setValues] = useState<Record<string, string>>({});
+  const [dialByKey, setDialByKey] = useState<Record<string, CountryDialCode>>({});
   const [formKey, setFormKey] = useState(0);
+
+  function countryFor(key: string) {
+    return dialByKey[key] ?? defaultCountry;
+  }
 
   const copy = INQUIRY_COPY[purpose];
   const isModal = density === "modal";
@@ -99,6 +112,7 @@ export default function ContactInquiryForm({
   function resetForm() {
     setValues({});
     setFieldErrors({});
+    setDialByKey({});
     setFormKey((k) => k + 1);
   }
 
@@ -119,7 +133,9 @@ export default function ContactInquiryForm({
       if (!raw) continue;
 
       if (field.type === "phone" && field.useLocaleDialCode !== false) {
-        payload[field.key] = `${phoneConfig.dialCode} ${raw.replace(/\D/g, "")}`;
+        payload[field.key] = `${countryFor(field.key).dial} ${raw.replace(/\D/g, "")}`;
+      } else if (field.type === "whatsapp") {
+        payload[field.key] = `${countryFor(field.key).dial} ${raw.replace(/\D/g, "")}`;
       } else {
         payload[field.key] = raw;
       }
@@ -148,16 +164,21 @@ export default function ContactInquiryForm({
     const err = fieldErrors[field.key];
     const value = values[field.key] ?? "";
 
-    if (field.type === "phone" && field.useLocaleDialCode !== false) {
+    const useDial =
+      field.type === "whatsapp" || (field.type === "phone" && field.useLocaleDialCode !== false);
+
+    if (useDial) {
       return (
         <div key={field.key}>
-          <label className={labelClass} htmlFor={id}>
+          <label className={labelClass} htmlFor={id} id={`${id}-label`}>
             {field.label}
           </label>
           <div className={`${fieldClassSized} flex min-w-0 items-center gap-2 px-3 ${err ? "ring-2 ring-red-500/60" : ""}`}>
-            <img src={phoneConfig.flag} alt="" className="h-[18px] w-[22px] shrink-0 rounded-[2px] object-cover" />
-            <span className="shrink-0 text-[13px] font-medium text-[#251b1e] sm:text-[14px]">{phoneConfig.dialCode}</span>
-            <span className="h-4 w-px shrink-0 bg-[#6a414d]/20" aria-hidden />
+            <CountryDialSelect
+              value={countryFor(field.key)}
+              labelledBy={`${id}-label`}
+              onChange={(country) => setDialByKey((prev) => ({ ...prev, [field.key]: country }))}
+            />
             <input
               id={id}
               name={field.key}
@@ -165,6 +186,7 @@ export default function ContactInquiryForm({
               value={value}
               onChange={(e) => setFieldValue(field.key, field, e.target.value)}
               inputMode="numeric"
+              autoComplete="tel"
               placeholder={field.placeholder || phoneConfig.placeholder}
               className="min-w-0 flex-1 bg-transparent text-[13px] text-[#251b1e] outline-none placeholder:text-[rgba(37,27,30,0.45)] sm:text-[14px]"
             />
