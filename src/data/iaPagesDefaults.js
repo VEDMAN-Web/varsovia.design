@@ -81,6 +81,40 @@ function mergeHero(saved, def) {
   };
 }
 
+function mergeArticleContact(saved, def) {
+  if (!saved && !def) return undefined;
+  const d = def && typeof def === "object" ? def : {};
+  const s = saved && typeof saved === "object" ? saved : {};
+  return {
+    title: mergeLoc(s.title, d.title),
+    subtitle: mergeLoc(s.subtitle, d.subtitle),
+    ctaLabel: mergeLoc(s.ctaLabel, d.ctaLabel),
+    ctaHref: String(s.ctaHref || "").trim() || String(d.ctaHref || "").trim() || "/contact",
+  };
+}
+
+function mergeArticleOffer(saved, def) {
+  if (!saved && !def) return undefined;
+  const d = def && typeof def === "object" ? def : {};
+  const s = saved && typeof saved === "object" ? saved : {};
+  const fallbackPoints = Array.isArray(d.points) ? d.points : [];
+  const savedPoints = Array.isArray(s.points) ? s.points : [];
+  const points =
+    savedPoints.some((p) => locText(p))
+      ? savedPoints.map((p, i) => mergeLoc(p, fallbackPoints[i]))
+      : fallbackPoints;
+  return {
+    eyebrow: mergeLoc(s.eyebrow, d.eyebrow),
+    title: mergeLoc(s.title, d.title),
+    text: mergeLoc(s.text, d.text),
+    points,
+    ctaLabel: mergeLoc(s.ctaLabel, d.ctaLabel),
+    ctaHref: String(s.ctaHref || "").trim() || String(d.ctaHref || "").trim() || "/contact",
+    image: String(s.image || "").trim() || String(d.image || "").trim(),
+    imageAlt: mergeLoc(s.imageAlt, d.imageAlt),
+  };
+}
+
 function sectionHasContent(section) {
   if (!section || typeof section !== "object") return false;
   return Boolean(
@@ -104,6 +138,32 @@ function localizeHero(heroObj, resolveLocalized, locale) {
     ctaLabel: resolveLocalized(heroObj.ctaLabel, locale),
     image: typeof heroObj.image === "string" ? heroObj.image : locText(heroObj.image),
     ctaHref: typeof heroObj.ctaHref === "string" ? heroObj.ctaHref : "",
+  };
+}
+
+function localizeArticleContact(block, resolveLocalized, locale) {
+  if (!block || typeof block !== "object") return undefined;
+  return {
+    title: resolveLocalized(block.title, locale),
+    subtitle: resolveLocalized(block.subtitle, locale),
+    ctaLabel: resolveLocalized(block.ctaLabel, locale),
+    ctaHref: typeof block.ctaHref === "string" ? block.ctaHref : "/contact",
+  };
+}
+
+function localizeArticleOffer(block, resolveLocalized, locale) {
+  if (!block || typeof block !== "object") return undefined;
+  return {
+    eyebrow: resolveLocalized(block.eyebrow, locale),
+    title: resolveLocalized(block.title, locale),
+    text: resolveLocalized(block.text, locale),
+    points: Array.isArray(block.points)
+      ? block.points.map((p) => resolveLocalized(p, locale)).filter(Boolean)
+      : [],
+    ctaLabel: resolveLocalized(block.ctaLabel, locale),
+    ctaHref: typeof block.ctaHref === "string" ? block.ctaHref : "/contact",
+    image: typeof block.image === "string" ? block.image : "",
+    imageAlt: resolveLocalized(block.imageAlt, locale),
   };
 }
 
@@ -158,6 +218,8 @@ function localizeHub(hubObj, resolveLocalized, locale) {
     servicesSubtitle: resolveLocalized(hubObj.servicesSubtitle, locale),
     hero: localizeHero(hubObj.hero, resolveLocalized, locale),
     sections: localizeSections(hubObj.sections, resolveLocalized, locale),
+    articleContact: localizeArticleContact(hubObj.articleContact, resolveLocalized, locale),
+    articleOffer: localizeArticleOffer(hubObj.articleOffer, resolveLocalized, locale),
     indexable: hubObj.indexable === true,
     children: Array.isArray(hubObj.children)
       ? hubObj.children
@@ -252,6 +314,8 @@ function mergeIaPages(current) {
       servicesSubtitle: mergeLoc(saved.servicesSubtitle, defHub.servicesSubtitle),
       hero: mergeHero(saved.hero, defHub.hero),
       sections: mergeSections(saved.sections, defHub.sections),
+      articleContact: mergeArticleContact(saved.articleContact, defHub.articleContact),
+      articleOffer: mergeArticleOffer(saved.articleOffer, defHub.articleOffer),
       indexable: saved.indexable === true,
       children,
     };

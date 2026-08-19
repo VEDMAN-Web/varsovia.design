@@ -20,6 +20,18 @@ const FIELD_TYPES = new Set(["name", "text", "email", "phone", "whatsapp", "text
 const DEFAULT_INQUIRY_FORM = {
   version: 1,
   submitLabel: { en: "Submit", th: "ส่ง", pl: "Wyślij" },
+  compactTitle: { en: "GET IN TOUCH", th: "ติดต่อเรา", pl: "SKONTAKTUJ SIĘ" },
+  compactSubtitle: {
+    en: "YOUR DREAM SPACE BEGINS WITH A SIMPLE CONVERSATION",
+    th: "พื้นที่ในฝันเริ่มต้นจากการพูดคุยสั้น ๆ",
+    pl: "TWOJA WYMARZONA PRZESTRZEŃ ZACZYNA SIĘ OD PROSTEJ ROZMOWY",
+  },
+  compactSubmitLabel: { en: "Send Inquiry", th: "ส่งข้อความ", pl: "Wyślij zapytanie" },
+  compactPrivacy: {
+    en: "Your data is safe. We do not share it with third parties.",
+    th: "ข้อมูลของคุณปลอดภัย เราไม่แชร์กับบุคคลที่สาม",
+    pl: "Twoje dane są bezpieczne. Nie udostępniamy ich osobom trzecim.",
+  },
   fields: [
     {
       key: "name",
@@ -136,6 +148,10 @@ function normalizeForm(raw) {
   return {
     version: base.version ?? 1,
     submitLabel: base.submitLabel ?? DEFAULT_INQUIRY_FORM.submitLabel,
+    compactTitle: base.compactTitle ?? DEFAULT_INQUIRY_FORM.compactTitle,
+    compactSubtitle: base.compactSubtitle ?? DEFAULT_INQUIRY_FORM.compactSubtitle,
+    compactSubmitLabel: base.compactSubmitLabel ?? DEFAULT_INQUIRY_FORM.compactSubmitLabel,
+    compactPrivacy: base.compactPrivacy ?? DEFAULT_INQUIRY_FORM.compactPrivacy,
     fields: fields
       .filter((f) => f && typeof f === "object" && f.enabled !== false)
       .map((f, i) => ({
@@ -157,6 +173,10 @@ function localizeInquiryForm(form, locale) {
   return {
     version: normalized.version,
     submitLabel: resolveLocalized(normalized.submitLabel, locale),
+    compactTitle: resolveLocalized(normalized.compactTitle, locale),
+    compactSubtitle: resolveLocalized(normalized.compactSubtitle, locale),
+    compactSubmitLabel: resolveLocalized(normalized.compactSubmitLabel, locale),
+    compactPrivacy: resolveLocalized(normalized.compactPrivacy, locale),
     fields: normalized.fields.map((field) => ({
       key: field.key,
       type: field.type,

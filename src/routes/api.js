@@ -40,6 +40,7 @@ router.use(adminAuth);
 router.put("/site", validate(schemas.siteUpdate), ctrl.updateSite);
 router.get("/contacts", ctrl.listContacts);
 router.patch("/contacts/:id", ctrl.updateContactStatus);
+router.delete("/contacts/:id", ctrl.deleteContact);
 
 router.get("/projects/interior-catalog/spec", ctrl.getInteriorCatalogFieldSpec);
 router.get("/inquiry-form/spec", ctrl.getInquiryFormSpec);

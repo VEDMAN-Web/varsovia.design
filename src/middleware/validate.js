@@ -310,6 +310,10 @@ const inquiryFormFieldSchema = z.object({
 const inquiryFormSchema = z.object({
   version: z.number().int().min(1).optional(),
   submitLabel: localizedString.optional(),
+  compactTitle: localizedString.optional(),
+  compactSubtitle: localizedString.optional(),
+  compactSubmitLabel: localizedString.optional(),
+  compactPrivacy: localizedString.optional(),
   fields: z.array(inquiryFormFieldSchema).min(1).max(40),
 });
 

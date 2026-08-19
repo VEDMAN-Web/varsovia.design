@@ -770,7 +770,8 @@ const pages = {
     children: [],
   }),
 
-  journal: hub({
+  journal: {
+    ...hub({
     slug: "journal",
     title: "Journal",
     subtitle: "Ideas on kitchens, materials, villas, and living in Thailand.",
@@ -898,6 +899,31 @@ const pages = {
       }),
     ],
   }),
+  articleContact: {
+    title: L("CONTACT VARSOVIA"),
+    subtitle: L(
+      "HAVE A QUESTION, NEED EXPERT ADVICE, OR PLANNING YOUR DREAM KITCHEN? OUR TEAM IS READY TO ASSIST YOU.",
+    ),
+    ctaLabel: L("Contact Us"),
+    ctaHref: "/contact",
+  },
+  articleOffer: {
+    eyebrow: L("DESIGNED AROUND YOU"),
+    title: L("YOUR KITCHEN, DESIGNED YOUR WAY"),
+    text: L(
+      "Tell us about your space, style, and needs. Our kitchen specialists will help you create a solution that feels beautiful, functional, and uniquely yours.",
+    ),
+    points: [
+      L("Tailored kitchen design based on your space"),
+      L("Expert guidance on materials, finishes & layouts"),
+      L("Personalized consultation with our kitchen specialists"),
+    ],
+    ctaLabel: L("Get Offers"),
+    ctaHref: "/contact",
+    image: IMG.k1,
+    imageAlt: L("Varsovia designed kitchen interior"),
+  },
+  },
 
   aboutBrand: hub({
     slug: "about",

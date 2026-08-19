@@ -18,6 +18,13 @@ async function loadInquiryForm() {
   return cachedForm;
 }
 
+const COMPACT_SOURCES = new Set(["get-in-touch", "journal-contact", "blog-contact"]);
+const COMPACT_KEYS = new Set(["name", "whatsapp", "message"]);
+
+function isCompactSubmission(body) {
+  return COMPACT_SOURCES.has(String(body?.source || "").trim());
+}
+
 function fieldZod(field) {
   const key = field.key;
   let schema;
@@ -86,17 +93,33 @@ function fieldZod(field) {
   return schema.optional().or(z.literal(""));
 }
 
-function buildContactZod(form) {
+function buildContactZod(form, compact) {
   const shape = {};
   for (const field of form.fields) {
     if (!field.key || typeof field.key !== "string") continue;
-    shape[field.key] = fieldZod(field);
+    if (compact && !COMPACT_KEYS.has(field.key)) continue;
+    const next =
+      compact && field.key === "whatsapp" ? { ...field, required: true } : field;
+    shape[field.key] = fieldZod(next);
+  }
+  if (compact && !shape.whatsapp) {
+    shape.whatsapp = fieldZod({
+      key: "whatsapp",
+      type: "whatsapp",
+      required: true,
+    });
+  }
+  if (compact && !shape.name) {
+    shape.name = fieldZod({ key: "name", type: "name", required: true });
+  }
+  if (compact && !shape.message) {
+    shape.message = fieldZod({ key: "message", type: "textarea", required: false, maxLength: 2000 });
   }
   shape.source = z.string().max(100).trim().optional();
   return z.object(shape).passthrough();
 }
 
-function mapBodyToContact(parsed, form) {
+function mapBodyToContact(parsed, form, compact) {
   const doc = {
     name: "",
     email: "",
@@ -123,6 +146,18 @@ function mapBodyToContact(parsed, form) {
     }
   }
 
+  if (compact) {
+    for (const key of COMPACT_KEYS) {
+      if (!doc[key] && parsed[key] != null) {
+        doc[key] = String(parsed[key]).trim();
+      }
+    }
+    if (!doc.name) return { error: "Name is required." };
+    if (!doc.whatsapp && !doc.phone) return { error: "WhatsApp number is required." };
+    if (!doc.phone && doc.whatsapp) doc.phone = doc.whatsapp;
+    return { doc };
+  }
+
   if (!doc.name || !doc.email || !doc.phone) {
     return { error: "Name, email, and phone are required." };
   }
@@ -133,8 +168,9 @@ function mapBodyToContact(parsed, form) {
 async function validateContactSubmission(req, res, next) {
   try {
     const form = await loadInquiryForm();
-    const schema = buildContactZod(form);
     const body = req.body && typeof req.body === "object" ? req.body : {};
+    const compact = isCompactSubmission(body);
+    const schema = buildContactZod(form, compact);
     const result = schema.safeParse(body);
 
     if (!result.success) {
@@ -150,7 +186,7 @@ async function validateContactSubmission(req, res, next) {
       });
     }
 
-    const mapped = mapBodyToContact(result.data, form);
+    const mapped = mapBodyToContact(result.data, form, compact);
     if (mapped.error) {
       return sendError(res, 400, { message: mapped.error });
     }

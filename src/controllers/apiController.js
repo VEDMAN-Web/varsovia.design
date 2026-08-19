@@ -110,6 +110,16 @@ async function submitContact(req, res) {
   }
 }
 
+async function deleteContact(req, res) {
+  try {
+    const contact = await Contact.findByIdAndDelete(req.params.id);
+    if (!contact) return sendError(res, 404, { message: "Not found" });
+    return sendSuccess(res, { deleted: true }, { req });
+  } catch (error) {
+    return sendError(res, 500, { message: error.message });
+  }
+}
+
 async function listContacts(req, res) {
   try {
     // Route is behind adminAuth; isAdminRequest also true via req.varsoviaAdmin
@@ -364,6 +374,7 @@ module.exports = {
   submitContact,
   listContacts,
   updateContactStatus,
+  deleteContact,
   getSite,
   updateSite,
   getBlogById,
