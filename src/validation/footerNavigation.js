@@ -1,31 +1,30 @@
 /**
  * Admin-editable footer layout (link columns, legal row, contact section labels).
  * Contact values (email, phones, offices) remain on SiteContent root fields.
+ * Link set matches live /en footer (frontend buildFallbackFooterNavigation).
  */
 
 function loc(en, th = "", pl = "") {
   return { en, th: th || "", pl: pl || "" };
 }
 
-function link(label, href) {
-  return { label: loc(label), href: String(href).trim(), enabled: true };
+function link(en, href, th = "", pl = "") {
+  return { label: loc(en, th, pl), href: String(href).trim(), enabled: true };
 }
 
 const DEFAULT_FOOTER_NAVIGATION = {
-  version: 2,
+  version: 3,
   linkColumns: [
     {
       id: "primary",
       order: 1,
       enabled: true,
       links: [
-        link("Journal", "/journal"),
-        link("About Us", "/about"),
-        link("Locations", "/locations"),
-        link("Services", "/services"),
-        link("Contact Us", "/contact"),
-        link("FAQ", "/faq"),
-        link("Catalogue", "/catalogue"),
+        link("Journal", "/journal", "วารสาร", "Journal"),
+        link("About Us", "/about", "เกี่ยวกับเรา", "O nas"),
+        link("Contact Us", "/contact", "ติดต่อเรา", "Kontakt"),
+        link("FAQ", "/faq", "คำถามที่พบบ่อย", "Najczęstsze pytania"),
+        link("Catalogue", "/catalogue", "แคตตาล็อก", "Katalog"),
       ],
     },
     {
@@ -33,26 +32,25 @@ const DEFAULT_FOOTER_NAVIGATION = {
       order: 2,
       enabled: true,
       links: [
-        link("Furniture", "/furniture"),
-        link("Kitchen", "/interior-design?category=Kitchen"),
-        link("Bedroom", "/interior-design?category=Bedroom"),
-        link("Bathroom", "/interior-design?category=Bathroom"),
-        link("Door & Windows", "/interior-design?category=Door%20%26%20Windows"),
-        link("Whole House Solutions", "/interior-design?category=Whole%20House%20Solutions"),
-        link("Projects", "/projects"),
+        link("Kitchen", "/interior-design?category=Kitchen", "ครัว", "Kuchnia"),
+        link("Bedroom", "/interior-design?category=Bedroom", "ห้องนอน", "Sypialnia"),
+        link("Bathroom", "/interior-design?category=Bathroom", "ห้องน้ำ", "Łazienka"),
+        link("Furniture", "/furniture", "เฟอร์นิเจอร์", "Meble"),
+        link("Door & Windows", "/interior-design?category=Door%20%26%20Windows", "ประตูและหน้าต่าง", "Drzwi i okna"),
+        link("Whole House Solutions", "/interior-design?category=Whole%20House%20Solutions", "โซลูชันทั้งบ้าน", "Rozwiązania dla całego domu"),
       ],
     },
   ],
   legalLinks: [
-    link("Privacy", "/privacy"),
-    link("Terms", "/terms"),
-    link("Sitemap", "/sitemap.xml"),
+    link("Privacy", "/privacy", "ความเป็นส่วนตัว", "Prywatność"),
+    link("Terms", "/terms", "ข้อกำหนด", "Regulamin"),
+    link("Sitemap", "/sitemap.xml", "แผนผังเว็บไซต์", "Mapa witryny"),
   ],
-  contactHeading: loc("Contact Us"),
+  contactHeading: loc("Contact Us", "ติดต่อเรา", "Kontakt"),
   contactLabels: {
-    email: loc("Email"),
-    mobileWhatsapp: loc("Mobile / WhatsApp"),
-    contactNumber: loc("Contact Number"),
+    email: loc("Email", "อีเมล", "E-mail"),
+    mobileWhatsapp: loc("Mobile / WhatsApp", "มือถือ / WhatsApp", "Telefon / WhatsApp"),
+    contactNumber: loc("Contact Number", "เบอร์ติดต่อ", "Numer kontaktowy"),
   },
   socialLabels: {
     whatsapp: loc("WhatsApp"),

@@ -744,31 +744,89 @@ const pages = {
     ],
   }),
 
-  forDevelopers: hub({
-    slug: "for-developers",
-    title: "For Developers",
-    subtitle: "Interior partners for show units, standard packages, and amenity spaces.",
-    image: IMG.c4,
-    metaTitle: "For Developers | Varsovia Design",
-    metaDescription:
-      "Partner with Varsovia Design for developer interior packages, show units, and scalable FF&E across Thailand.",
-    body: "Developers need interiors that sell and scale. We deliver show-unit storytelling, repeatable apartment packages, and amenity design with clear specs, timelines, and installation support — so every phase stays on brand and on schedule.",
-    sections: storyPair(
-      {
-        heading: "Show units that sell the vision",
-        text: "Launch interiors with storytelling that buyers remember — then convert to packages that roll out cleanly across phases.",
-        image: IMG.c4,
-        layout: "editorial",
+  forDevelopers: (() => {
+    const base = hub({
+      slug: "for-developers",
+      title: "For Developers",
+      subtitle: "Interior partners for show units, standard packages, and amenity spaces.",
+      image: IMG.c4,
+      metaTitle: "For Developers | Varsovia Design",
+      metaDescription:
+        "Partner with Varsovia Design for developer interior packages, show units, and scalable FF&E across Thailand. Specs, timelines, and installation in every phase.",
+      body: "Developers need interiors that sell and scale. We deliver show-unit storytelling, repeatable apartment packages, and amenity design with clear specs, timelines, and installation support — so every phase stays on brand and on schedule.",
+      sections: storyPair(
+        {
+          heading: "Show units that sell the vision",
+          text: "Launch interiors with storytelling that buyers remember — then convert to packages that roll out cleanly across phases.",
+          image: IMG.c4,
+          layout: "editorial",
+        },
+        {
+          heading: "Packages, amenities, installation",
+          text: "Standard apartment packages and amenity spaces with clear specs, timelines, and installation support so every phase stays on brand.",
+          image: IMG.p3,
+          layout: "overlay",
+        },
+      ),
+      children: [],
+    });
+    return {
+      ...base,
+      metaTitle: L(
+        "For Developers | Varsovia Design",
+        "สำหรับนักพัฒนา | Varsovia Design",
+        "Dla deweloperów | Varsovia Design",
+      ),
+      metaDescription: L(
+        "Partner with Varsovia Design for developer interior packages, show units, and scalable FF&E across Thailand. Specs, timelines, and installation in every phase.",
+        "ร่วมงานกับ Varsovia Design สำหรับแพ็กเกจอินทีเรียนักพัฒนา ยูนิตตัวอย่าง และ FF&E ที่ขยายได้ทั่วไทย พร้อมสเปก ไทม์ไลน์ และการติดตั้งในทุกเฟส",
+        "Współpracuj z Varsovia Design przy pakietach wnętrz deweloperskich, show unitach i FF&E w Tajlandii. Specyfikacje, harmonogram i montaż na każdym etapie.",
+      ),
+      hero: {
+        ...base.hero,
+        title: L("For Developers", "สำหรับนักพัฒนา", "Dla deweloperów"),
+        subtitle: L(
+          "Interior partners for show units, standard packages, and amenity spaces.",
+          "พาร์ทเนอร์อินทีเรียสำหรับยูนิตตัวอย่าง แพ็กเกจมาตรฐาน และพื้นที่ส่วนกลาง",
+          "Partnerzy wnętrzarscy do mieszkań show, pakietów standardowych i przestrzeni wspólnych.",
+        ),
+        ctaLabel: L("Get a consultation", "ปรึกษาฟรี", "Bezpłatna konsultacja"),
       },
-      {
-        heading: "Packages, amenities, installation",
-        text: "Standard apartment packages and amenity spaces with clear specs, timelines, and installation support so every phase stays on brand.",
-        image: IMG.p3,
-        layout: "overlay",
-      },
-    ),
-    children: [],
-  }),
+      body: L(
+        base.body.en,
+        "นักพัฒนาต้องการอินทีเรียที่ขายได้และขยายได้ เราส่งมอบเรื่องราวยูนิตตัวอย่าง แพ็กเกจอพาร์ตเมนต์ที่ทำซ้ำได้ และการออกแบบพื้นที่ส่วนกลาง พร้อมสเปก ไทม์ไลน์ และการติดตั้งที่ชัดเจน ให้ทุกเฟสคงแบรนด์และตรงเวลา",
+        "Deweloperzy potrzebują wnętrz, które sprzedają i skalują się. Dostarczamy storytelling mieszkań show, powtarzalne pakiety apartamentów i projekt przestrzeni wspólnych z jasnymi specyfikacjami, harmonogramem i wsparciem montażu — żeby każdy etap zostawał w zgodzie z marką i terminem.",
+      ),
+      sections: [
+        {
+          ...base.sections[0],
+          heading: L(
+            "Show units that sell the vision",
+            "ยูนิตตัวอย่างที่ขายวิสัยทัศน์",
+            "Mieszkania show, które sprzedają wizję",
+          ),
+          text: L(
+            "Launch interiors with storytelling that buyers remember — then convert to packages that roll out cleanly across phases.",
+            "เปิดตัวอินทีเรียด้วยเรื่องราวที่ผู้ซื้อจำได้ แล้วแปลงเป็นแพ็กเกจที่ขยายได้ทุกเฟสอย่างเรียบร้อย",
+            "Wprowadzaj wnętrza z opowieścią, którą kupujący zapamiętają — a potem zamieniaj je w pakiety wdrażane czysto w kolejnych etapach.",
+          ),
+        },
+        {
+          ...base.sections[1],
+          heading: L(
+            "Packages, amenities, installation",
+            "แพ็กเกจ พื้นที่ส่วนกลาง และการติดตั้ง",
+            "Pakiety, udogodnienia, montaż",
+          ),
+          text: L(
+            "Standard apartment packages and amenity spaces with clear specs, timelines, and installation support so every phase stays on brand.",
+            "แพ็กเกจอพาร์ตเมนต์มาตรฐานและพื้นที่ส่วนกลาง พร้อมสเปก ไทม์ไลน์ และการติดตั้งที่ชัดเจน ให้ทุกเฟสคงแบรนด์",
+            "Standardowe pakiety mieszkań i przestrzenie wspólne z jasnymi specyfikacjami, harmonogramem i wsparciem montażu, żeby każdy etap zostawał w zgodzie z marką.",
+          ),
+        },
+      ],
+    };
+  })(),
 
   journal: {
     ...hub({

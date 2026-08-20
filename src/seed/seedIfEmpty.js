@@ -137,7 +137,8 @@ async function migratePageCmsDefaults() {
 async function migrateFooterNavigation() {
   const { DEFAULT_FOOTER_NAVIGATION } = require("../validation/footerNavigation");
   const site = await SiteContent.findOne({ key: "main" }).select("footerNavigation").lean();
-  if (!site?.footerNavigation?.linkColumns?.length) {
+  const version = Number(site?.footerNavigation?.version || 0);
+  if (!site?.footerNavigation?.linkColumns?.length || version < 3) {
     await SiteContent.updateOne(
       { key: "main" },
       { $set: { footerNavigation: DEFAULT_FOOTER_NAVIGATION } },

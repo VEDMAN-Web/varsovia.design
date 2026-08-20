@@ -121,8 +121,12 @@ function siteContentDoc() {
     ],
     teamPage: {
       indexable: false,
-      metaTitle: "Our Team | Varsovia Design",
-      metaDescription: "Meet the designers, architects, and craftspeople behind Varsovia Design.",
+      metaTitle: locTitle("Our Team | Varsovia Design", "ทีมของเรา | Varsovia Design", "Nasz zespół | Varsovia Design"),
+      metaDescription: locTitle(
+        "Meet the designers, architects, and craftspeople behind Varsovia Design — Italian design collaboration and technical teams for homes across Thailand.",
+        "พบนักออกแบบ สถาปนิก และช่างฝีมือเบื้องหลัง Varsovia Design — ทีมออกแบบอิตาลีและทีมเทคนิคสำหรับบ้านทั่วไทย",
+        "Poznaj projektantów, architektów i rzemieślników Varsovia Design — współpraca z Włochami i zespoły techniczne dla domów w Tajlandii."
+      ),
       heroTitle: "Our Team",
       heroSubtitle: "THE CREATIVE MINDS BEHIND EVERY BEAUTIFUL SPACE",
       intro:
@@ -214,9 +218,9 @@ function siteContentDoc() {
     footerNavigation: require("../validation/footerNavigation").DEFAULT_FOOTER_NAVIGATION,
     qualitySale: {
       indexable: false,
-      metaTitle: "Quality & After-Sales | Varsovia Design",
+      metaTitle: "Quality After Sales | Varsovia Design",
       metaDescription:
-        "Varsovia quality standards, support process, and after-sales care for kitchens and interiors.",
+        "Warranty, maintenance, and after-sales care for Varsovia kitchens and interiors — from first contact through assessment, scheduling, and resolution.",
       heroTitle: "Quality & After-Sales Support",
       heroSubtitle: "Built to last — supported long after installation",
       heroBody:
@@ -648,14 +652,48 @@ function testimonialsDocs() {
   ];
 }
 
+function locTitle(en, th, pl) {
+  return { en, th: th || en, pl: pl || en };
+}
+
 function cataloguesDocs() {
   return [
-    { title: "Classic Collection 2026", coverImage: L.catalogue1, downloadUrl: "/catalogue", order: 1 },
-    { title: "Modern Living", coverImage: L.catalogue2, downloadUrl: "/catalogue", order: 2 },
-    { title: "Explore Modern Design", coverImage: L.catalogue3, downloadUrl: "/catalogue", order: 3 },
-    { title: "Warm Neutrals", coverImage: L.catalogue4, downloadUrl: "/catalogue", order: 4 },
-    { title: "Urban Kitchens", coverImage: L.catalogue5, downloadUrl: "/catalogue", order: 5 },
-    { title: "Coastal Living", coverImage: L.catalogue3, downloadUrl: "/catalogue", order: 6 },
+    {
+      title: locTitle("Classic Collection 2026", "คอลเลกชันคลาสสิก 2026", "Kolekcja Classic 2026"),
+      coverImage: L.catalogue1,
+      downloadUrl: "/catalogue",
+      order: 1,
+    },
+    {
+      title: locTitle("Modern Living", "โมเดิร์นลิฟวิ่ง", "Nowoczesne życie"),
+      coverImage: L.catalogue2,
+      downloadUrl: "/catalogue",
+      order: 2,
+    },
+    {
+      title: locTitle("Explore Modern Design", "สำรวจดีไซน์โมเดิร์น", "Odkryj nowoczesny design"),
+      coverImage: L.catalogue3,
+      downloadUrl: "/catalogue",
+      order: 3,
+    },
+    {
+      title: locTitle("Warm Neutrals", "โทนกลางอุ่น", "Ciepłe neutrale"),
+      coverImage: L.catalogue4,
+      downloadUrl: "/catalogue",
+      order: 4,
+    },
+    {
+      title: locTitle("Urban Kitchens", "ครัวเมือง", "Kuchnie miejskie"),
+      coverImage: L.catalogue5,
+      downloadUrl: "/catalogue",
+      order: 5,
+    },
+    {
+      title: locTitle("Coastal Living", "ชีวิตชายฝั่ง", "Życie nad morzem"),
+      coverImage: L.catalogue3,
+      downloadUrl: "/catalogue",
+      order: 6,
+    },
   ];
 }
 

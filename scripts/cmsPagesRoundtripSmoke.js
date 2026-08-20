@@ -72,7 +72,7 @@ const STANDALONE = [
   { path: "/en/catalogue", keys: ["cataloguePage.heroTitle", "cataloguePage.metaTitle"], label: "Free Catalogue" },
   { path: "/en/team", keys: ["teamPage.heroTitle", "teamPage.metaTitle"], label: "Our Team" },
   { path: "/en/quality-sale", keys: ["qualitySale.heroTitle", "qualitySale.metaTitle"], label: "Quality After Sales" },
-  { path: "/en/contact", keys: ["contactPage.metaTitle"], label: "Contact" },
+  { path: "/en/contact", keys: ["contactPage.metaTitle", "contactPage.heroTitle", "contactPage.locationTitle", "contactPage.showroomsTitle", "inquiryForm.compactTitle", "inquiryForm.submitLabel"], label: "Contact" },
   { path: "/en/faq", keys: ["faqPage.heroTitle", "faqPage.metaTitle"], label: "FAQ" },
 ];
 
@@ -113,6 +113,36 @@ async function fetchHtml(path) {
     pass("GET /site cms=1");
   }
   const cmsSite = cmsRes.status === 200 ? siteFrom(cmsRes) : {};
+
+  if (KEY && cmsRes.status === 200) {
+    const { DEFAULT_FOOTER_NAVIGATION } = require("../src/validation/footerNavigation");
+    const { PAGE_CMS_DEFAULTS } = require("../src/data/pageCmsDefaults");
+    const patch = {};
+    const cmsNav = cmsSite.footerNavigation || {};
+    if (Number(cmsNav.version || 0) < 3) {
+      patch.footerNavigation = DEFAULT_FOOTER_NAVIGATION;
+    }
+    const cp = { ...(cmsSite.contactPage || {}) };
+    if (!loc(cp.heroTitle)) {
+      cp.heroTitle = PAGE_CMS_DEFAULTS.contactPage.heroTitle;
+      cp.heroSubtitle = PAGE_CMS_DEFAULTS.contactPage.heroSubtitle;
+      patch.contactPage = cp;
+    }
+    const bio = loc(cmsSite.footerBio);
+    if (!bio || /Varsovia Kitchen/i.test(bio)) {
+      patch.footerBio = {
+        en: "Transforming homes with thoughtfully designed interiors tailored to your lifestyle and vision.",
+        th: "เปลี่ยนบ้านของคุณด้วยอินทีเรียที่ออกแบบอย่างพิถีพิถันให้เข้ากับไลฟ์สไตล์และวิสัยทัศน์ของคุณ",
+        pl: "Przekształcamy domy dzięki przemyślanym wnętrzom dopasowanym do Twojego stylu życia i wizji.",
+      };
+    }
+    if (Object.keys(patch).length) {
+      await api("/site", { method: "PUT", admin: true, body: patch });
+      Object.assign(publicSite, siteFrom(await api("/site?locale=en")));
+      Object.assign(cmsSite, siteFrom(await api("/site?cms=1", { admin: true })));
+      pass("Filled missing footer/contact live fields");
+    }
+  }
 
   const about = publicSite.pages?.aboutBrand || {};
   const aboutCms = cmsSite.pages?.aboutBrand || {};
@@ -193,8 +223,133 @@ async function fetchHtml(path) {
     }
   }
 
+  console.log("\nFooter + contact fields");
+  const footerNav = publicSite.footerNavigation || {};
+  const primaryHrefs = (footerNav.linkColumns || [])
+    .find((col) => col.id === "primary")
+    ?.links?.map((l) => l.href) || [];
+  const productHrefs = (footerNav.linkColumns || [])
+    .find((col) => col.id === "products")
+    ?.links?.map((l) => l.href) || [];
+  const expectedPrimary = ["/journal", "/about", "/contact", "/faq", "/catalogue"];
+  const expectedProducts = [
+    "/interior-design?category=Kitchen",
+    "/interior-design?category=Bedroom",
+    "/interior-design?category=Bathroom",
+    "/furniture",
+    "/interior-design?category=Door%20%26%20Windows",
+    "/interior-design?category=Whole%20House%20Solutions",
+  ];
+  if (JSON.stringify(primaryHrefs) === JSON.stringify(expectedPrimary)) {
+    pass("Footer primary links 1:1");
+  } else {
+    fail("Footer primary links 1:1", primaryHrefs.join(", "));
+  }
+  if (JSON.stringify(productHrefs) === JSON.stringify(expectedProducts)) {
+    pass("Footer product links 1:1");
+  } else {
+    fail("Footer product links 1:1", productHrefs.join(", "));
+  }
+  for (const key of [
+    "footerBio",
+    "email",
+    "contactPhone",
+    "footerNavigation.contactHeading",
+    "footerOffices.0.address",
+    "inquiryForm.compactTitle",
+    "inquiryForm.submitLabel",
+    "inquiryForm.fields.0.label",
+    "contactPage.heroTitle",
+    "contactPage.locationTitle",
+    "contactPage.showroomsTitle",
+  ]) {
+    const value = loc(getPath(publicSite, key));
+    if (value) pass(`Field ${key}`, value.length > 70 ? `${value.slice(0, 67)}…` : value);
+    else fail(`Field ${key}`, "empty");
+  }
+
+  async function writeRoundTrip(name, patchFn, path, pick) {
+    if (!KEY) {
+      fail(`${name} write round-trip`, "no ADMIN_KEY");
+      return;
+    }
+    const beforeRes = await api("/site?cms=1", { admin: true });
+    const before = siteFrom(beforeRes);
+    const marker = `QA-RT-${Date.now()}`;
+    const putRes = await api("/site", {
+      method: "PUT",
+      admin: true,
+      body: patchFn(before, marker, false),
+    });
+    if (putRes.status >= 400) {
+      fail(`${name} write`, `HTTP ${putRes.status}`);
+      return;
+    }
+    await new Promise((r) => setTimeout(r, 1200));
+    const afterSite = siteFrom(await api("/site?locale=en"));
+    const apiVal = loc(pick(afterSite));
+    if (apiVal.includes(marker)) pass(`${name} API read`, marker);
+    else fail(`${name} API read`, apiVal.slice(0, 40));
+    try {
+      const page = await fetchHtml(path);
+      if (page.status === 200 && page.html.includes(marker)) pass(`${name} live HTML`, path);
+      else fail(`${name} live HTML`, `HTTP ${page.status}`);
+    } catch (err) {
+      fail(`${name} live HTML`, err.message);
+    }
+    await api("/site", {
+      method: "PUT",
+      admin: true,
+      body: patchFn(before, marker, true),
+    });
+    pass(`${name} reverted`);
+  }
+
+  const locEn = (value, marker) =>
+    value && typeof value === "object"
+      ? { ...value, en: marker }
+      : { en: marker, th: "", pl: "" };
+
+  await writeRoundTrip(
+    "footer contactHeading",
+    (before, marker, revert) => {
+      const nav = before.footerNavigation || {};
+      if (revert) return { footerNavigation: nav };
+      return {
+        footerNavigation: { ...nav, contactHeading: locEn(nav.contactHeading, marker) },
+      };
+    },
+    "/en",
+    (s) => s.footerNavigation?.contactHeading,
+  );
+
+  await writeRoundTrip(
+    "contact locationTitle",
+    (before, marker, revert) => {
+      const cp = before.contactPage || {};
+      if (revert) return { contactPage: cp };
+      return { contactPage: { ...cp, locationTitle: locEn(cp.locationTitle, marker) } };
+    },
+    "/en/contact",
+    (s) => s.contactPage?.locationTitle,
+  );
+
+  await writeRoundTrip(
+    "inquiry name label",
+    (before, marker, revert) => {
+      const form = before.inquiryForm || {};
+      if (revert) return { inquiryForm: form };
+      const fields = Array.isArray(form.fields) ? form.fields.map((row) => ({ ...row })) : [];
+      if (fields[0]) fields[0] = { ...fields[0], label: locEn(fields[0].label, marker) };
+      return { inquiryForm: { ...form, fields } };
+    },
+    "/en/contact",
+    (s) => s.inquiryForm?.fields?.[0]?.label,
+  );
+
   const failed = results.filter((r) => !r.ok);
   const passed = results.filter((r) => r.ok);
+
   console.log(`\n${passed.length} passed · ${failed.length} failed · ${results.length} checks`);
   process.exit(failed.length ? 1 : 0);
 })().catch((err) => {

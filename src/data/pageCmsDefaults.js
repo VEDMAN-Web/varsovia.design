@@ -125,36 +125,78 @@ const PAGE_CMS_DEFAULTS = {
   },
   faqPage: {
     indexable: false,
-    metaTitle: L("FAQ | Varsovia Design"),
-    metaDescription: L(
-      "Answers to common questions about Varsovia kitchens, interiors, materials, and project process.",
+    metaTitle: L(
+      "FAQ | Varsovia Design",
+      "คำถามที่พบบ่อย | Varsovia Design",
+      "FAQ | Varsovia Design",
     ),
-    heroTitle: L("FAQ"),
-    heroSubtitle: L("Clear answers to help you make informed design decisions"),
+    metaDescription: L(
+      "Answers to common questions on Varsovia kitchens, interiors, materials, timelines, and after-sales — from planning through installation.",
+      "คำตอบคำถามที่พบบ่อยเรื่องครัว อินทีเรีย วัสดุ ไทม์ไลน์ และบริการหลังการขายของ Varsovia — ตั้งแต่วางแผนถึงติดตั้ง",
+      "Odpowiedzi na częste pytania o kuchnie, wnętrza, materiały, terminy i serwis Varsovia — od planowania po montaż.",
+    ),
+    heroTitle: L("FAQ", "คำถามที่พบบ่อย", "FAQ"),
+    heroSubtitle: L(
+      "Clear answers to help you make informed design decisions",
+      "คำตอบที่ชัดเจนเพื่อช่วยคุณตัดสินใจด้านการออกแบบอย่างมีข้อมูล",
+      "Jasne odpowiedzi, które pomogą Ci podjąć świadome decyzje projektowe",
+    ),
   },
   cataloguePage: {
     indexable: false,
-    metaTitle: L("Free Catalogue | Varsovia Design"),
-    metaDescription: L(
-      "Download Varsovia Design catalogues for kitchen and interior inspiration.",
+    metaTitle: L(
+      "Free Catalogue | Varsovia Design",
+      "แคตตาล็อกฟรี | Varsovia Design",
+      "Darmowy katalog | Varsovia Design",
     ),
-    heroTitle: L("Free Catalogue"),
-    heroSubtitle: L("Explore Our Interior Design Catalogue"),
+    metaDescription: L(
+      "Download Varsovia Design catalogues for kitchen and interior inspiration — layouts, finishes, and collections for homes across Thailand.",
+      "ดาวน์โหลดแคตตาล็อก Varsovia Design สำหรับแรงบันดาลใจครัวและอินทีเรีย — เลย์เอาต์ ผิวงาน และคอลเลกชันสำหรับบ้านทั่วไทย",
+      "Pobierz katalogi Varsovia Design z inspiracjami kuchennymi i wnętrzarskimi — układy, wykończenia i kolekcje dla domów w Tajlandii.",
+    ),
+    heroTitle: L("Free Catalogue", "แคตตาล็อกฟรี", "Darmowy katalog"),
+    heroSubtitle: L(
+      "Explore Our Interior Design Catalogue",
+      "สำรวจแคตตาล็อกออกแบบอินทีเรียของเรา",
+      "Odkryj nasz katalog projektowania wnętrz",
+    ),
   },
   contactPage: {
     indexable: false,
-    metaTitle: L("Contact Us | Varsovia Design"),
-    metaDescription: L(
-      "Get in touch with Varsovia Design for a free consultation on modular kitchens and interiors.",
+    metaTitle: L(
+      "Contact Us | Varsovia Design",
+      "ติดต่อเรา | Varsovia Design",
+      "Kontakt | Varsovia Design",
     ),
-    locationTitle: L("Our Location"),
-    locationSubtitle: L("Visit our showroom or reach us online — we are here to help"),
+    metaDescription: L(
+      "Visit Varsovia Design in Koh Samui, Phuket, and Pattaya — book a free consultation for modular kitchens and complete interiors.",
+      "เยี่ยม Varsovia Design ที่เกาะสมุย ภูเก็ต และพัทยา — นัดปรึกษาฟรีสำหรับครัวโมดูลาร์และอินทีเรียครบวงจร",
+      "Odwiedź Varsovia Design w Koh Samui, Phuket i Pattayi — umów bezpłatną konsultację kuchni modułowych i wnętrz.",
+    ),
+    heroTitle: L("Get In Touch", "ติดต่อเรา", "Skontaktuj się"),
+    heroSubtitle: L(
+      "Let's create something beautiful together",
+      "มาออกแบบสิ่งสวยงามร่วมกัน",
+      "Zaprojektujmy razem coś pięknego",
+    ),
+    locationTitle: L("Our Location", "ที่ตั้งของเรา", "Nasza lokalizacja"),
+    locationSubtitle: L(
+      "Visit our showroom or reach us online — we are here to help",
+      "เยี่ยมชมโชว์รูมหรือติดต่อเราออนไลน์ — เรายินดีช่วยเหลือ",
+      "Odwiedź salon lub skontaktuj się online — jesteśmy tu, by pomóc",
+    ),
     mapEmbedUrl:
-      "https://maps.google.com/maps?q=9.56218,100.01582&hl=en&z=16&output=embed",
-    mapAriaLabel: L("Varsovia Design office location map"),
-    showroomsTitle: L("Visit a showroom"),
+      "https://maps.google.com/maps?q=loc:9.56218,100.01582&ll=9.56218,100.01582&z=16&hl=en&output=embed",
+    mapAriaLabel: L(
+      "Varsovia Design office location map",
+      "แผนที่สำนักงาน Varsovia Design",
+      "Mapa biura Varsovia Design",
+    ),
+    showroomsTitle: L("Visit a showroom", "เยี่ยมชมโชว์รูม", "Odwiedź salon"),
     showroomsSubtitle: L(
       "Experience materials, layouts, and finishes in person at our locations.",
+      "สัมผัสวัสดุ เลย์เอาต์ และผิวงานด้วยตัวเองที่สาขาของเรา",
+      "Zobacz materiały, układy i wykończenia na żywo w naszych lokalizacjach.",
     ),
   },
   legalPages: {
