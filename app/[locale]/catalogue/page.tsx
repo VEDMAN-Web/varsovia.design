@@ -25,10 +25,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .map((row) => String((row as { coverImage?: string }).coverImage || "").trim())
     .find(Boolean);
   return pageMetadata({
-    title: pickLocalized(cp.metaTitle, locale as Locale) || "Free Catalogue",
+    title: pickLocalized(cp.metaTitle, locale as Locale) || "Free Catalogue | Varsovia Design",
     description:
       pickLocalized(cp.metaDescription, locale as Locale) ||
-      "Download Varsovia kitchen and interior catalogues — layouts, finishes, and collections for homes in Thailand.",
+      "Download Varsovia Design catalogues for kitchen and interior inspiration — layouts, finishes, and collections for homes across Thailand.",
     path: `/${locale}/catalogue`,
     locale,
     indexable: cp.indexable === true,

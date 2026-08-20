@@ -17,10 +17,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const site = await fetchSite(locale as Locale);
   const tp = site.teamPage || {};
   return pageMetadata({
-    title: pickLocalized(tp.metaTitle, locale as Locale) || "Our Team",
+    title: pickLocalized(tp.metaTitle, locale as Locale) || "Our Team | Varsovia Design",
     description:
       pickLocalized(tp.metaDescription, locale as Locale) ||
-      "Meet the designers, architects, and craftspeople behind Varsovia Design.",
+      "Meet the designers, architects, and craftspeople behind Varsovia Design — Italian design collaboration and technical teams for homes across Thailand.",
     path: `/${locale}/team`,
     locale,
     indexable: tp.indexable === true,

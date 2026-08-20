@@ -101,6 +101,7 @@ export function getFooterNavigationForUi(
       "/faq": tNav("faq"),
       "/catalogue": t("catalogue"),
       "/furniture": tCat("furniture"),
+      "/interior-design?category=Furniture": tCat("furniture"),
       "/interior-design?category=Kitchen": tCat("kitchen"),
       "/interior-design?category=Bedroom": tCat("bedroom"),
       "/interior-design?category=Bathroom": tCat("bathroom"),

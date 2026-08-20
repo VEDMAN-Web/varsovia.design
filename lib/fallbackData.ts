@@ -191,7 +191,7 @@ export const fallbackHomeData = {
   projects: [...seedInteriorProjects],
   catalogues: [
     { _id: "1", title: "Classic Collection 2026", coverImage: MEDIA.catalogues[0], downloadUrl: "" },
-    { _id: "2", title: "Modern Living 2026", coverImage: MEDIA.catalogues[1], downloadUrl: "" },
+    { _id: "2", title: "Modern Living", coverImage: MEDIA.catalogues[1], downloadUrl: "" },
     { _id: "3", title: "Explore Modern Design", coverImage: MEDIA.catalogues[2], downloadUrl: "" },
     { _id: "4", title: "Warm Neutrals", coverImage: MEDIA.catalogues[3], downloadUrl: "" },
     { _id: "5", title: "Urban Kitchens", coverImage: MEDIA.catalogues[4], downloadUrl: "" },

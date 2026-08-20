@@ -1,4 +1,4 @@
-import { DEFAULT_IA_PAGES, IA_HUB_PATHS } from "./iaPagesDefaults";
+import { DEFAULT_IA_PAGES, IA_HUB_PATHS, iaPagesForLocale } from "./iaPagesDefaults";
 import { pickLocalized } from "./i18n/pickLocalized";
 import type { Locale } from "./i18n/routing";
 
@@ -248,8 +248,9 @@ export function getIaPages(
       ? (site.pages as Record<string, IaHubPage>)
       : {};
   const out: Record<string, IaHubPage> = {};
-  for (const key of Object.keys(DEFAULT_IA_PAGES) as IaHubKey[]) {
-    const def = DEFAULT_IA_PAGES[key] as unknown as IaHubPage;
+  const defaults = iaPagesForLocale(loc);
+  for (const key of Object.keys(defaults) as IaHubKey[]) {
+    const def = defaults[key] as unknown as IaHubPage;
     const saved = raw[key];
     if (!saved || typeof saved !== "object") {
       out[key] = {

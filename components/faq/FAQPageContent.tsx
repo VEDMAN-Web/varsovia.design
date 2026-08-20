@@ -111,10 +111,11 @@ type MobileNestedFaqProps = {
   topicLabels: Record<FaqTopic, string>;
   dbFaqs: Array<{ category?: string; question?: string; answer?: string; _raw?: ApiFaqRow }>;
   locale: Locale;
+  preferCms: boolean;
 };
 
 /** Mobile / tablet — topic › questions › answers nested accordion */
-function MobileNestedFaq({ topicLabels, dbFaqs, locale }: MobileNestedFaqProps) {
+function MobileNestedFaq({ topicLabels, dbFaqs, locale, preferCms }: MobileNestedFaqProps) {
   const defaultTopic = FAQ_TOPICS[0];
   const [expandedTopic, setExpandedTopic] = useState<FaqTopic | null>(defaultTopic);
   const [openQuestion, setOpenQuestion] = useState<{ topic: FaqTopic; index: number } | null>(
@@ -141,7 +142,7 @@ function MobileNestedFaq({ topicLabels, dbFaqs, locale }: MobileNestedFaqProps) 
     <div className="space-y-2">
       {FAQ_TOPICS.map((topic) => {
         const isTopicOpen = expandedTopic === topic;
-        const faqs = resolveFaqsForTopic(topic, dbFaqs, locale);
+        const faqs = resolveFaqsForTopic(topic, dbFaqs, locale, { preferCms });
 
         return (
           <div
@@ -262,15 +263,24 @@ export default function FAQPageContent() {
   const [dbFaqs, setDbFaqs] = useState<
     Array<{ category?: string; question?: string; answer?: string; _raw?: ApiFaqRow }>
   >([]);
+  const [preferCms, setPreferCms] = useState(true);
 
   useEffect(() => {
-    fetchFAQs(locale as Locale).then((data) => {
-      if (Array.isArray(data) && data.length > 0) {
-        setDbFaqs(normalizeFaqsFromApi(data, locale as Locale));
-      } else {
+    let cancelled = false;
+    fetchFAQs(locale as Locale)
+      .then((data) => {
+        if (cancelled) return;
+        setPreferCms(true);
+        setDbFaqs(normalizeFaqsFromApi(Array.isArray(data) ? data : [], locale as Locale));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setPreferCms(false);
         setDbFaqs([]);
-      }
-    });
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [locale]);
 
   function handleTopicChange(topic: FaqTopic) {
@@ -282,7 +292,7 @@ export default function FAQPageContent() {
     setOpenIndex((prev) => (prev === index ? -1 : index));
   }
 
-  const currentFAQs = resolveFaqsForTopic(activeTopic, dbFaqs, locale as Locale);
+  const currentFAQs = resolveFaqsForTopic(activeTopic, dbFaqs, locale as Locale, { preferCms });
 
   return (
     <div className={COMPANY_PAGE_BG}>
@@ -299,7 +309,12 @@ export default function FAQPageContent() {
         {/* Mobile / tablet — nested topic › question › answer */}
         <FadeInView className="lg:hidden">
           <h2 className={`${FAQ_COLUMN_TITLE} mb-3`}>{tCommon("questionsAndAnswers")}</h2>
-          <MobileNestedFaq topicLabels={topicLabels} dbFaqs={dbFaqs} locale={locale as Locale} />
+          <MobileNestedFaq
+            topicLabels={topicLabels}
+            dbFaqs={dbFaqs}
+            locale={locale as Locale}
+            preferCms={preferCms}
+          />
         </FadeInView>
 
         {/* Desktop — two-column Figma layout */}

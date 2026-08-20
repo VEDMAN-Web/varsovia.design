@@ -431,37 +431,61 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
         ?.aboutDescription,
     }, locale),
     faqPage: (() => {
-      const m = getAppMessages(getLocaleOrDefault(locale));
+      const loc = getLocaleOrDefault(locale);
+      const m = getAppMessages(loc);
+      const defaults = ((pageCmsDefaults as Record<string, unknown>).faqPage || {}) as Record<
+        string,
+        unknown
+      >;
+      const pickDef = (key: string, fallback = "") =>
+        pickLocalized(defaults[key], loc) || fallback;
       return mergeSimplePageBlock(
         data.faqPage,
         {
-          heroTitle: m.faq?.heroTitle,
-          heroSubtitle: m.faq?.heroSubtitle,
-          metaTitle: m.faq?.heroTitle,
-          metaDescription: m.faq?.heroSubtitle,
+          heroTitle: pickDef("heroTitle", m.faq?.heroTitle || "FAQ"),
+          heroSubtitle: pickDef(
+            "heroSubtitle",
+            m.faq?.heroSubtitle || "Clear answers to help you make informed design decisions",
+          ),
+          metaTitle: pickDef("metaTitle", "FAQ | Varsovia Design"),
+          metaDescription: pickDef(
+            "metaDescription",
+            "Answers to common questions on Varsovia kitchens, interiors, materials, timelines, and after-sales — from planning through installation.",
+          ),
         },
         locale,
         ["heroTitle", "heroSubtitle"],
       );
     })(),
     cataloguePage: (() => {
-      const m = getAppMessages(getLocaleOrDefault(locale));
+      const loc = getLocaleOrDefault(locale);
+      const m = getAppMessages(loc);
       const cp = m.cataloguePage as { heroTitle?: string; heroSubtitle?: string } | undefined;
-      const pm = m.pageMeta as { catalogueTitle?: string; catalogueDescription?: string } | undefined;
+      const defaults = ((pageCmsDefaults as Record<string, unknown>).cataloguePage || {}) as Record<
+        string,
+        unknown
+      >;
+      const pickDef = (key: string, fallback = "") =>
+        pickLocalized(defaults[key], loc) || fallback;
       return mergeSimplePageBlock(
         data.cataloguePage,
         {
-          heroTitle: cp?.heroTitle || pm?.catalogueTitle,
-          heroSubtitle: cp?.heroSubtitle || pm?.catalogueDescription,
-          metaTitle: pm?.catalogueTitle || cp?.heroTitle,
-          metaDescription: pm?.catalogueDescription || cp?.heroSubtitle,
+          heroTitle: pickDef("heroTitle", cp?.heroTitle || "Free Catalogue"),
+          heroSubtitle: pickDef(
+            "heroSubtitle",
+            cp?.heroSubtitle || "Explore Our Interior Design Catalogue",
+          ),
+          metaTitle: pickDef("metaTitle", "Free Catalogue | Varsovia Design"),
+          metaDescription: pickDef(
+            "metaDescription",
+            "Download Varsovia Design catalogues for kitchen and interior inspiration — layouts, finishes, and collections for homes across Thailand.",
+          ),
         },
         locale,
         ["heroTitle", "heroSubtitle"],
       );
     })(),
     contactPage: (() => {
-      const m = getAppMessages(getLocaleOrDefault(locale));
       const loc = getLocaleOrDefault(locale);
       const contactFb = {
         en: {
@@ -486,16 +510,24 @@ async function mergeSiteFallback(data: Record<string, unknown>, locale?: Locale)
           mapAriaLabel: "Mapa biura Varsovia Design",
         },
       }[loc];
-      const pm = m.pageMeta as { contactTitle?: string; contactDescription?: string } | undefined;
+      const defaults = ((pageCmsDefaults as Record<string, unknown>).contactPage || {}) as Record<
+        string,
+        unknown
+      >;
+      const pickDef = (key: string, fallback = "") =>
+        pickLocalized(defaults[key], loc) || fallback;
       return mergeSimplePageBlock(
         data.contactPage,
         {
           ...contactFb,
-          metaTitle: pm?.contactTitle || contactFb.locationTitle,
-          metaDescription: pm?.contactDescription || contactFb.locationSubtitle,
-          mapEmbedUrl:
-            ((pageCmsDefaults as Record<string, unknown>).contactPage as Record<string, unknown>)
-              ?.mapEmbedUrl || "",
+          heroTitle: pickDef("heroTitle", "Get In Touch"),
+          heroSubtitle: pickDef("heroSubtitle", "Let's create something beautiful together"),
+          metaTitle: pickDef("metaTitle", "Contact Us | Varsovia Design"),
+          metaDescription: pickDef(
+            "metaDescription",
+            "Visit Varsovia Design in Koh Samui, Phuket, and Pattaya — book a free consultation for modular kitchens and complete interiors.",
+          ),
+          mapEmbedUrl: defaults.mapEmbedUrl || "",
         },
         locale,
         [
@@ -807,11 +839,7 @@ export async function fetchTeamMembers(locale?: Locale): Promise<Record<string, 
 }
 
 export async function fetchFAQs(locale?: Locale): Promise<Record<string, unknown>[]> {
-  try {
-    return onlyVisibleRows(await fetchAllListItems("/faqs", locale, { next: { revalidate: 10 } }));
-  } catch {
-    return [];
-  }
+  return onlyVisibleRows(await fetchAllListItems("/faqs", locale, { cache: "no-store" }));
 }
 
 function cmsImageList(raw: unknown, cover?: string): string[] {

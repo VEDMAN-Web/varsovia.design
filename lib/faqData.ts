@@ -163,20 +163,19 @@ export function resolveFaqsForTopic(
   topic: FaqTopic,
   apiFaqs: Array<{ category?: string; question?: string; answer?: string; _raw?: ApiFaqRow }>,
   locale: Locale = "en",
+  options?: { preferCms?: boolean },
 ): FaqItem[] {
+  const preferCms = options?.preferCms === true;
   const localizedStatic = getFaqDataForLocale(locale)[topic] ?? [];
-  const topicNorm = topic.trim().toLowerCase();
 
   const apiForTopic = apiFaqs.filter((f) => {
-    const cat = String(f.category || "").trim().toLowerCase();
-    if (!cat || !f.question || !f.answer) return false;
-    return (
-      cat === topicNorm ||
-      cat.includes(topicNorm) ||
-      topicNorm.includes(cat) ||
-      cat.replace(/\s+/g, "") === topicNorm.replace(/\s+/g, "")
-    );
+    if (!f.question || !f.answer) return false;
+    return faqRowCategoryKeys(f).some((cat) => canonicalFaqTopic(cat) === topic);
   });
+
+  if (preferCms) {
+    return apiForTopic.map((f) => ({ question: f.question!, answer: f.answer! }));
+  }
 
   if (locale !== "en" && localizedStatic.length > 0) {
     const apiHasLocaleFields = apiForTopic.some(
@@ -197,15 +196,86 @@ export function resolveFaqsForTopic(
   return localizedStatic.length > 0 ? localizedStatic : FAQ_DATA[topic] || [];
 }
 
+const FAQ_TOPIC_CANON: Record<string, FaqTopic> = {
+  kitchen: "Kitchen Interior",
+  "kitchen interior": "Kitchen Interior",
+  "อินทีเรียครัว": "Kitchen Interior",
+  "wnętrze kuchni": "Kitchen Interior",
+  bedroom: "Bedroom Interior",
+  "bedroom interior": "Bedroom Interior",
+  "อินทีเรียห้องนอน": "Bedroom Interior",
+  "wnętrze sypialni": "Bedroom Interior",
+  "living room": "Living Room",
+  "ห้องนั่งเล่น": "Living Room",
+  salon: "Living Room",
+  bathroom: "Bathroom Interior",
+  "bathroom interior": "Bathroom Interior",
+  "อินทีเรียห้องน้ำ": "Bathroom Interior",
+  "wnętrze łazienki": "Bathroom Interior",
+  "doors & windows": "Doors & Windows",
+  "door & windows": "Doors & Windows",
+  "ประตูและหน้าต่าง": "Doors & Windows",
+  "drzwi i okna": "Doors & Windows",
+  furniture: "Furniture",
+  "เฟอร์นิเจอร์": "Furniture",
+  meble: "Furniture",
+  "whole home": "Whole Home",
+  "whole house": "Whole Home",
+  ทั้งบ้าน: "Whole Home",
+  "cały dom": "Whole Home",
+};
+
+function canonicalFaqTopic(raw: unknown): FaqTopic | null {
+  const cat = String(raw || "").trim().toLowerCase();
+  if (!cat) return null;
+  if (FAQ_TOPICS.includes(cat as FaqTopic)) return cat as FaqTopic;
+  if (FAQ_TOPIC_CANON[cat]) return FAQ_TOPIC_CANON[cat];
+  for (const topic of FAQ_TOPICS) {
+    if (categoryMatchesTopic(cat, topic.toLowerCase())) return topic;
+  }
+  for (const [alias, topic] of Object.entries(FAQ_TOPIC_CANON)) {
+    if (categoryMatchesTopic(cat, alias)) return topic;
+  }
+  return null;
+}
+
+function faqRowCategoryKeys(
+  f: { category?: string; _raw?: ApiFaqRow },
+): string[] {
+  const keys = new Set<string>();
+  const add = (value: unknown) => {
+    const s = String(value || "").trim().toLowerCase();
+    if (s) keys.add(s);
+  };
+  add(f.category);
+  if (f._raw) {
+    add(pickLocalized(f._raw.category, "en"));
+    add(pickLocalized(f._raw.category, "th"));
+    add(pickLocalized(f._raw.category, "pl"));
+  }
+  return [...keys];
+}
+
+function categoryMatchesTopic(cat: string, topicNorm: string): boolean {
+  if (!cat) return false;
+  return (
+    cat === topicNorm ||
+    cat.includes(topicNorm) ||
+    topicNorm.includes(cat) ||
+    cat.replace(/\s+/g, "") === topicNorm.replace(/\s+/g, "")
+  );
+}
+
 /** Flatten Q&A across topics for FAQPage JSON-LD. */
 export function collectFaqEntities(
   apiFaqs: Array<{ category?: string; question?: string; answer?: string; _raw?: ApiFaqRow }>,
   locale: Locale = "en",
+  options?: { preferCms?: boolean },
 ): FaqItem[] {
   const seen = new Set<string>();
   const out: FaqItem[] = [];
   for (const topic of FAQ_TOPICS) {
-    for (const item of resolveFaqsForTopic(topic, apiFaqs, locale)) {
+    for (const item of resolveFaqsForTopic(topic, apiFaqs, locale, options)) {
       const key = item.question.trim().toLowerCase();
       if (!key || seen.has(key)) continue;
       seen.add(key);

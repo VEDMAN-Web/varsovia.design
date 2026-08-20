@@ -66,7 +66,7 @@
   },
   "cataloguePage": {
     "heroTitle": "Free Catalogue",
-    "heroSubtitle": "Browse our latest design collections",
+    "heroSubtitle": "Explore Our Interior Design Catalogue",
     "exploreKitchen": "EXPLORE KITCHEN DESIGN",
     "downloadCatalogue": "Download catalogue"
   },
@@ -177,16 +177,21 @@
     "aboutDescription": "Learn about Varsovia Design — our vision, mission, and approach to premium interiors.",
     "contactTitle": "Contact",
     "contactDescription": "Get in touch for a free consultation on your interior project.",
-    "catalogueTitle": "Free Catalogue",
-    "catalogueDescription": "Download Varsovia design catalogues and kitchen inspiration.",
+    "catalogueTitle": "Free Catalogue | Varsovia Design",
+    "catalogueDescription": "Download Varsovia Design catalogues for kitchen and interior inspiration — layouts, finishes, and collections for homes across Thailand.",
     "showcaseTitle": "Showcase",
     "showcaseDescription": "Explore residential and commercial interior projects by Varsovia Design.",
     "interiorTitle": "Interior",
     "interiorDescription": "Browse kitchen, bedroom, bathroom, and whole-home interior designs."
   },
   "contactPage": {
-    "heroTitle": "Contact Us",
-    "heroSubtitle": "Let's design something beautiful together"
+    "heroTitle": "Get In Touch",
+    "heroSubtitle": "Let's create something beautiful together",
+    "locationTitle": "Our Location",
+    "locationSubtitle": "Visit our showroom or reach us online — we are here to help",
+    "mapAriaLabel": "Varsovia Design office location map",
+    "showroomsTitle": "Visit a showroom",
+    "showroomsSubtitle": "Experience materials, layouts, and finishes in person at our locations."
   },
   "siteFallback": {
     "aboutText": "Varsovia started in a rented one-room studio in Warsaw's Praga district, with a simple belief: a beautiful room only earns that word once someone has lived in it for a year and still loves it. We still work that way — measuring twice, drawing by hand before we draw on screen, and choosing materials that age instead of wear out.\n\nEvery project starts with how you move through a space, not how it will photograph. The result is interiors that feel inevitable, as if they couldn't have been arranged any other way.",

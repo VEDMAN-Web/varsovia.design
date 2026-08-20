@@ -26,7 +26,7 @@ import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 
 const FALLBACK_CATALOGUES = [
   { id: "1", image: MEDIA.catalogues[0], title: "Classic Collection 2026", downloadUrl: "" },
-  { id: "2", image: MEDIA.catalogues[1], title: "Modern Living 2026", downloadUrl: "" },
+  { id: "2", image: MEDIA.catalogues[1], title: "Modern Living", downloadUrl: "" },
   { id: "3", image: MEDIA.catalogues[2], title: "Explore Modern Design", downloadUrl: "" },
   { id: "4", image: MEDIA.catalogues[3], title: "Warm Neutrals", downloadUrl: "" },
   { id: "5", image: MEDIA.catalogues[4], title: "Urban Kitchens", downloadUrl: "" },

@@ -24,7 +24,7 @@
     "ourBlog": "Journal",
     "qualityAfterSales": "Quality After Sales",
     "contact": "Contact",
-    "getInTouch": "Get in Touch",
+    "getInTouch": "Get In Touch",
     "faq": "FAQ",
     "freeConsultation": "Free Consultation",
     "searchPlaceholder": "Search...",
@@ -215,8 +215,8 @@
       "messageMax": "Message cannot exceed 2000 characters."
     },
     "ourLocationTitle": "Our Location",
-    "ourLocationSubtitle": "Conveniently located to serve your interior design needs",
-    "mapAriaLabel": "Map showing Varsovia Design office location",
+    "ourLocationSubtitle": "Visit our showroom or reach us online — we are here to help",
+    "mapAriaLabel": "Varsovia Design office location map",
     "openInMaps": "Open in Google Maps"
   },
   "blogListing": {

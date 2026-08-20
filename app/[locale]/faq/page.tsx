@@ -24,11 +24,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const site = await fetchSite(locale as Locale);
   const fp = site.faqPage || {};
   return pageMetadata({
-    title: pickLocalized(fp.metaTitle, locale as Locale) || "FAQ",
+    title: pickLocalized(fp.metaTitle, locale as Locale) || "FAQ | Varsovia Design",
     description:
       pickLocalized(fp.metaDescription, locale as Locale) ||
       pickLocalized(fp.heroSubtitle, locale as Locale) ||
-      "Answers on Varsovia kitchens, interiors, materials, timelines, and after-sales.",
+      "Answers to common questions on Varsovia kitchens, interiors, materials, timelines, and after-sales — from planning through installation.",
     path: `/${locale}/faq`,
     locale,
     indexable: fp.indexable === true,
@@ -38,9 +38,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function FAQPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [site, rows] = await Promise.all([
+  const [site, faqRows] = await Promise.all([
     fetchSite(locale as Locale),
-    fetchFAQs(locale as Locale).catch(() => []),
+    fetchFAQs(locale as Locale)
+      .then((rows) => ({ ok: true as const, rows }))
+      .catch(() => ({ ok: false as const, rows: [] as Record<string, unknown>[] })),
   ]);
   const fp = site.faqPage || {};
   const title = pickLocalized(fp.heroTitle, locale as Locale) || "FAQ";
@@ -49,8 +51,9 @@ export default async function FAQPage({ params }: Props) {
     pickLocalized(fp.heroSubtitle, locale as Locale) ||
     "";
   const entities = collectFaqEntities(
-    normalizeFaqsFromApi(rows, locale as Locale),
+    normalizeFaqsFromApi(faqRows.rows, locale as Locale),
     locale as Locale,
+    { preferCms: faqRows.ok },
   );
   const jsonLd = {
     "@context": "https://schema.org",

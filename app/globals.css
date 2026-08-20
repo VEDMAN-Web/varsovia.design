@@ -398,3 +398,51 @@ html.intro-pending [data-nextjs-dev-tools-button],
 html.intro-pending [data-next-badge-root] {
   display: none !important;
 }
+
+/* Contact map — English labels + visible +/- zoom */
+.contact-location-map.maplibregl-map {
+  font: inherit;
+  width: 100%;
+}
+
+.contact-location-map .maplibregl-canvas,
+.contact-location-map .maplibregl-canvas-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.contact-location-map .varsovia-office-marker {
+  background: transparent;
+  border: none;
+  pointer-events: none;
+}
+
+.contact-location-map .maplibregl-ctrl-top-right {
+  top: 8px;
+  right: 8px;
+}
+
+.contact-location-map .maplibregl-ctrl-group {
+  overflow: hidden;
+  border: 0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(42, 26, 30, 0.18);
+}
+
+.contact-location-map .maplibregl-ctrl-group button {
+  width: 36px !important;
+  height: 36px !important;
+  background: #fff !important;
+}
+
+.contact-location-map .maplibregl-ctrl-group button + button {
+  border-top: 1px solid #eadfd8;
+}
+
+.contact-location-map .maplibregl-ctrl-group button:hover {
+  background: #faf4f4 !important;
+}
+
+.contact-location-map .maplibregl-ctrl-attrib {
+  font-size: 10px;
+}

@@ -24,10 +24,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ? site.contactImages[0]
       : undefined;
   return pageMetadata({
-    title: pickLocalized(cp.metaTitle, locale as Locale) || "Contact Us",
+    title: pickLocalized(cp.metaTitle, locale as Locale) || "Contact Us | Varsovia Design",
     description:
       pickLocalized(cp.metaDescription, locale as Locale) ||
-      "Get in touch with Varsovia Design for a free consultation on modular kitchens and interiors.",
+      "Visit Varsovia Design in Koh Samui, Phuket, and Pattaya — book a free consultation for modular kitchens and complete interiors.",
     path: `/${locale}/contact`,
     locale,
     indexable: cp.indexable === true,

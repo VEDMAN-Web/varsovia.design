@@ -18,10 +18,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const qs = (site.qualitySale || {}) as Record<string, unknown>;
   return pageMetadata({
     title:
-      pickLocalized(qs.metaTitle, locale as Locale) || "Quality After Sales",
+      pickLocalized(qs.metaTitle, locale as Locale) || "Quality After Sales | Varsovia Design",
     description:
       pickLocalized(qs.metaDescription, locale as Locale) ||
-      "Varsovia quality standards, support process, and after-sales care for kitchens and interiors.",
+      "Warranty, maintenance, and after-sales care for Varsovia kitchens and interiors — from first contact through assessment, scheduling, and resolution.",
     path: `/${locale}/quality-sale`,
     locale,
     indexable: qs.indexable === true,

@@ -56,6 +56,10 @@ export function buildLocalizedSiteFallback(locale?: string): SiteContent {
       architectBody: m.teamPage.architectBody,
       toolsTitle: m.teamPage.toolsTitle,
       toolsBody: m.teamPage.toolsBody,
+      metaTitle: "Our Team | Varsovia Design",
+      metaDescription:
+        "Meet the designers, architects, and craftspeople behind Varsovia Design — Italian design collaboration and technical teams for homes across Thailand.",
+      indexable: false,
       stats: [
         { value: m.teamPage.statProjectsValue, label: m.teamPage.statProjectsLabel },
         { value: m.teamPage.statYearsValue, label: m.teamPage.statYearsLabel },
@@ -63,6 +67,9 @@ export function buildLocalizedSiteFallback(locale?: string): SiteContent {
     },
     localeFlags: { ...D.localeFlags },
     qualitySale: {
+      metaTitle: "Quality After Sales | Varsovia Design",
+      metaDescription:
+        "Warranty, maintenance, and after-sales care for Varsovia kitchens and interiors — from first contact through assessment, scheduling, and resolution.",
       support1Image: D.qualitySupportImages[0],
       support2Image: D.qualitySupportImages[1],
       support3Image: D.qualitySupportImages[2],

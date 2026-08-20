@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { motion, useInView } from "framer-motion";
 import SectionShell from "@/components/ui/SectionShell";
+import FixedBackgroundImage from "@/components/ui/FixedBackgroundImage";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
 
 type Stat = { value: string; label: string };
@@ -13,26 +14,13 @@ type StatsProps = {
   statsImage?: string;
 };
 
-/**
- * Static cover image — no scroll-linked offset (that fights native momentum).
- */
 function StatsImage({ src, alt }: { src: string; alt: string }) {
   return (
-    <div
-      className="relative mx-auto h-[min(52vw,280px)] min-h-[200px] w-full max-w-full overflow-hidden sm:h-[300px] md:h-[400px] lg:h-[440px]"
-      role="img"
-      aria-label={alt}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={src}
-        alt=""
-        aria-hidden="true"
-        draggable={false}
-        decoding="async"
-        className="h-full w-full object-cover object-center select-none"
-      />
-    </div>
+    <FixedBackgroundImage
+      src={src}
+      alt={alt}
+      className="mx-auto h-[min(52vw,280px)] min-h-[200px] w-full max-w-full sm:h-[300px] md:h-[400px] lg:h-[440px]"
+    />
   );
 }
 

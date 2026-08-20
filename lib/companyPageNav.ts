@@ -76,11 +76,9 @@ function copyForHref(
     return pageCopy(qs.heroTitle, qs.heroSubtitle, locale);
   }
   if (path === "/contact") {
-    return pageCopy(
-      site?.contactPage?.heroTitle,
-      site?.contactPage?.heroSubtitle,
-      locale,
-    );
+    const raw = strField(site?.contactPage?.heroTitle, "", locale);
+    const title = /^contact us$/i.test(raw.trim()) ? "" : raw;
+    return pageCopy(title, site?.contactPage?.heroSubtitle, locale);
   }
   if (path === "/faq") {
     return pageCopy(site?.faqPage?.heroTitle, site?.faqPage?.heroSubtitle, locale);
@@ -150,7 +148,9 @@ export function overlayContactMegaMenu(
   const contact = copyForHref("/contact", site, locale);
   const loc = (locale === "th" || locale === "pl" ? locale : "en") as Locale;
   const featuredLabel =
-    contact?.title && !looksUntranslated(contact.title, loc)
+    contact?.title &&
+    !looksUntranslated(contact.title, loc) &&
+    !/^contact us$/i.test(contact.title.trim())
       ? contact.title
       : menu.featured.label;
   const featuredSubtitle =

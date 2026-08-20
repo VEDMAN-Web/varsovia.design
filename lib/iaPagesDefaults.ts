@@ -133,6 +133,11 @@ function localizeArticleOffer(raw: unknown, locale = "en") {
 
 const seed = seedRaw as Record<string, unknown>;
 
-export const DEFAULT_IA_PAGES = Object.fromEntries(
-  Object.keys(IA_HUB_PATHS).map((key) => [key, localizeHub(seed[key], "en")]),
-);
+export function iaPagesForLocale(locale = "en") {
+  const loc = locale === "th" || locale === "pl" ? locale : "en";
+  return Object.fromEntries(
+    Object.keys(IA_HUB_PATHS).map((key) => [key, localizeHub(seed[key], loc)]),
+  );
+}
+
+export const DEFAULT_IA_PAGES = iaPagesForLocale("en");
