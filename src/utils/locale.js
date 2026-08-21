@@ -365,7 +365,8 @@ function localizeBlog(doc, locale) {
 
 const MODEL_FIELDS = {
   Product: ["title", "description", "fullDescription"],
-  Project: ["title", "description", "location", "detailTitle", "detailDescription", "narrativeOne", "narrativeTwo"],
+    // category stays an English enum ("Kitchen", …) — never localize it
+    Project: ["title", "description", "location", "detailTitle", "detailDescription", "narrativeOne", "narrativeTwo"],
   Testimonial: ["name", "role", "quote"],
   Catalogue: ["title", "category"],
   Showcase: ["title", "category", "location", "typeLabel", "typeValue", "supplyArea"],
