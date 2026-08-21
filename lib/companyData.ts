@@ -842,7 +842,7 @@ export function normalizeBlog(
   }
 
   const bodyText = String(content || excerpt || "").trim();
-  let category =
+  const category =
     pickLocalized(raw.category, loc) ||
     (typeof raw.category === "string" ? raw.category : "") ||
     localePack?.category ||

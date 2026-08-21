@@ -1,5 +1,5 @@
-const fs = require("fs");
-const path = require("path");
+import fs from "node:fs";
+import path from "node:path";
 
 const src = path.join("node_modules", "maplibre-gl", "dist");
 const dest = path.join("public", "maplibre");

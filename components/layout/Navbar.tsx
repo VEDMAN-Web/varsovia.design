@@ -89,10 +89,11 @@ const headerBtnBase =
 function useSearchablePages(): SearchPage[] {
   const t = useTranslations("search");
   const site = useSiteSettings();
+  const searchPages = site?.searchPages;
 
   return useMemo(() => {
-    if (site?.searchPages && site.searchPages.length > 0) {
-      return site.searchPages
+    if (searchPages && searchPages.length > 0) {
+      return searchPages
         .slice()
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
         .map((p) => ({
@@ -115,7 +116,7 @@ function useSearchablePages(): SearchPage[] {
       { title: t("showcaseTitle"), href: "/projects", description: t("showcaseDesc") },
       { title: t("qualityTitle"), href: "/quality-sale", description: t("qualityDesc") },
     ];
-  }, [site?.searchPages, t]);
+  }, [searchPages, t]);
 }
 
 export default function Navbar({ overlayHero = false }: { overlayHero?: boolean }) {
@@ -488,7 +489,7 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
                       key={`menu-${item.id}`}
                       featured={item.menu.featured}
                       sectionLabel={item.menu.sectionLabel}
-                      children={item.menu.links.map((link) => ({
+                      links={item.menu.links.map((link) => ({
                         label: link.label ?? link.title ?? "",
                         href: link.href,
                       }))}

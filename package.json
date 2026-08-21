@@ -9,8 +9,8 @@
     "build": "next build",
     "start": "next start -H 0.0.0.0",
     "lint": "eslint",
-    "copy:maplibre": "node scripts/copy-maplibre-worker.cjs",
-    "postinstall": "node scripts/copy-maplibre-worker.cjs"
+    "copy:maplibre": "node scripts/copy-maplibre-worker.mjs",
+    "postinstall": "node scripts/copy-maplibre-worker.mjs"
   },
   "dependencies": {
     "@swc/helpers": "^0.5.23",
