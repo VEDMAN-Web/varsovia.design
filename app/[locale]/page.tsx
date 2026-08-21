@@ -44,7 +44,7 @@ export default async function Home({ params }: Props) {
   const [data, products, projects] = await Promise.all([
     fetchHomeData(locale as Locale),
     fetchProducts(locale as Locale),
-    fetchProjects(locale as Locale),
+    fetchProjects(locale as Locale).catch(() => []),
   ]);
   const site = data.site || {};
 

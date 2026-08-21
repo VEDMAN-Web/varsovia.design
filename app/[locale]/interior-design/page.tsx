@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import InteriorPage from "@/components/interior/InteriorPage";
 import Navbar from "@/components/layout/Navbar";
 import { IaHubView } from "@/components/ia/IaLanding";
-import { fetchSite } from "@/lib/api";
+import { fetchProjects, fetchSite } from "@/lib/api";
 import { getIaHub, hubPath, strField } from "@/lib/iaPages";
 import type { Locale } from "@/lib/i18n/routing";
 import { pageMetadata } from "@/lib/seo";
@@ -34,7 +34,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function InteriorDesignCatalogPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const site = await fetchSite(locale as Locale);
+  const [site, projects] = await Promise.all([
+    fetchSite(locale as Locale),
+    fetchProjects(locale as Locale).catch(() => [] as Awaited<ReturnType<typeof fetchProjects>>),
+  ]);
   const hub = getIaHub(site, "interiorDesign", locale);
   return (
     <>
@@ -44,7 +47,7 @@ export default async function InteriorDesignCatalogPage({ params }: Props) {
           hubKey="interiorDesign"
           hub={hub}
           locale={locale}
-          exploreSlot={<InteriorPage embedded />}
+          exploreSlot={<InteriorPage embedded initialProjects={projects} />}
         />
       </main>
     </>

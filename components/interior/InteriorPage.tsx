@@ -87,6 +87,11 @@ type Props = {
   initialCategory?: InteriorCategory;
   /** Nested under IaHubView — skip listing H1 and navbar offset. */
   embedded?: boolean;
+  /**
+   * Server-fetched CMS projects. Renders the catalogue in the initial HTML so the
+   * listing is never blank while client JS loads (or if it fails outright).
+   */
+  initialProjects?: ApiProject[];
 };
 
 function categoryFromQuery(value: string | null | undefined, fallback: InteriorCategory): InteriorCategory {
@@ -126,10 +131,14 @@ function FilterIcon({ className = "" }: { className?: string }) {
   );
 }
 
-export default function InteriorPage({ initialCategory = "All", embedded = false }: Props) {
+export default function InteriorPage({
+  initialCategory = "All",
+  embedded = false,
+  initialProjects,
+}: Props) {
   const locale = useLocale();
   const site = useSiteSettings();
-  const catalogMode = "api";
+  const catalogMode = site?.interiorCatalogMode === "api" ? "api" : "hybrid";
   const tCommon = useTranslations("common");
   const tCat = useTranslations("categories");
   const tHero = useTranslations("categoryHero");
@@ -146,8 +155,18 @@ export default function InteriorPage({ initialCategory = "All", embedded = false
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [projects, setProjects] = useState<ApiProject[]>([]);
-  const [catalogLoaded, setCatalogLoaded] = useState(false);
+  const [projects, setProjects] = useState<ApiProject[]>(() =>
+    initialProjects?.length
+      ? (buildInteriorCatalog(
+          initialProjects as unknown as Record<string, unknown>[],
+          locale as Locale,
+          catalogMode,
+          { apiFailed: false },
+        ) as ApiProject[])
+      : [],
+  );
+  const [catalogLoaded, setCatalogLoaded] = useState(Boolean(initialProjects?.length));
+  const hasServerCatalogRef = useRef(Boolean(initialProjects?.length));
   const [, startTransition] = useTransition();
   const sortRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -172,37 +191,44 @@ export default function InteriorPage({ initialCategory = "All", embedded = false
   useEffect(() => {
     let cancelled = false;
 
-    function loadCatalog() {
-      setCatalogLoaded(false);
-      import("@/lib/api").then(({ fetchProjects }) => {
-        fetchProjects(locale as Locale)
-          .then((data: ApiProject[]) => {
-            if (!cancelled) {
-              setProjects(
-                buildInteriorCatalog(data ?? [], locale as Locale, catalogMode, {
-                  apiFailed: false,
-                }) as ApiProject[],
-              );
-            }
-          })
-          .catch(() => {
-            if (!cancelled) {
-              setProjects(
-                buildInteriorCatalog([], locale as Locale, catalogMode, {
+    function loadCatalog({ showSkeleton }: { showSkeleton: boolean }) {
+      if (showSkeleton) setCatalogLoaded(false);
+      import("@/lib/api")
+        .then(({ fetchProjects }) =>
+          fetchProjects(locale as Locale).then((data: ApiProject[]) => {
+            if (cancelled) return;
+            setProjects(
+              buildInteriorCatalog(data ?? [], locale as Locale, catalogMode, {
+                apiFailed: false,
+              }) as ApiProject[],
+            );
+          }),
+        )
+        .catch(() => {
+          if (cancelled) return;
+          // Keep whatever is already on screen (server-rendered or previous fetch)
+          // rather than blanking the catalogue because one refresh failed.
+          setProjects((current) =>
+            current.length > 0
+              ? current
+              : (buildInteriorCatalog([], locale as Locale, catalogMode, {
                   apiFailed: true,
-                }) as ApiProject[],
-              );
-            }
-          })
-          .finally(() => {
-            if (!cancelled) setCatalogLoaded(true);
-          });
-      });
+                }) as ApiProject[]),
+          );
+        })
+        .finally(() => {
+          if (!cancelled) setCatalogLoaded(true);
+        });
     }
 
-    loadCatalog();
+    // Server already rendered the catalogue — skip the duplicate first fetch.
+    if (hasServerCatalogRef.current) {
+      hasServerCatalogRef.current = false;
+    } else {
+      loadCatalog({ showSkeleton: true });
+    }
     const onVisible = () => {
-      if (document.visibilityState === "visible") loadCatalog();
+      if (document.visibilityState === "visible") loadCatalog({ showSkeleton: false });
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => {

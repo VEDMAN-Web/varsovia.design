@@ -709,13 +709,12 @@ function normalizeProjectCover(project: Record<string, unknown>) {
 }
 
 export async function fetchProjects(locale?: Locale): Promise<ApiProject[]> {
-  try {
-    const rows = onlyVisibleRows(await fetchAllListItems("/projects", locale, { cache: "no-store" }));
-    return rows.map((row) => normalizeProjectCover(row as Record<string, unknown>)) as ApiProject[];
-  } catch {
-    // Do not swap in seed cards — live /interior-design must mirror CMS, even if the API is down.
-    return [];
-  }
+  const rows = onlyVisibleRows(
+    await fetchAllListItems("/projects", locale, { cache: "no-store" }),
+  );
+  return rows.map((row) =>
+    normalizeProjectCover(row as Record<string, unknown>),
+  ) as ApiProject[];
 }
 
 export async function fetchHomeData(locale?: Locale): Promise<HomeData> {

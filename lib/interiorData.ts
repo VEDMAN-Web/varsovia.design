@@ -858,7 +858,7 @@ export function normalizeInteriorProject(
   const gallery = (item.gallery as string[] | undefined) ?? [];
   const image = item.image as string | undefined;
   const coverImage = item.coverImage as string | undefined;
-  const category = (item.category as string | undefined) || "Kitchen";
+  const category = readInteriorCategory(item) || "Kitchen";
   const mockItem = INTERIOR_ITEMS.find(
     (m) => m.id === id || interiorMockSlugForId(m.id) === id,
   );
@@ -905,8 +905,23 @@ const INTERIOR_CATEGORY_SET = new Set(
   INTERIOR_CATEGORIES.filter((c): c is Exclude<InteriorCategory, "All"> => c !== "All")
 );
 
+function readInteriorCategory(item: Record<string, unknown>): string {
+  const raw = item.category;
+  if (typeof raw === "string") return raw.trim();
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    const map = raw as Record<string, unknown>;
+    const picked =
+      (typeof map.en === "string" && map.en.trim()) ||
+      (typeof map.th === "string" && map.th.trim()) ||
+      (typeof map.pl === "string" && map.pl.trim()) ||
+      "";
+    return picked;
+  }
+  return "";
+}
+
 function isInteriorCatalogItem(item: Record<string, unknown>) {
-  const category = item.category as string | undefined;
+  const category = readInteriorCategory(item);
   if (!category || !INTERIOR_CATEGORY_SET.has(category as Exclude<InteriorCategory, "All">)) {
     return false;
   }
@@ -932,14 +947,13 @@ export function buildInteriorCatalog(
     return fromApi;
   }
 
-  if (mode === "api") {
-    return [];
-  }
-
-  // hybrid + successful empty API response → show empty (deleted catalog stays empty)
-  // hybrid + API failure → keep mock fallback so the page still renders offline
+  // API down / blocked → keep the catalogue visible. Empty CMS list stays empty.
   if (options.apiFailed) {
     return mockNormalized;
+  }
+
+  if (mode === "api") {
+    return [];
   }
 
   return [];
