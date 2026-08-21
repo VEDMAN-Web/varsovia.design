@@ -302,6 +302,22 @@ async function updateSite(req, res) {
   try {
     const { mergeIaPages, mergeSavedIaPages } = require("../data/iaPagesDefaults");
     const { key: _key, _id: _id2, __v, pages: pagesPatch, ...rest } = req.body;
+    
+    console.log("[updateSite] ===== START =====");
+    console.log("[updateSite] Received request body keys:", Object.keys(req.body));
+    console.log("[updateSite] Has pagesPatch:", !!pagesPatch);
+    if (pagesPatch) {
+      console.log("[updateSite] PagesPatch keys:", Object.keys(pagesPatch));
+      if (pagesPatch.furniture) {
+        console.log("[updateSite] Furniture hub received");
+        console.log("[updateSite] Furniture children count:", Array.isArray(pagesPatch.furniture.children) ? pagesPatch.furniture.children.length : 0);
+        if (Array.isArray(pagesPatch.furniture.children) && pagesPatch.furniture.children[0]) {
+          console.log("[updateSite] First child slug:", pagesPatch.furniture.children[0].slug);
+          console.log("[updateSite] First child hero.image:", pagesPatch.furniture.children[0].hero?.image);
+        }
+      }
+    }
+    
     let site = await SiteContent.findOne({ key: "main" });
     if (!site) site = new SiteContent({ key: "main" });
 
@@ -310,22 +326,42 @@ async function updateSite(req, res) {
     }
 
     if (pagesPatch && typeof pagesPatch === "object" && !Array.isArray(pagesPatch)) {
-      site.set("pages", mergeSavedIaPages(site.pages, pagesPatch));
+      console.log("[updateSite] Merging pages with mergeSavedIaPages...");
+      const merged = mergeSavedIaPages(site.pages, pagesPatch);
+      console.log("[updateSite] After merge, furniture children count:", Array.isArray(merged.furniture?.children) ? merged.furniture.children.length : 0);
+      if (Array.isArray(merged.furniture?.children) && merged.furniture.children[0]) {
+        console.log("[updateSite] After merge, first child hero.image:", merged.furniture.children[0].hero?.image);
+      }
+      site.set("pages", merged);
       site.markModified("pages");
     }
 
+    console.log("[updateSite] Saving to MongoDB...");
     await site.save();
+    console.log("[updateSite] ✅ Saved to MongoDB successfully");
     invalidateInquiryFormCache();
 
     // Force a fresh read from database to ensure consistency
     const freshSite = await SiteContent.findOne({ key: "main" }).lean();
     const payload = freshSite || (site.toObject ? site.toObject() : site);
     
-    if (!isAdminRequest(req)) {
-      payload.pages = mergeIaPages(payload.pages);
+    console.log("[updateSite] Fresh from DB, furniture children count:", Array.isArray(payload.pages?.furniture?.children) ? payload.pages.furniture.children.length : 0);
+    if (Array.isArray(payload.pages?.furniture?.children) && payload.pages.furniture.children[0]) {
+      console.log("[updateSite] Fresh from DB, first child hero.image:", payload.pages.furniture.children[0].hero?.image);
     }
+    
+    if (!isAdminRequest(req)) {
+      console.log("[updateSite] Not admin request, merging with defaults");
+      payload.pages = mergeIaPages(payload.pages);
+    } else {
+      console.log("[updateSite] Admin request, returning raw MongoDB data");
+    }
+    
+    console.log("[updateSite] ===== END =====");
     return sendSuccess(res, payload, { req });
   } catch (error) {
+    console.error("[updateSite] ❌ ERROR:", error.message);
+    console.error("[updateSite] Stack:", error.stack);
     return sendError(res, 400, { message: error.message });
   }
 }
