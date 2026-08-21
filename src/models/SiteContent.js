@@ -118,7 +118,7 @@ const siteContentSchema = new mongoose.Schema(
     /** Admin-defined contact / inquiry forms (contact page + catalogue modal) */
     inquiryForm: { type: mongoose.Schema.Types.Mixed, default: undefined },
     /** api = API interior projects only (with fallback); hybrid = merge mock + API */
-    interiorCatalogMode: { type: String, enum: ["hybrid", "api"], default: "hybrid" },
+    interiorCatalogMode: { type: String, enum: ["hybrid", "api"], default: "api" },
     /** Group A SEO IA hubs + children (furniture, locations, journal, …) */
     pages: { type: mongoose.Schema.Types.Mixed, default: undefined },
     /** /about SEO */
