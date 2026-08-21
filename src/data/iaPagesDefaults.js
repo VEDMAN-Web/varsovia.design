@@ -50,12 +50,11 @@ function mergeLoc(saved, def) {
   const en = String(s.en || "").trim() || String(d.en || "").trim();
   const take = (loc) => {
     const savedLoc = String(s[loc] || "").trim();
-    if (savedLoc && savedLoc !== en) return savedLoc;
+    if (savedLoc) return savedLoc;
     const defLoc = String(d[loc] || "").trim();
     const defEn = String(d.en || "").trim();
     if (defLoc && defLoc !== defEn) return defLoc;
-    if (savedLoc) return savedLoc;
-    return defLoc;
+    return "";
   };
   return {
     en,
@@ -123,9 +122,22 @@ function sectionHasContent(section) {
 }
 
 function mergeSections(saved, def) {
-  if (!Array.isArray(saved) || saved.length === 0) return Array.isArray(def) ? def : [];
-  if (!saved.some(sectionHasContent)) return Array.isArray(def) ? def : [];
-  return saved;
+  const fallback = Array.isArray(def) ? def : [];
+  if (!Array.isArray(saved) || saved.length === 0) return fallback;
+  if (!saved.some(sectionHasContent)) return fallback;
+  return saved.map((block, index) => {
+    const d = fallback[index] && typeof fallback[index] === "object" ? fallback[index] : {};
+    const s = block && typeof block === "object" ? block : {};
+    return {
+      ...d,
+      ...s,
+      heading: mergeLoc(s.heading, d.heading),
+      text: mergeLoc(s.text, d.text),
+      image: String(s.image || "").trim() || String(d.image || "").trim(),
+      imagePosition: s.imagePosition || d.imagePosition,
+      layout: s.layout || d.layout,
+    };
+  });
 }
 
 function localizeHero(heroObj, resolveLocalized, locale) {
@@ -345,6 +357,21 @@ function mergeSavedIaPages(current, patch) {
         ? cur[hubKey]
         : {};
     const nextHub = { ...prev, ...patchHub };
+    if (
+      patchHub.hero &&
+      typeof patchHub.hero === "object" &&
+      !Array.isArray(patchHub.hero) &&
+      prev.hero &&
+      typeof prev.hero === "object" &&
+      !Array.isArray(prev.hero)
+    ) {
+      nextHub.hero = { ...prev.hero, ...patchHub.hero };
+    }
+    if (Array.isArray(patchHub.sections)) {
+      nextHub.sections = patchHub.sections;
+    } else if (Array.isArray(prev.sections)) {
+      nextHub.sections = prev.sections;
+    }
     if (Array.isArray(patchHub.children)) {
       nextHub.children = patchHub.children.map(normalizeSavedChild).filter(Boolean);
     } else if (Array.isArray(prev.children)) {

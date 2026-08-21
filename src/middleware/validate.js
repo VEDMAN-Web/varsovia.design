@@ -517,7 +517,7 @@ const siteUpdateSchema = z.object({
   inquiryForm:            inquiryFormSchema.optional(),
   mainNavigation:         mainNavigationSchema.optional(),
   footerNavigation:       footerNavigationSchema.optional(),
-  pages:                  z.record(z.string(), z.unknown()).optional(),
+  pages:                  z.record(z.string(), z.any()).optional(),
 });
 const showcaseSchema = z.object({
   title:      localizedRequired,

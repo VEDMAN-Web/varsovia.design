@@ -248,7 +248,6 @@ async function getProductBySlug(req, res) {
 
 async function getSite(req, res) {
   try {
-    const { mergeIaPages } = require("../data/iaPagesDefaults");
     const { PAGE_CMS_DEFAULTS } = require("../data/pageCmsDefaults");
     const site = await SiteContent.findOne({ key: "main" });
     if (isAdminRequest(req)) {
@@ -259,7 +258,8 @@ async function getSite(req, res) {
       for (const [key, value] of Object.entries(PAGE_CMS_DEFAULTS)) {
         if (!payload[key]) payload[key] = value;
       }
-      payload.pages = mergeIaPages(payload.pages);
+      // Return Mongo pages as stored. Filling from seed here made admin Save
+      // write a seed snapshot and Refresh look like a wipe.
       return sendSuccess(res, payload, { req });
     }
 
@@ -304,7 +304,7 @@ async function updateSite(req, res) {
     }
 
     if (pagesPatch && typeof pagesPatch === "object" && !Array.isArray(pagesPatch)) {
-      site.pages = mergeSavedIaPages(site.pages, pagesPatch);
+      site.set("pages", mergeSavedIaPages(site.pages, pagesPatch));
       site.markModified("pages");
     }
 
@@ -312,7 +312,9 @@ async function updateSite(req, res) {
     invalidateInquiryFormCache();
 
     const payload = site.toObject ? site.toObject() : site;
-    payload.pages = mergeIaPages(payload.pages);
+    if (!isAdminRequest(req)) {
+      payload.pages = mergeIaPages(payload.pages);
+    }
     return sendSuccess(res, payload, { req });
   } catch (error) {
     return sendError(res, 400, { message: error.message });
