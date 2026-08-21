@@ -129,7 +129,7 @@ function FilterIcon({ className = "" }: { className?: string }) {
 export default function InteriorPage({ initialCategory = "All", embedded = false }: Props) {
   const locale = useLocale();
   const site = useSiteSettings();
-  const catalogMode = site?.interiorCatalogMode || "hybrid";
+  const catalogMode = "api";
   const tCommon = useTranslations("common");
   const tCat = useTranslations("categories");
   const tHero = useTranslations("categoryHero");
@@ -171,33 +171,43 @@ export default function InteriorPage({ initialCategory = "All", embedded = false
 
   useEffect(() => {
     let cancelled = false;
-    setCatalogLoaded(false);
-    import("@/lib/api").then(({ fetchProjects }) => {
-      fetchProjects(locale as Locale)
-        .then((data: ApiProject[]) => {
-          if (!cancelled) {
-            setProjects(
-              buildInteriorCatalog(data ?? [], locale as Locale, catalogMode, {
-                apiFailed: false,
-              }) as ApiProject[],
-            );
-          }
-        })
-        .catch(() => {
-          if (!cancelled) {
-            setProjects(
-              buildInteriorCatalog([], locale as Locale, catalogMode, {
-                apiFailed: true,
-              }) as ApiProject[],
-            );
-          }
-        })
-        .finally(() => {
-          if (!cancelled) setCatalogLoaded(true);
-        });
-    });
+
+    function loadCatalog() {
+      setCatalogLoaded(false);
+      import("@/lib/api").then(({ fetchProjects }) => {
+        fetchProjects(locale as Locale)
+          .then((data: ApiProject[]) => {
+            if (!cancelled) {
+              setProjects(
+                buildInteriorCatalog(data ?? [], locale as Locale, catalogMode, {
+                  apiFailed: false,
+                }) as ApiProject[],
+              );
+            }
+          })
+          .catch(() => {
+            if (!cancelled) {
+              setProjects(
+                buildInteriorCatalog([], locale as Locale, catalogMode, {
+                  apiFailed: true,
+                }) as ApiProject[],
+              );
+            }
+          })
+          .finally(() => {
+            if (!cancelled) setCatalogLoaded(true);
+          });
+      });
+    }
+
+    loadCatalog();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") loadCatalog();
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       cancelled = true;
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, [locale, catalogMode]);
 

@@ -713,8 +713,8 @@ export async function fetchProjects(locale?: Locale): Promise<ApiProject[]> {
     const rows = onlyVisibleRows(await fetchAllListItems("/projects", locale, { cache: "no-store" }));
     return rows.map((row) => normalizeProjectCover(row as Record<string, unknown>)) as ApiProject[];
   } catch {
-    const { fallbackHomeData } = await import("./fallbackData");
-    return fallbackHomeData.projects.map(normalizeProjectCover) as ApiProject[];
+    // Do not swap in seed cards — live /interior-design must mirror CMS, even if the API is down.
+    return [];
   }
 }
 
@@ -861,7 +861,7 @@ function cmsImageList(raw: unknown, cover?: string): string[] {
 }
 
 export async function fetchProjectById(idOrSlug: string, locale?: Locale) {
-  const { getInteriorProjectById } = await import("./interiorData");
+  const { getInteriorProjectById, isMockInteriorId } = await import("./interiorData");
   const { interiorDetailSlug } = await import("./interiorRoutes");
 
   try {
@@ -933,18 +933,11 @@ export async function fetchProjectById(idOrSlug: string, locale?: Locale) {
       };
     }
   } catch {
-    // fall through to static mock
+    /* CMS miss */
   }
 
-  try {
-    const { getInteriorProjectFromFallback } = await import("./interiorData");
-    const fromFallback = getInteriorProjectFromFallback(idOrSlug, locale);
-    if (fromFallback) return fromFallback;
-  } catch {
-    /* continue */
-  }
-
-  return getInteriorProjectById(idOrSlug);
+  if (isMockInteriorId(idOrSlug)) return getInteriorProjectById(idOrSlug);
+  return null;
 }
 
 export async function fetchCatalogues(locale?: Locale): Promise<Record<string, unknown>[]> {

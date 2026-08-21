@@ -14,6 +14,7 @@ import type { IaChildPage, IaHubPage } from "@/lib/iaPages";
 import { childPath, hubPath, strField, type IaHubKey } from "@/lib/iaPages";
 import { Link } from "@/lib/i18n/navigation";
 import { getPublicSiteUrl } from "@/lib/publicEnv";
+import { resolveMediaUrl } from "@/lib/mediaAssets";
 
 type Crumb = { label: string; href?: string };
 
@@ -454,11 +455,11 @@ function ServiceLinkList({
 }
 
 function absoluteImage(path?: string) {
-  const raw = String(path || "").trim();
-  if (!raw) return undefined;
-  if (/^https?:\/\//i.test(raw)) return raw;
+  const resolved = resolveMediaUrl(String(path || "").trim(), "");
+  if (!resolved) return undefined;
+  if (/^https?:\/\//i.test(resolved)) return resolved;
   const base = getPublicSiteUrl().replace(/\/$/, "");
-  return `${base}${raw.startsWith("/") ? raw : `/${raw}`}`;
+  return `${base}${resolved.startsWith("/") ? resolved : `/${resolved}`}`;
 }
 
 export function IaHubView({
@@ -592,7 +593,7 @@ export function IaHubView({
         title={title}
         subtitle={subtitle}
         eyebrow={eyebrow}
-        image={hub.hero?.image}
+        image={resolveMediaUrl(hub.hero?.image, hub.hero?.image || "")}
         ctaLabel={strField(hub.hero?.ctaLabel, "", locale)}
         ctaHref={strField(hub.hero?.ctaHref, "/contact", locale)}
       />
@@ -831,7 +832,7 @@ export function IaChildView({
         title={heading}
         subtitle={subtitle}
         eyebrow={eyebrow}
-        image={child.hero?.image}
+        image={resolveMediaUrl(child.hero?.image, child.hero?.image || "")}
         ctaLabel={strField(child.hero?.ctaLabel, "", locale)}
         ctaHref={strField(child.hero?.ctaHref, "/contact", locale)}
       />

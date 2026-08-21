@@ -1,6 +1,7 @@
 import { DEFAULT_IA_PAGES, IA_HUB_PATHS, iaPagesForLocale } from "./iaPagesDefaults";
 import { pickLocalized } from "./i18n/pickLocalized";
 import type { Locale } from "./i18n/routing";
+import { resolveMediaUrl } from "./mediaAssets";
 
 export type IaHero = {
   eyebrow?: string;
@@ -145,7 +146,10 @@ function mergeHero(
     eyebrow: mergeStr(s.eyebrow, d.eyebrow, locale),
     title: mergeStr(s.title, d.title, locale),
     subtitle: mergeStr(s.subtitle, d.subtitle, locale),
-    image: mergeStr(s.image, d.image, locale),
+    image: resolveMediaUrl(
+      mergeStr(s.image, d.image, locale),
+      mergeStr(d.image, "", locale),
+    ),
     ctaLabel: mergeStr(s.ctaLabel, d.ctaLabel, locale),
     ctaHref: mergeStr(s.ctaHref, d.ctaHref, locale) || "/contact",
   };
@@ -189,7 +193,7 @@ function mergeArticleOffer(
     points,
     ctaLabel: mergeStr(s.ctaLabel, d.ctaLabel, locale),
     ctaHref: mergeStr(s.ctaHref, d.ctaHref, locale) || "/contact",
-    image: mergeStr(s.image, d.image, locale),
+    image: resolveMediaUrl(mergeStr(s.image, d.image, locale), mergeStr(d.image, "", locale)),
     imageAlt: mergeStr(s.imageAlt, d.imageAlt, locale),
   };
 }
@@ -201,7 +205,7 @@ function normalizeSection(section: IaContentSection, locale: Locale = "en"): IaC
   return {
     heading: str(section.heading, locale),
     text: str(section.text, locale),
-    image: str(section.image, locale),
+    image: resolveMediaUrl(str(section.image, locale), str(section.image, locale)),
     imagePosition:
       section.imagePosition === "right" || section.imagePosition === "left"
         ? section.imagePosition

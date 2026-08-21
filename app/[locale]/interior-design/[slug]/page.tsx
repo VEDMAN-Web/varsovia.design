@@ -4,7 +4,6 @@ import Navbar from "@/components/layout/Navbar";
 import InteriorDetail from "@/components/interior/InteriorDetail";
 import { fetchProjectById, fetchSite } from "@/lib/api";
 import type { Locale } from "@/lib/i18n/routing";
-import { interiorDetailStaticParams } from "@/lib/interiorData";
 import { legacyInteriorSlugRedirect } from "@/lib/interiorRoutes";
 import { getIaHub } from "@/lib/iaPages";
 import { pageMetadata } from "@/lib/seo";
@@ -14,10 +13,6 @@ import type { Metadata } from "next";
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
 };
-
-export async function generateStaticParams() {
-  return interiorDetailStaticParams();
-}
 
 export const revalidate = 0;
 export const dynamic = "force-dynamic";

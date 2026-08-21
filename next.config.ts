@@ -73,8 +73,45 @@ const nextConfig: NextConfig = {
     )
       .trim()
       .replace(/\/+$/, "");
-    if (!uploadOrigin) return [];
+    const mediaRewrites = [
+      ...Array.from({ length: 8 }, (_, index) => {
+        const n = index + 1;
+        return [
+          {
+            source: `/home/featured-project/feature-${n}.jpg`,
+            destination: `/home/featured/feature-${n}.jpg`,
+          },
+          {
+            source: `/home/featured-project/feature-${n}.png`,
+            destination: `/home/featured/feature-${n}.jpg`,
+          },
+        ];
+      }).flat(),
+      ...Array.from({ length: 6 }, (_, index) => {
+        const n = index + 1;
+        const dest =
+          n <= 3
+            ? `/home/product/product-${n}.jpg`
+            : `/home/featured/feature-${((n - 1) % 8) + 1}.jpg`;
+        return [
+          { source: `/products/Kitchen${n}.jpg`, destination: dest },
+          { source: `/products/Kitchen${n}.jpeg`, destination: dest },
+          { source: `/products/Kitchen${n}.png`, destination: dest },
+          { source: `/products/Kitchen${n}.webp`, destination: dest },
+        ];
+      }).flat(),
+      {
+        source: "/home/home-front-page.png",
+        destination: "/home/hero.jpg",
+      },
+      {
+        source: "/home/counting.png",
+        destination: "/home/stats.jpg",
+      },
+    ];
+    if (!uploadOrigin) return mediaRewrites;
     return [
+      ...mediaRewrites,
       {
         source: "/uploads/:path*",
         destination: `${uploadOrigin}/uploads/:path*`,

@@ -99,16 +99,57 @@ for (let i = 1; i <= 8; i += 1) {
   LOCAL_ALIASES[`/home/featured-project/feature-${i}.png`] = featured;
 }
 
+const KITCHEN_PRODUCTS = MEDIA.products;
+for (let i = 1; i <= 6; i += 1) {
+  const dest =
+    i <= KITCHEN_PRODUCTS.length
+      ? KITCHEN_PRODUCTS[i - 1]
+      : MEDIA.featured[(i - 1) % MEDIA.featured.length];
+  for (const ext of ["png", "jpg", "jpeg", "webp"] as const) {
+    LOCAL_ALIASES[`/products/Kitchen${i}.${ext}`] = dest;
+  }
+}
+
 for (let i = 1; i <= 7; i += 1) {
   const story = MEDIA.stories[i - 1] ?? MEDIA.stories[0];
   LOCAL_ALIASES[`/home/stories/story-${i}.jpg`] = story;
 }
 
+function isPrivateAssetHost(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  return (
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    host === "0.0.0.0" ||
+    /^192\.168\.\d+\.\d+$/.test(host) ||
+    /^10\.\d+\.\d+\.\d+$/.test(host)
+  );
+}
+
+/**
+ * CMS sometimes stored site assets as http://127.0.0.1:5000/home/... (upload API origin).
+ * Those files live on the Varsovia Next app — unwrap to a public path.
+ */
+function unwrapCmsMediaPath(src: string): string {
+  const value = src.trim();
+  if (!/^https?:\/\//i.test(value)) return value;
+  try {
+    const parsed = new URL(value);
+    if (parsed.pathname.startsWith("/uploads/")) return value;
+    if (isPrivateAssetHost(parsed.hostname)) {
+      return parsed.pathname;
+    }
+  } catch {
+    /* keep original */
+  }
+  return value;
+}
+
 export function resolveMediaUrl(src?: string | null, fallback: string = MEDIA.hero as string): string {
   if (!src || !src.trim()) return fallback;
-  const value = src.trim();
-  if (value.startsWith("http://") || value.startsWith("https://")) return value;
+  const value = unwrapCmsMediaPath(src);
   if (LOCAL_ALIASES[value]) return LOCAL_ALIASES[value];
+  if (value.startsWith("http://") || value.startsWith("https://")) return value;
   if (value.startsWith("/")) return value;
   return fallback;
 }

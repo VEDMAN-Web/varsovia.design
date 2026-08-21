@@ -1,4 +1,5 @@
 import Image, { type ImageProps } from "next/image";
+import { resolveMediaUrl } from "@/lib/mediaAssets";
 
 function isRemoteHttpUrl(src: string): boolean {
   return /^https?:\/\//i.test(src);
@@ -10,7 +11,7 @@ function isRemoteHttpUrl(src: string): boolean {
  * native img. Local / public paths still go through next/image.
  */
 export default function CmsImage({ src, alt, className, fill, sizes, priority, style }: ImageProps) {
-  const url = typeof src === "string" ? src : "";
+  const url = typeof src === "string" ? resolveMediaUrl(src, src) : "";
   if (!url) return null;
 
   if (isRemoteHttpUrl(url)) {

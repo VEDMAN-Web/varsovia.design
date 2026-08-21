@@ -291,7 +291,7 @@ function findMockInteriorItem(idOrSlug: string) {
   );
 }
 
-function isMockInteriorId(id: string) {
+export function isMockInteriorId(id: string) {
   return INTERIOR_ITEMS.some((item) => item.id === id);
 }
 
@@ -910,17 +910,7 @@ function isInteriorCatalogItem(item: Record<string, unknown>) {
   if (!category || !INTERIOR_CATEGORY_SET.has(category as Exclude<InteriorCategory, "All">)) {
     return false;
   }
-  if (item.interiorCatalog === false) return false;
-  return Boolean(
-    item.interiorCatalog === true ||
-      item.coverImage ||
-      item.subcategory ||
-      item.shape ||
-      item.style ||
-      item.color ||
-      item.material ||
-      item.finish,
-  );
+  return item.interiorCatalog !== false;
 }
 
 /** Interior listing: prefer API/admin projects; mocks only when the API request fails. */
