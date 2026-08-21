@@ -87,8 +87,15 @@ function ShowcaseListingInner() {
     if (!source) {
       return getShowcaseProjects(activeTab);
     }
+    // "All" tab shows everything
     if (activeTab === "All") return source;
-    return source.filter((p) => p.category === activeTab);
+    
+    // Filter by category - compare normalized strings
+    return source.filter((p) => {
+      const projectCategory = String(p.category || "").trim();
+      const activeCategory = String(activeTab).trim();
+      return projectCategory === activeCategory;
+    });
   })();
 
   const { items: pageProjects, totalPages } = useMemo(
