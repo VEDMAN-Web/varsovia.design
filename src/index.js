@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const path = require("path");
 const cors = require("cors");
 const helmet = require("helmet");
 const connectDB = require("./config/db");
@@ -21,8 +22,19 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
 }));
 
+// ─── Serve static files from frontend/public for admin previews ──────────────
+const publicPath = path.join(__dirname, "..", "..", "frontend", "public");
+app.use(express.static(publicPath, {
+  setHeaders: (res) => {
+    res.set({
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': 'public, max-age=31536000, immutable'
+    });
+  }
+}));
+
 // ─── Prevent any caching of API responses ─────────────────────────────────────
-app.use((req, res, next) => {
+app.use("/api", (req, res, next) => {
   res.set({
     'Cache-Control': 'no-store, no-cache, must-revalidate, private, max-age=0',
     'Pragma': 'no-cache',
