@@ -3,13 +3,12 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Shield, X } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useModalScrollLock } from "@/hooks/useModalScrollLock";
 import { trackGenerateLead } from "@/lib/analytics";
 import { sanitizeNameInput, sanitizePhoneDigits } from "@/lib/contactFormValidation";
 import CountryDialSelect, { defaultDialCountry } from "@/components/forms/CountryDialSelect";
 import { resolveInquiryForm } from "@/lib/inquiryForm";
-import type { Locale } from "@/lib/i18n/routing";
 import { submitContact } from "@/lib/submitContactClient";
 import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import {
@@ -57,14 +56,13 @@ function fieldByKey(fields: { key: string; label?: string; placeholder?: string 
 function ModalBody({ onClose, source }: { onClose: () => void; source: string }) {
   const t = useTranslations("contact");
   const tCommon = useTranslations("common");
-  const locale = useLocale() as Locale;
   const site = useSiteSettings();
   const inquiry = useMemo(() => resolveInquiryForm(site), [site]);
   const dialogRef = useRef<HTMLDivElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   useModalScrollLock(true, dialogRef, dialogRef);
 
-  const [country, setCountry] = useState(() => defaultDialCountry(locale, true));
+  const [country, setCountry] = useState(() => defaultDialCountry());
 
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");

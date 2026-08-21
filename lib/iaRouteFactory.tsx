@@ -8,9 +8,9 @@ import {
   getIaChild,
   getIaHub,
   hubPath,
+  normalizeIaSlug,
   strField,
   type IaHubKey,
-  DEFAULT_IA_PAGES,
 } from "@/lib/iaPages";
 import {
   interiorCategoriesForFurnitureSlug,
@@ -192,7 +192,7 @@ export function makeIaChildHandlers(hubKey: IaHubKey) {
     params: Promise<{ locale: string; slug: string }>;
   }): Promise<Metadata> {
     const { locale, slug: rawSlug } = await params;
-    const slug = decodeURIComponent(String(rawSlug || "")).trim();
+    const slug = normalizeIaSlug(rawSlug);
     const site = await fetchSite(locale as Locale);
     const child = getIaChild(site, hubKey, slug, locale);
     if (!child) return { title: "Not found" };
@@ -212,24 +212,13 @@ export function makeIaChildHandlers(hubKey: IaHubKey) {
     });
   }
 
-  async function generateStaticParams() {
-    const site = await fetchSite("en");
-    const hub = getIaHub(site, hubKey, "en");
-    const children = Array.isArray(hub.children) && hub.children.length > 0
-      ? hub.children
-      : ((DEFAULT_IA_PAGES[hubKey] as { children?: { slug: string }[] }).children || []);
-    return children
-      .filter((c) => typeof c.slug === "string" && c.slug)
-      .map((c) => ({ slug: c.slug }));
-  }
-
   async function Page({
     params,
   }: {
     params: Promise<{ locale: string; slug: string }>;
   }) {
     const { locale, slug: rawSlug } = await params;
-    const slug = decodeURIComponent(String(rawSlug || "")).trim();
+    const slug = normalizeIaSlug(rawSlug);
     setRequestLocale(locale);
     const site = await fetchSite(locale as Locale);
     const hub = getIaHub(site, hubKey, locale);
@@ -361,5 +350,5 @@ export function makeIaChildHandlers(hubKey: IaHubKey) {
     );
   }
 
-  return { generateMetadata, generateStaticParams, Page };
+  return { generateMetadata, Page };
 }

@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import { IaChildView } from "@/components/ia/IaLanding";
 import { fetchSite } from "@/lib/api";
-import { getIaChild, getIaHub, strField } from "@/lib/iaPages";
+import { getIaChild, getIaHub, normalizeIaSlug, strField } from "@/lib/iaPages";
 import type { Locale } from "@/lib/i18n/routing";
 import { pageMetadata } from "@/lib/seo";
 import { setRequestLocale } from "next-intl/server";
@@ -16,7 +16,7 @@ type Props = { params: Promise<{ locale: string; entity: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, entity: raw } = await params;
-  const entity = decodeURIComponent(String(raw || "")).trim();
+  const entity = normalizeIaSlug(raw);
   if (entity.toLowerCase() === "varsovia") {
     redirect(`/${locale}/about`);
   }
@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AboutEntityPage({ params }: Props) {
   const { locale, entity: raw } = await params;
-  const entity = decodeURIComponent(String(raw || "")).trim();
+  const entity = normalizeIaSlug(raw);
   if (entity.toLowerCase() === "varsovia") {
     redirect(`/${locale}/about`);
   }

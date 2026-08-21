@@ -5,4 +5,9 @@ export const revalidate = 0;
 
 const handlers = makeIaHubHandlers("forDevelopers");
 export const generateMetadata = handlers.generateMetadata;
-export default handlers.Page;
+
+export default async function Page(props: {
+  params: Promise<{ locale: string }>;
+}) {
+  return handlers.Page(props);
+}

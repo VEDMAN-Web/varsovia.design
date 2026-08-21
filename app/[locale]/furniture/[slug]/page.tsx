@@ -6,7 +6,6 @@ export const revalidate = 0;
 
 const handlers = makeIaChildHandlers("furniture");
 export const generateMetadata = handlers.generateMetadata;
-export const generateStaticParams = handlers.generateStaticParams;
 
 /** Wrapper required: Turbopack can fail to run factory-exported Page on [slug] routes. */
 export default async function Page(props: {

@@ -47,7 +47,7 @@ export default function ContactInquiryForm({
   const locale = useLocale() as Locale;
   const site = useSiteSettings();
   const inquiryForm = useMemo(() => resolveInquiryForm(site), [site]);
-  const defaultCountry = useMemo(() => defaultDialCountry(locale), [locale]);
+  const defaultCountry = useMemo(() => defaultDialCountry(), []);
   const phoneConfig = {
     ...(PHONE_CONFIG[locale] ?? PHONE_CONFIG.en),
     minDigits: 6,

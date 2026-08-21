@@ -8,14 +8,14 @@ export type PhoneLocaleConfig = {
   placeholder: string;
 };
 
-/** Phone defaults per site locale — matches language selector flags (EN/TH/PL). */
+/** Phone defaults — Varsovia contact forms default to Thailand (+66) on every locale. */
 export const PHONE_CONFIG: Record<Locale, PhoneLocaleConfig> = {
   en: {
-    flag: "/icon/flag-english.svg",
-    dialCode: "+44",
-    minDigits: 10,
-    maxDigits: 11,
-    placeholder: "7123456789",
+    flag: "/icon/flag-thailand.svg",
+    dialCode: "+66",
+    minDigits: 8,
+    maxDigits: 9,
+    placeholder: "812345678",
   },
   th: {
     flag: "/icon/flag-thailand.svg",
@@ -25,11 +25,11 @@ export const PHONE_CONFIG: Record<Locale, PhoneLocaleConfig> = {
     placeholder: "812345678",
   },
   pl: {
-    flag: "/icon/flag-polish.svg",
-    dialCode: "+48",
-    minDigits: 9,
+    flag: "/icon/flag-thailand.svg",
+    dialCode: "+66",
+    minDigits: 8,
     maxDigits: 9,
-    placeholder: "512345678",
+    placeholder: "812345678",
   },
 };
 

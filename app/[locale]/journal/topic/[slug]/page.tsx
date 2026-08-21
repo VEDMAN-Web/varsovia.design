@@ -6,7 +6,6 @@ export const revalidate = 0;
 
 const handlers = makeIaChildHandlers("journal");
 export const generateMetadata = handlers.generateMetadata;
-export const generateStaticParams = handlers.generateStaticParams;
 
 export default async function Page(props: {
   params: Promise<{ locale: string; slug: string }>;

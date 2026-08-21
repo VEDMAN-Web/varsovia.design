@@ -21,8 +21,10 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-/** Layout may statically wrap locale routes; fetchSite always uses cache: 'no-store'. */
-export const revalidate = 15;
+/** Locale layout lists en/th/pl; nested CMS slugs must still resolve at request time. */
+export const dynamic = "force-dynamic";
+export const dynamicParams = true;
+export const revalidate = 0;
 
 export async function generateMetadata({ params }: Pick<Props, "params">): Promise<Metadata> {
   const { locale } = await params;

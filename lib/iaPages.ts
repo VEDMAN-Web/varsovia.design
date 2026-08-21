@@ -90,6 +90,30 @@ export function strField(value: unknown, fallback = "", locale: Locale | string 
   return fallback;
 }
 
+/** URL slug from a string or `{ en, th, pl }` CMS accident. */
+export function normalizeIaSlug(value: unknown): string {
+  const raw =
+    typeof value === "string"
+      ? value
+      : value && typeof value === "object" && !Array.isArray(value)
+        ? String(
+            (value as { en?: unknown; th?: unknown; pl?: unknown }).en ||
+              (value as { th?: unknown }).th ||
+              (value as { pl?: unknown }).pl ||
+              "",
+          )
+        : "";
+  try {
+    return decodeURIComponent(raw)
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/^\/+|\/+$/g, "");
+  } catch {
+    return raw.trim().toLowerCase().replace(/\s+/g, "-");
+  }
+}
+
 function str(value: unknown, locale: Locale = "en"): string {
   return strField(value, "", locale);
 }
@@ -271,21 +295,20 @@ export function getIaPages(
       continue;
     }
     const savedChildren = Array.isArray(saved.children) ? saved.children : [];
-    const bySlug = new Map(
-      savedChildren
-        .map((c) => {
-          const slug = String(c?.slug || "").trim();
-          return slug ? [slug, { ...c, slug }] as const : null;
-        })
-        .filter((entry): entry is readonly [string, IaChildPage] => Boolean(entry)),
-    );
-    const children = (def.children || []).map((defChild) =>
-      mergeChild(defChild, bySlug.get(defChild.slug), loc),
-    );
-    for (const s of savedChildren) {
-      const slug = String(s?.slug || "").trim();
-      if (slug && !children.some((c) => c.slug === slug)) {
-        children.push(mergeChild({ slug }, { ...s, slug }, loc));
+    const bySlug = new Map<string, IaChildPage>();
+    for (const child of savedChildren) {
+      const slug = normalizeIaSlug(child?.slug);
+      if (!slug) continue;
+      bySlug.set(slug, { ...child, slug });
+    }
+    const children = (def.children || []).map((defChild) => {
+      const slug = normalizeIaSlug(defChild.slug);
+      return mergeChild({ ...defChild, slug }, bySlug.get(slug), loc);
+    });
+    for (const extra of savedChildren) {
+      const slug = normalizeIaSlug(extra?.slug);
+      if (slug && !children.some((c) => normalizeIaSlug(c.slug) === slug)) {
+        children.push(mergeChild({ slug }, { ...extra, slug }, loc));
       }
     }
     out[key] = {
@@ -315,7 +338,11 @@ export function getIaHub(
   hubKey: IaHubKey,
   locale: Locale | string = "en",
 ): IaHubPage {
-  return getIaPages(site, locale)[hubKey];
+  const loc = (locale === "th" || locale === "pl" || locale === "en" ? locale : "en") as Locale;
+  return (
+    getIaPages(site, loc)[hubKey] ||
+    (iaPagesForLocale(loc)[hubKey] as unknown as IaHubPage)
+  );
 }
 
 export function getIaChild(
@@ -324,9 +351,19 @@ export function getIaChild(
   childSlug: string,
   locale: Locale | string = "en",
 ): IaChildPage | null {
-  const hub = getIaHub(site, hubKey, locale);
-  const children = Array.isArray(hub.children) ? hub.children : [];
-  return children.find((c) => c.slug === childSlug) || null;
+  const loc = (locale === "th" || locale === "pl" || locale === "en" ? locale : "en") as Locale;
+  const wanted = normalizeIaSlug(childSlug);
+  if (!wanted) return null;
+
+  const hub = getIaHub(site, hubKey, loc);
+  const children = Array.isArray(hub?.children) ? hub.children : [];
+  const found = children.find((c) => normalizeIaSlug(c.slug) === wanted);
+  if (found) return { ...found, slug: wanted };
+
+  const seedHub = iaPagesForLocale(loc)[hubKey] as IaHubPage | undefined;
+  const seedChild = (seedHub?.children || []).find((c) => normalizeIaSlug(c.slug) === wanted);
+  if (!seedChild) return null;
+  return mergeChild({ ...seedChild, slug: wanted }, undefined, loc);
 }
 
 export function hubPath(hubKey: IaHubKey): string {

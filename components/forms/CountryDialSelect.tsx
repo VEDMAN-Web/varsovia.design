@@ -10,19 +10,13 @@ import {
   flagEmoji,
   type CountryDialCode,
 } from "@/lib/countryDialCodes";
-import type { Locale } from "@/lib/i18n/routing";
 
 const MENU_W = 280;
 const MENU_H = 268;
 
-export function defaultDialCountry(locale: Locale, preferThailand = false): CountryDialCode {
-  const iso2 =
-    locale === "th" || (preferThailand && locale === "en")
-      ? "TH"
-      : locale === "pl"
-        ? "PL"
-        : "GB";
-  return countryByIso2(iso2) ?? COUNTRY_DIAL_CODES.find((c) => c.iso2 === "TH")!;
+/** Varsovia contact forms always open on Thailand (+66), on every locale. */
+export function defaultDialCountry(): CountryDialCode {
+  return countryByIso2("TH") ?? COUNTRY_DIAL_CODES.find((c) => c.iso2 === "TH")!;
 }
 
 type CountryDialSelectProps = {
