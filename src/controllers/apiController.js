@@ -357,6 +357,11 @@ async function updateSite(req, res) {
       console.log("[updateSite] Admin request, returning raw MongoDB data");
     }
     
+    console.log("[updateSite] ===== FINAL PAYLOAD CHECK =====");
+    console.log("[updateSite] payload has pages:", !!payload.pages);
+    console.log("[updateSite] payload.pages has furniture:", !!payload.pages?.furniture);
+    console.log("[updateSite] Payload keys:", Object.keys(payload));
+    console.log("[updateSite] Pages keys:", payload.pages ? Object.keys(payload.pages) : "NO PAGES");
     console.log("[updateSite] ===== END =====");
     return sendSuccess(res, payload, { req });
   } catch (error) {
