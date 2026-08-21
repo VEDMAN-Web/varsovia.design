@@ -183,10 +183,16 @@ function crud(Model, modelName) {
           {
             new: true,
             runValidators: true,
+            // Ensure we bypass any Mongoose cache
+            rawResult: false,
           },
         );
         if (!item) return sendError(res, 404, { message: "Not found" });
-        return sendSuccess(res, item, { req });
+        
+        // Force a fresh read from database to ensure consistency
+        const freshItem = await Model.findById(req.params.id).lean();
+        
+        return sendSuccess(res, freshItem || item, { req });
       } catch (error) {
         if (error.name === "CastError") return sendError(res, 404, { message: "Not found" });
         return sendError(res, 400, { message: error.message });
@@ -311,7 +317,10 @@ async function updateSite(req, res) {
     await site.save();
     invalidateInquiryFormCache();
 
-    const payload = site.toObject ? site.toObject() : site;
+    // Force a fresh read from database to ensure consistency
+    const freshSite = await SiteContent.findOne({ key: "main" }).lean();
+    const payload = freshSite || (site.toObject ? site.toObject() : site);
+    
     if (!isAdminRequest(req)) {
       payload.pages = mergeIaPages(payload.pages);
     }

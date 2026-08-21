@@ -22,7 +22,18 @@ async function connectDB() {
   }
   const maskedUri = uri.replace(/:([^@:]+)@/, ":*****@");
   console.log(`Connecting to database at ${maskedUri}...`);
-  await mongoose.connect(uri);
+  
+  // Configure connection with write concern for immediate consistency
+  await mongoose.connect(uri, {
+    writeConcern: {
+      w: 'majority',
+      j: true, // Wait for journal commit
+      wtimeout: 5000
+    },
+    readPreference: 'primary', // Always read from primary for consistency
+    readConcern: { level: 'majority' }
+  });
+  
   console.log("Database successfully connected to MongoDB Atlas!");
 }
 

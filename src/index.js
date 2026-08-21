@@ -17,7 +17,19 @@ const PORT = process.env.PORT || 5000;
 app.set("trust proxy", 1);
 
 // ─── Security headers ─────────────────────────────────────────────────────────
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+}));
+
+// ─── Prevent any caching of API responses ─────────────────────────────────────
+app.use((req, res, next) => {
+  res.set({
+    'Cache-Control': 'no-store, no-cache, must-revalidate, private, max-age=0',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+  });
+  next();
+});
 
 // ─── Strict CORS ──────────────────────────────────────────────────────────────
 if (process.env.NODE_ENV === "production") {
