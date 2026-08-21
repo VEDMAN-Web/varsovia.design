@@ -22,3 +22,7 @@ jobs:
         run: npm run lint
       - name: Build
         run: npm run build
+        env:
+          # Compile-only placeholders. Real deploys must set these on the host.
+          NEXT_PUBLIC_API_URL: http://localhost:5000/api
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
