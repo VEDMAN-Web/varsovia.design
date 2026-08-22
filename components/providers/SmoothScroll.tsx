@@ -65,10 +65,12 @@ function LuxuryWheelProvider({ children }: { children: ReactNode }) {
         return;
       }
       instance.raf(time);
+      // Only continue RAF loop if actually scrolling with momentum
       if (lenisIsEasing(instance)) {
         rafId = requestAnimationFrame(loop);
       } else {
         running = false;
+        rafId = 0;
       }
     };
 

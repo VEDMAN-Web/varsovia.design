@@ -58,6 +58,7 @@ function CardImage({
     <img
       src={current}
       alt={alt}
+      loading="lazy"
       decoding="async"
       className={`absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out ${
         zoomed ? "scale-110" : "scale-100"

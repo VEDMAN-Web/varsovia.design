@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useReducedMotion } from "framer-motion";
 
 type FixedBackgroundImageProps = {
@@ -11,78 +11,110 @@ type FixedBackgroundImageProps = {
 };
 
 /**
- * Viewport-locked photo inside a scrolling clip frame (window reveal).
- * Avoids `background-attachment: fixed`, which `overflow-x: clip` on html/body breaks.
+ * Optimized viewport-locked parallax with minimal JavaScript.
+ * Uses CSS transforms on GPU layer with passive scroll observation.
  */
 export default function FixedBackgroundImage({
   src,
   alt,
   className = "",
 }: FixedBackgroundImageProps) {
-  const frameRef = useRef<HTMLDivElement>(null);
-  const mediaRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
   const reduceMotion = useReducedMotion();
+  const lastUpdate = useRef({ x: 0, y: 0, width: 0, height: 0 });
 
-  useLayoutEffect(() => {
-    const frame = frameRef.current;
-    const media = mediaRef.current;
-    if (!frame || !media || reduceMotion) return;
+  useEffect(() => {
+    if (reduceMotion) return;
 
-    let ticking = false;
-    let visible = true;
+    const container = containerRef.current;
+    const image = imageRef.current;
+    if (!container || !image) return;
 
-    const apply = () => {
-      ticking = false;
-      if (!visible) return;
-      const rect = frame.getBoundingClientRect();
-      media.style.right = "auto";
-      media.style.bottom = "auto";
-      media.style.width = `${window.innerWidth}px`;
-      media.style.height = `${window.innerHeight}px`;
-      media.style.transform = `translate3d(${-rect.left}px, ${-rect.top}px, 0)`;
+    let isVisible = false;
+    let rafId: number | null = null;
+
+    // Apply transform only if values changed significantly (>1px)
+    const updatePosition = () => {
+      if (!isVisible || !container || !image) {
+        rafId = null;
+        return;
+      }
+
+      const rect = container.getBoundingClientRect();
+      const x = Math.round(-rect.left);
+      const y = Math.round(-rect.top);
+      const w = Math.round(window.innerWidth);
+      const h = Math.round(window.innerHeight);
+
+      // Only update if changed by more than 1px (reduce repaints)
+      const last = lastUpdate.current;
+      if (
+        Math.abs(x - last.x) > 1 ||
+        Math.abs(y - last.y) > 1 ||
+        Math.abs(w - last.width) > 1 ||
+        Math.abs(h - last.height) > 1
+      ) {
+        // Use single composite transform for best performance
+        image.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+        image.style.width = `${w}px`;
+        image.style.height = `${h}px`;
+        lastUpdate.current = { x, y, width: w, height: h };
+      }
+
+      rafId = null;
     };
 
-    const request = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(apply);
+    // Schedule update only if not already scheduled
+    const scheduleUpdate = () => {
+      if (rafId === null && isVisible) {
+        rafId = requestAnimationFrame(updatePosition);
+      }
     };
 
-    const io = new IntersectionObserver(
+    // Intersection observer - only run when visible
+    const observer = new IntersectionObserver(
       ([entry]) => {
-        visible = entry.isIntersecting;
-        if (visible) request();
+        isVisible = entry.isIntersecting;
+        if (isVisible) {
+          scheduleUpdate();
+        } else if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
       },
-      { rootMargin: "25% 0px" },
+      { rootMargin: "100px" } // Start updating slightly before visible
     );
-    io.observe(frame);
 
-    apply();
-    window.addEventListener("scroll", request, { passive: true });
-    window.addEventListener("resize", request, { passive: true });
+    observer.observe(container);
+    
+    // Use passive scroll listener for best performance
+    const handleScroll = () => scheduleUpdate();
+    const handleResize = () => scheduleUpdate();
+    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleResize, { passive: true });
+
+    // Initial position
+    scheduleUpdate();
 
     return () => {
-      visible = false;
-      io.disconnect();
-      window.removeEventListener("scroll", request);
-      window.removeEventListener("resize", request);
+      observer.disconnect();
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
     };
-  }, [reduceMotion, src]);
+  }, [reduceMotion]);
 
-  return (
-    <div
-      ref={frameRef}
-      className={`relative overflow-hidden ${className}`}
-      role="img"
-      aria-label={alt}
-    >
+  if (reduceMotion) {
+    return (
       <div
-        ref={mediaRef}
-        className={
-          reduceMotion
-            ? "absolute inset-0"
-            : "pointer-events-none absolute inset-0 will-change-transform"
-        }
+        ref={containerRef}
+        className={`relative overflow-hidden ${className}`}
+        role="img"
+        aria-label={alt}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -90,8 +122,53 @@ export default function FixedBackgroundImage({
           alt=""
           aria-hidden="true"
           draggable={false}
+          loading="lazy"
           decoding="async"
           className="h-full w-full object-cover object-center select-none"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className={`relative overflow-hidden ${className}`}
+      role="img"
+      aria-label={alt}
+      style={{
+        // Contain layout and paint to prevent reflows
+        contain: 'layout paint',
+      }}
+    >
+      <div
+        ref={imageRef}
+        className="absolute pointer-events-none"
+        style={{
+          // Initial position
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          // GPU acceleration
+          transform: 'translate3d(0, 0, 0)',
+          // Remove will-change to prevent constant GPU memory
+          willChange: 'auto',
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover object-center select-none"
+          style={{
+            // Force GPU compositing only on image
+            transform: 'translateZ(0)',
+          }}
         />
       </div>
     </div>

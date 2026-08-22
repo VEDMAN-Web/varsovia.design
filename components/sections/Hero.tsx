@@ -48,6 +48,9 @@ export default function Hero({
           src={resolveMediaUrl(heroImage, MEDIA.hero)}
           alt={t("heroImageAlt")}
           className="h-full w-full object-cover object-center"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
         />
       </div>
 

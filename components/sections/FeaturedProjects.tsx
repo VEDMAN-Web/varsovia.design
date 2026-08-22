@@ -76,6 +76,7 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
   const [projectLimit, setProjectLimit] = useState(8);
 
   useEffect(() => {
+    let resizeTimer: NodeJS.Timeout;
     const update = () => {
       const w = window.innerWidth;
       if (w < 480) setProjectLimit(4);
@@ -84,8 +85,18 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
       else setProjectLimit(8);
     };
     update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    
+    // Debounce resize to prevent constant updates
+    const handleResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(update, 200);
+    };
+    
+    window.addEventListener("resize", handleResize, { passive: true });
+    return () => {
+      clearTimeout(resizeTimer);
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   const displayProjects = useMemo(
@@ -151,6 +162,8 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover"
                     draggable={false}
+                    loading="lazy"
+                    decoding="async"
                     animate={{ scale: isExpanded ? 1.04 : 1 }}
                     transition={{ duration: 0.55, ease: REVEAL_EASE }}
                     onError={() => {
