@@ -12,8 +12,8 @@ type SectionPreloaderProps = {
 };
 
 /**
- * Preloads critical section images while user is on hero.
- * Uses browser's native image preloading for zero lag.
+ * Preloads all section images immediately on page load.
+ * Uses browser's native image preloading for instant display.
  */
 export default function SectionPreloader({ images }: SectionPreloaderProps) {
   useEffect(() => {
@@ -21,24 +21,21 @@ export default function SectionPreloader({ images }: SectionPreloaderProps) {
 
     const preloadedImages: HTMLLinkElement[] = [];
 
-    // Delay preload slightly to not interfere with hero LCP
-    const timer = setTimeout(() => {
-      images.forEach(({ src, priority = "low" }) => {
-        if (!src) return;
+    // Preload immediately (no delay)
+    images.forEach(({ src, priority = "low" }) => {
+      if (!src) return;
 
-        const link = document.createElement("link");
-        link.rel = "preload";
-        link.as = "image";
-        link.href = src;
-        link.fetchPriority = priority;
-        
-        document.head.appendChild(link);
-        preloadedImages.push(link);
-      });
-    }, 800);
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = src;
+      link.fetchPriority = priority;
+      
+      document.head.appendChild(link);
+      preloadedImages.push(link);
+    });
 
     return () => {
-      clearTimeout(timer);
       preloadedImages.forEach((link) => {
         if (link.parentNode) {
           link.parentNode.removeChild(link);

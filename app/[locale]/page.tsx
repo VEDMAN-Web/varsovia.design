@@ -50,9 +50,9 @@ export default async function Home({ params }: Props) {
   ]);
   const site = data.site || {};
 
-  // Preload critical images from next 2-3 sections (About, Stats, FeaturedProjects)
+  // Preload ALL section images (About, Stats, FeaturedProjects, Products, Catalogue, Testimonials, CoreStrengths)
   const preloadImages = [
-    // About section images
+    // About section images (3 images)
     ...(site.aboutImages || []).slice(0, 3).map((img: string) => ({
       src: resolveMediaUrl(img, MEDIA.about[0]),
       priority: "low" as const,
@@ -62,9 +62,34 @@ export default async function Home({ params }: Props) {
       src: resolveMediaUrl(site.statsImage, MEDIA.stats),
       priority: "low" as const,
     },
-    // First 3 featured projects
-    ...(projects || []).slice(0, 3).map((project: { coverImage?: string; gallery?: string[] }) => ({
+    // Featured projects (first 6)
+    ...(projects || []).slice(0, 6).map((project: { coverImage?: string; gallery?: string[] }) => ({
       src: resolveMediaUrl(project.coverImage || project.gallery?.[0], MEDIA.featured[0]),
+      priority: "low" as const,
+    })),
+    // Products section (first 3)
+    ...(products || []).slice(0, 3).map((product: { image?: string }) => ({
+      src: resolveMediaUrl(product.image, MEDIA.products[0]),
+      priority: "low" as const,
+    })),
+    // Catalogue section (first 5)
+    ...(data.catalogues || []).slice(0, 5).map((cat: { coverImage?: string; image?: string }, idx: number) => ({
+      src: resolveMediaUrl(cat.coverImage || cat.image, MEDIA.catalogues[idx % MEDIA.catalogues.length]),
+      priority: "low" as const,
+    })),
+    // Testimonials (first 7)
+    ...(data.testimonials || []).slice(0, 7).map((t: { image?: string }, idx: number) => ({
+      src: resolveMediaUrl(t.image, MEDIA.stories[idx % MEDIA.stories.length]),
+      priority: "low" as const,
+    })),
+    // Core strengths (first 6)
+    ...(data.coreStrengths || []).slice(0, 6).map((s: { image?: string }, idx: number) => ({
+      src: resolveMediaUrl(s.image, MEDIA.core[idx % MEDIA.core.length]),
+      priority: "low" as const,
+    })),
+    // Contact images (first 3)
+    ...(site.contactImages || []).slice(0, 3).map((img: string) => ({
+      src: resolveMediaUrl(img, MEDIA.contact[0]),
       priority: "low" as const,
     })),
   ].filter((item) => item.src);
