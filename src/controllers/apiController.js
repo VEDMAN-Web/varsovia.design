@@ -337,8 +337,16 @@ async function updateSite(req, res) {
     }
 
     console.log("[updateSite] Saving to MongoDB...");
+    console.log("[updateSite] About to save - furniture hero:", 
+      site.pages?.furniture?.hero?.image);
     await site.save();
     console.log("[updateSite] ✅ Saved to MongoDB successfully");
+    
+    // Verify what was actually written
+    const verification = await SiteContent.findOne({ key: "main" }).lean();
+    console.log("[updateSite] Verification read - furniture hero:",
+      verification?.pages?.furniture?.hero?.image);
+    
     invalidateInquiryFormCache();
 
     // Force a fresh read from database to ensure consistency
