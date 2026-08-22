@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import SmoothScroll from "@/components/providers/SmoothScroll";
 import FooterWrapper from "@/components/layout/FooterWrapper";
 import { SiteSettingsProvider } from "@/components/providers/SiteSettingsProvider";
 import LocaleHtmlLang from "@/components/i18n/LocaleHtmlLang";
@@ -73,14 +72,12 @@ export default async function LocaleLayout({ children, params }: Props) {
         telephone={site?.phone || site?.contactPhone}
         logo={site?.brandLogoLockup || site?.brandLogoMark}
       />
-      <SmoothScroll>
-        <SiteSettingsProvider site={site}>
-          <SiteIntroShell>
-            {children}
-            <FooterWrapper site={site} />
-          </SiteIntroShell>
-        </SiteSettingsProvider>
-      </SmoothScroll>
+      <SiteSettingsProvider site={site}>
+        <SiteIntroShell>
+          {children}
+          <FooterWrapper site={site} />
+        </SiteIntroShell>
+      </SiteSettingsProvider>
     </NextIntlClientProvider>
   );
 }

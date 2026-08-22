@@ -151,18 +151,12 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
       setHoveredIndex(null);
     };
 
-    // Use Lenis scroll event instead of window scroll for better performance
-    const lenis = (window as { __lenis?: { on: (event: string, cb: () => void) => void; off: (event: string, cb: () => void) => void } }).__lenis;
-    if (lenis) {
-      lenis.on('scroll', lockHover);
-    }
-
+    // Use native scroll event for better performance
+    window.addEventListener("scroll", lockHover, { passive: true });
     window.addEventListener("wheel", lockHover, { passive: true });
 
     return () => {
-      if (lenis) {
-        lenis.off('scroll', lockHover);
-      }
+      window.removeEventListener("scroll", lockHover);
       window.removeEventListener("wheel", lockHover);
     };
   }, []);
