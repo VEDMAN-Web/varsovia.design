@@ -382,7 +382,6 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
                         <img
                           src={item.image}
                           alt=""
-                          loading="lazy"
                           decoding="async"
                           className="pointer-events-none absolute inset-0 h-full w-full scale-[1.04] object-cover object-center"
                           draggable={false}

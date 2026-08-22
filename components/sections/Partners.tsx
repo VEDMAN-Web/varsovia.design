@@ -36,7 +36,6 @@ function PartnerLogoImage({ name, src }: PartnerLogo) {
       className="partners-marquee-logo shrink-0 max-h-12 w-auto max-w-[140px] object-contain"
       draggable={false}
       decoding="async"
-      fetchPriority="low"
     />
   );
 }

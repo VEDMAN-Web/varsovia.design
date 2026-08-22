@@ -127,7 +127,6 @@ export default function About({
                     alt={img.alt}
                     className="h-full w-full object-cover"
                     decoding="async"
-                    fetchPriority="low"
                     animate={{ scale: isHovered ? 1.06 : 1 }}
                     transition={{ duration: 0.55, ease: REVEAL_EASE }}
                   />

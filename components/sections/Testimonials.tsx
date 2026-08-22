@@ -379,7 +379,6 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
                       <img
                         src={item.image}
                         alt={item.name}
-                        loading="lazy"
                         decoding="async"
                         className="pointer-events-none absolute inset-0 h-full w-full object-cover"
                         draggable={false}
@@ -405,7 +404,6 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
                           <img
                             src={item.avatar}
                             alt=""
-                            loading="lazy"
                             decoding="async"
                             className="h-9 w-9 rounded-full object-cover ring-2 ring-white/50 sm:h-11 sm:w-11"
                           />
