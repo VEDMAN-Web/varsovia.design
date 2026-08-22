@@ -151,11 +151,18 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
       setHoveredIndex(null);
     };
 
-    window.addEventListener("scroll", lockHover, { passive: true, capture: true });
+    // Use Lenis scroll event instead of window scroll for better performance
+    const lenis = (window as any).__lenis;
+    if (lenis) {
+      lenis.on('scroll', lockHover);
+    }
+
     window.addEventListener("wheel", lockHover, { passive: true });
 
     return () => {
-      window.removeEventListener("scroll", lockHover, true);
+      if (lenis) {
+        lenis.off('scroll', lockHover);
+      }
       window.removeEventListener("wheel", lockHover);
     };
   }, []);
@@ -356,7 +363,8 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
                           borderLeft: "4.6px solid #251B1E",
                           boxShadow: isHovered ? CARD_HOVER_SHADOW : CARD_REST_SHADOW,
                           transformOrigin: "center center",
-                          willChange: "transform",
+                          willChange: "transform, opacity",
+                          transform: "translateZ(0)",
                         }}
                         initial={false}
                         animate={{
@@ -374,6 +382,8 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
                         <img
                           src={item.image}
                           alt=""
+                          loading="lazy"
+                          decoding="async"
                           className="pointer-events-none absolute inset-0 h-full w-full scale-[1.04] object-cover object-center"
                           draggable={false}
                         />

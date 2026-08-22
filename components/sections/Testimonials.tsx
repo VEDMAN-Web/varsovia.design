@@ -207,8 +207,16 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
       }
     };
     update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    let timeoutId: number;
+    const debouncedUpdate = () => {
+      clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(update, 150);
+    };
+    window.addEventListener("resize", debouncedUpdate);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener("resize", debouncedUpdate);
+    };
   }, []);
 
   useEffect(() => {
@@ -339,6 +347,8 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
                       transformOrigin: "center center",
                       zIndex: isCenter ? 30 : 20 - Math.abs(offset),
                       pointerEvents: "auto",
+                      willChange: "transform, opacity",
+                      transform: "translateZ(0)",
                     }}
                     initial={{ opacity: 0 }}
                     animate={{
@@ -369,6 +379,8 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
                       <img
                         src={item.image}
                         alt={item.name}
+                        loading="lazy"
+                        decoding="async"
                         className="pointer-events-none absolute inset-0 h-full w-full object-cover"
                         draggable={false}
                       />
@@ -393,6 +405,8 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
                           <img
                             src={item.avatar}
                             alt=""
+                            loading="lazy"
+                            decoding="async"
                             className="h-9 w-9 rounded-full object-cover ring-2 ring-white/50 sm:h-11 sm:w-11"
                           />
                           <div className="min-w-0">

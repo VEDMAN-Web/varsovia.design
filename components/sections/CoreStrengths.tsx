@@ -299,6 +299,8 @@ export default function CoreStrengths({ strengths }: { strengths?: ApiCoreStreng
                     transformStyle: "preserve-3d",
                     transformPerspective: perspectivePx,
                     pointerEvents: "auto",
+                    willChange: "transform",
+                    transform: "translateZ(0)",
                   }}
                   initial={false}
                   animate={{
@@ -341,6 +343,8 @@ export default function CoreStrengths({ strengths }: { strengths?: ApiCoreStreng
                     <img
                       src={item.image}
                       alt=""
+                      loading="lazy"
+                      decoding="async"
                       className="pointer-events-none absolute inset-0 h-full w-full object-cover"
                       draggable={false}
                     />
