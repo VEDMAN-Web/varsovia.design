@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import { useTranslations } from "next-intl";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 import SectionShell from "@/components/ui/SectionShell";
 import FixedBackgroundImage from "@/components/ui/FixedBackgroundImage";
 import { MEDIA, resolveMediaUrl } from "@/lib/mediaAssets";
+import { staggerContainer, fadeUpItem, reducedFadeUpItem, VIEWPORT_ONCE } from "@/lib/motionPresets";
 
 type Stat = { value: string; label: string };
 
@@ -41,9 +42,9 @@ function CountUp({
   const suffix = suffixMatch && suffixMatch[1] !== prefix ? suffixMatch[1] : "";
   const to = numMatch ? parseInt(numMatch[1], 10) : 0;
 
-  const [n, setN] = useState(0);
+  const [n, setN] = React.useState(0);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!active) return;
     let frame = 0;
     const start = performance.now();
@@ -78,20 +79,24 @@ export default function Stats({ stats, statsImage }: StatsProps) {
         ];
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.45 });
+  const reduceMotion = useReducedMotion();
 
   const imageSrc = resolveMediaUrl(statsImage, MEDIA.stats);
 
   return (
     <section ref={ref} className="bg-[#fdf2f0] pb-0 pt-8 sm:pt-10 md:pt-14">
       <SectionShell>
-        <div className="grid grid-cols-1 gap-8 text-center min-[480px]:grid-cols-3 min-[480px]:gap-4 sm:gap-6">
+        <motion.div
+          className="grid grid-cols-1 gap-8 text-center min-[480px]:grid-cols-3 min-[480px]:gap-4 sm:gap-6"
+          initial="hidden"
+          whileInView="visible"
+          viewport={VIEWPORT_ONCE}
+          variants={staggerContainer(0.1, 0.1)}
+        >
           {displayStats.map((stat, i) => (
             <motion.div
               key={stat.label}
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1, duration: 0.5 }}
+              variants={reduceMotion ? reducedFadeUpItem : fadeUpItem}
             >
               <p className="font-display text-[clamp(2.75rem,5vw,3.125rem)] font-normal leading-none tracking-[0.1em] text-[#6a414d]">
                 <CountUp raw={stat.value} active={inView} />
@@ -101,7 +106,7 @@ export default function Stats({ stats, statsImage }: StatsProps) {
               </p>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </SectionShell>
 
       <SectionShell className="mt-12 md:mt-16">
@@ -110,3 +115,6 @@ export default function Stats({ stats, statsImage }: StatsProps) {
     </section>
   );
 }
+
+// Add React import for useState
+import React from "react";
