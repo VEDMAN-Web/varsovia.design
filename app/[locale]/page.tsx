@@ -1,15 +1,10 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import Navbar from "@/components/layout/Navbar";
 import Hero from "@/components/sections/Hero";
 import About from "@/components/sections/About";
 import Stats from "@/components/sections/Stats";
-import Products from "@/components/sections/Products";
-import Catalogue from "@/components/sections/Catalogue";
 import FeaturedProjects from "@/components/sections/FeaturedProjects";
-import Testimonials from "@/components/sections/Testimonials";
-import CoreStrengths from "@/components/sections/CoreStrengths";
-import Partners from "@/components/sections/Partners";
-import Contact from "@/components/sections/Contact";
 import HomeScrollToTop from "@/components/home/HomeScrollToTop";
 import SectionPreloader from "@/components/sections/SectionPreloader";
 import { fetchHomeData, fetchProducts, fetchProjects, fetchSite } from "@/lib/api";
@@ -17,6 +12,26 @@ import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/i18n/routing";
 import { pageMetadata } from "@/lib/seo";
 import { resolveMediaUrl, MEDIA } from "@/lib/mediaAssets";
+
+// Lazy load below-fold sections for better initial load performance
+const Catalogue = dynamic(() => import("@/components/sections/Catalogue"), {
+  loading: () => <div className="min-h-[400px]" />,
+});
+const Products = dynamic(() => import("@/components/sections/Products"), {
+  loading: () => <div className="min-h-[400px]" />,
+});
+const Testimonials = dynamic(() => import("@/components/sections/Testimonials"), {
+  loading: () => <div className="min-h-[400px]" />,
+});
+const CoreStrengths = dynamic(() => import("@/components/sections/CoreStrengths"), {
+  loading: () => <div className="min-h-[300px]" />,
+});
+const Partners = dynamic(() => import("@/components/sections/Partners"), {
+  loading: () => <div className="min-h-[200px]" />,
+});
+const Contact = dynamic(() => import("@/components/sections/Contact"), {
+  loading: () => <div className="min-h-[500px]" />,
+});
 
 type Props = {
   params: Promise<{ locale: string }>;

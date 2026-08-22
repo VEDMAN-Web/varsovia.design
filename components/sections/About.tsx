@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { useTranslations } from "next-intl";
 import {
@@ -38,7 +38,7 @@ type AboutProps = {
   ctaHref?: string;
 };
 
-export default function About({
+function AboutComponent({
   title,
   subtitle,
   text,
@@ -176,3 +176,5 @@ export default function About({
     </section>
   );
 }
+
+export default memo(AboutComponent);

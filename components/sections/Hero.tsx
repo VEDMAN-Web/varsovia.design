@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useIntroComplete } from "@/components/preloader/IntroProvider";
@@ -19,7 +20,7 @@ export type HeroContent = {
 
 const REVEAL_EASE = [0.22, 1, 0.36, 1] as const;
 
-export default function Hero({
+function HeroComponent({
   eyebrow,
   headline,
   subtitle,
@@ -113,3 +114,5 @@ export default function Hero({
     </section>
   );
 }
+
+export default memo(HeroComponent);

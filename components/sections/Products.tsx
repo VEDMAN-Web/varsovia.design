@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
@@ -91,7 +92,7 @@ const FALLBACK_PRODUCTS: Product[] = [
   },
 ];
 
-export default function Products({ products }: ProductsProps) {
+function ProductsComponent({ products }: ProductsProps) {
   const t = useTranslations("home");
   const site = useSiteSettings();
   const section = site?.sectionCopy?.products;
@@ -166,3 +167,4 @@ export default function Products({ products }: ProductsProps) {
   );
 }
 
+export default memo(ProductsComponent);

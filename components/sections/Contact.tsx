@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { useTranslations } from "next-intl";
 import { motion, useReducedMotion } from "framer-motion";
 import ContactFormPanel from "@/components/forms/ContactFormPanel";
@@ -12,7 +13,7 @@ type ContactProps = {
   images: string[];
 };
 
-export default function Contact({ images }: ContactProps) {
+function ContactComponent({ images }: ContactProps) {
   const t = useTranslations("home");
   const site = useSiteSettings();
   const section = site?.sectionCopy?.contact;
@@ -41,3 +42,5 @@ export default function Contact({ images }: ContactProps) {
     </section>
   );
 }
+
+export default memo(ContactComponent);

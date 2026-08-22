@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { motion, useReducedMotion, type PanInfo } from "framer-motion";
 import {
@@ -156,7 +156,7 @@ function getGeometry(offset: number) {
   };
 }
 
-export default function CoreStrengths({ strengths }: { strengths?: ApiCoreStrength[] }) {
+function CoreStrengthsComponent({ strengths }: { strengths?: ApiCoreStrength[] }) {
   const t = useTranslations("home");
   const site = useSiteSettings();
   const section = site?.sectionCopy?.coreStrengths;
@@ -411,3 +411,5 @@ export default function CoreStrengths({ strengths }: { strengths?: ApiCoreStreng
     </section>
   );
 }
+
+export default memo(CoreStrengthsComponent);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import SectionShell from "@/components/ui/SectionShell";
@@ -67,7 +67,7 @@ function CountUp({
   );
 }
 
-export default function Stats({ stats, statsImage }: StatsProps) {
+function StatsComponent({ stats, statsImage }: StatsProps) {
   const t = useTranslations("home");
   const displayStats =
     stats && stats.length > 0
@@ -118,3 +118,5 @@ export default function Stats({ stats, statsImage }: StatsProps) {
 
 // Add React import for useState
 import React from "react";
+
+export default memo(StatsComponent);

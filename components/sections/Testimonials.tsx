@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { motion, useReducedMotion, type PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { debounce } from "@/lib/debounce";
 import { getRelativeOffset } from "@/lib/carousel";
 import SectionHeading from "@/components/ui/SectionHeading";
 import SectionShell, { SECTION_HEADING_WIDE, SITE_SECTION_PADDING_Y } from "@/components/ui/SectionShell";
@@ -171,7 +172,7 @@ function getCurve(offset: number, gap: number) {
   };
 }
 
-export default function Testimonials({ testimonials }: { testimonials: Testimonial[] }) {
+function TestimonialsComponent({ testimonials }: { testimonials: Testimonial[] }) {
   const t = useTranslations("home");
   const site = useSiteSettings();
   const section = site?.sectionCopy?.testimonials;
@@ -207,14 +208,11 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
       }
     };
     update();
-    let timeoutId: number;
-    const debouncedUpdate = () => {
-      clearTimeout(timeoutId);
-      timeoutId = window.setTimeout(update, 150);
-    };
+    
+    // Debounced resize handler
+    const debouncedUpdate = debounce(update, 150);
     window.addEventListener("resize", debouncedUpdate);
     return () => {
-      clearTimeout(timeoutId);
       window.removeEventListener("resize", debouncedUpdate);
     };
   }, []);
@@ -463,3 +461,5 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
     </section>
   );
 }
+
+export default memo(TestimonialsComponent);

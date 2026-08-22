@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { Link } from "@/lib/i18n/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import { debounce } from "@/lib/debounce";
 import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
 import SectionShell, { SECTION_HEADING_WIDE, SITE_SECTION_PADDING_Y } from "@/components/ui/SectionShell";
 import MagneticButton from "@/components/ui/MagneticButton";
@@ -65,7 +66,7 @@ function buildDisplayProjects(projects?: Project[]) {
   return merged;
 }
 
-export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
+function FeaturedProjectsComponent({ projects }: FeaturedProjectsProps) {
   const t = useTranslations("home");
   const site = useSiteSettings();
   const section = site?.sectionCopy?.featured;
@@ -76,7 +77,6 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
   const [projectLimit, setProjectLimit] = useState(8);
 
   useEffect(() => {
-    let resizeTimer: NodeJS.Timeout;
     const update = () => {
       const w = window.innerWidth;
       if (w < 480) setProjectLimit(4);
@@ -86,15 +86,11 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
     };
     update();
     
-    // Debounce resize to prevent constant updates
-    const handleResize = () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(update, 200);
-    };
+    // Debounced resize handler to prevent constant updates
+    const handleResize = debounce(update, 200);
     
     window.addEventListener("resize", handleResize, { passive: true });
     return () => {
-      clearTimeout(resizeTimer);
       window.removeEventListener("resize", handleResize);
     };
   }, []);
@@ -230,3 +226,4 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
   );
 }
 
+export default memo(FeaturedProjectsComponent);

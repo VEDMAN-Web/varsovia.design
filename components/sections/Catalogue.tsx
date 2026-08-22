@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { motion, useReducedMotion, type PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { debounce } from "@/lib/debounce";
 import { getRelativeOffset } from "@/lib/carousel";
 import DownloadCatalogueModal from "@/components/forms/DownloadCatalogueModal";
 import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
@@ -67,7 +68,7 @@ function catalogueImage(item: CatalogueItem, index: number) {
   return catalogueCoverPhoto(cover, index, theme.photo);
 }
 
-export default function Catalogue({ catalogues, contactImages = fallbackHomeData.site.contactImages }: CatalogueProps) {
+function CatalogueComponent({ catalogues, contactImages = fallbackHomeData.site.contactImages }: CatalogueProps) {
   const t = useTranslations("home");
   const site = useSiteSettings();
   const section = site?.sectionCopy?.catalogue;
@@ -192,8 +193,11 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
       setStep(width + gap);
     };
     update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    
+    // Debounced resize handler
+    const debouncedUpdate = debounce(update, 150);
+    window.addEventListener("resize", debouncedUpdate);
+    return () => window.removeEventListener("resize", debouncedUpdate);
   }, []);
 
   useEffect(() => {
@@ -433,3 +437,5 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
     </>
   );
 }
+
+export default memo(CatalogueComponent);

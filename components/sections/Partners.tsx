@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import SectionHeadingReveal from "@/components/ui/SectionHeadingReveal";
@@ -56,7 +56,7 @@ type Partner = {
   logo?: string;
 };
 
-export default function Partners({ partners = [] }: { partners?: Partner[] }) {
+function PartnersComponent({ partners = [] }: { partners?: Partner[] }) {
   const t = useTranslations("home");
   const site = useSiteSettings();
   const section = site?.sectionCopy?.partners;
@@ -107,3 +107,5 @@ export default function Partners({ partners = [] }: { partners?: Partner[] }) {
     </section>
   );
 }
+
+export default memo(PartnersComponent);
