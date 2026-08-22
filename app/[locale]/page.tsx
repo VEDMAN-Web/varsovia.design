@@ -11,10 +11,12 @@ import CoreStrengths from "@/components/sections/CoreStrengths";
 import Partners from "@/components/sections/Partners";
 import Contact from "@/components/sections/Contact";
 import HomeScrollToTop from "@/components/home/HomeScrollToTop";
+import SectionPreloader from "@/components/sections/SectionPreloader";
 import { fetchHomeData, fetchProducts, fetchProjects, fetchSite } from "@/lib/api";
 import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/i18n/routing";
 import { pageMetadata } from "@/lib/seo";
+import { resolveMediaUrl, MEDIA } from "@/lib/mediaAssets";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -48,9 +50,29 @@ export default async function Home({ params }: Props) {
   ]);
   const site = data.site || {};
 
+  // Preload critical images from next 2-3 sections (About, Stats, FeaturedProjects)
+  const preloadImages = [
+    // About section images
+    ...(site.aboutImages || []).slice(0, 3).map((img: string) => ({
+      src: resolveMediaUrl(img, MEDIA.about[0]),
+      priority: "low" as const,
+    })),
+    // Stats image
+    {
+      src: resolveMediaUrl(site.statsImage, MEDIA.stats),
+      priority: "low" as const,
+    },
+    // First 3 featured projects
+    ...(projects || []).slice(0, 3).map((project: any) => ({
+      src: resolveMediaUrl(project.coverImage || project.gallery?.[0], MEDIA.featured[0]),
+      priority: "low" as const,
+    })),
+  ].filter((item) => item.src);
+
   return (
     <>
       <Navbar />
+      <SectionPreloader images={preloadImages} />
       <main>
         <Hero
           eyebrow={site.heroEyebrow}
