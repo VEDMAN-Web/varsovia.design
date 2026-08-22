@@ -63,7 +63,7 @@ export default async function Home({ params }: Props) {
       priority: "low" as const,
     },
     // First 3 featured projects
-    ...(projects || []).slice(0, 3).map((project: any) => ({
+    ...(projects || []).slice(0, 3).map((project: { coverImage?: string; gallery?: string[] }) => ({
       src: resolveMediaUrl(project.coverImage || project.gallery?.[0], MEDIA.featured[0]),
       priority: "low" as const,
     })),
