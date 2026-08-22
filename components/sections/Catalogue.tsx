@@ -152,7 +152,7 @@ export default function Catalogue({ catalogues, contactImages = fallbackHomeData
     };
 
     // Use Lenis scroll event instead of window scroll for better performance
-    const lenis = (window as any).__lenis;
+    const lenis = (window as { __lenis?: { on: (event: string, cb: () => void) => void; off: (event: string, cb: () => void) => void } }).__lenis;
     if (lenis) {
       lenis.on('scroll', lockHover);
     }
