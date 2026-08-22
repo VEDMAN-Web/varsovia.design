@@ -1,57 +1,57 @@
 /** Self-hosted assets under /public — mapped from legacy /home/* paths. */
 
 export const MEDIA = {
-  hero: "/home/hero.jpg",
-  stats: "/home/stats.jpg",
-  team: "/team/team.jpg",
-  blog: "/blog/blog1.jpg",
+  hero: "/home/hero.webp",
+  stats: "/home/stats.webp",
+  team: "/team/team.webp",
+  blog: "/blog/blog1.webp",
   about: ["/home/about-1.png", "/home/about-2.png", "/home/about-3.png"],
   core: [
-    "/home/core/core-1.jpg",
-    "/home/core/core-2.jpg",
-    "/home/core/core-3.jpg",
-    "/home/core/core-4.jpg",
-    "/home/core/core-5.jpg",
-    "/home/core/core-6.jpg",
+    "/home/core/core-1.webp",
+    "/home/core/core-2.webp",
+    "/home/core/core-3.webp",
+    "/home/core/core-4.webp",
+    "/home/core/core-5.webp",
+    "/home/core/core-6.webp",
   ],
-  products: ["/home/product/product-1.jpg", "/home/product/product-2.jpg", "/home/product/product-3.jpg"],
+  products: ["/home/product/product-1.webp", "/home/product/product-2.webp", "/home/product/product-3.webp"],
   catalogues: [
-    "/home/catalog/catalog-1.jpg",
-    "/home/catalog/catalog-2.jpg",
-    "/home/catalog/catalog-3.jpg",
-    "/home/catalog/catalog-4.jpg",
-    "/home/catalog/catalog-5.jpg",
+    "/home/catalog/catalog-1.webp",
+    "/home/catalog/catalog-2.webp",
+    "/home/catalog/catalog-3.webp",
+    "/home/catalog/catalog-4.webp",
+    "/home/catalog/catalog-5.webp",
   ],
   featured: [
-    "/home/featured/feature-1.jpg",
-    "/home/featured/feature-2.jpg",
-    "/home/featured/feature-3.jpg",
-    "/home/featured/feature-4.jpg",
-    "/home/featured/feature-5.jpg",
-    "/home/featured/feature-6.jpg",
-    "/home/featured/feature-7.jpg",
-    "/home/featured/feature-8.jpg",
+    "/home/featured/feature-1.webp",
+    "/home/featured/feature-2.webp",
+    "/home/featured/feature-3.webp",
+    "/home/featured/feature-4.webp",
+    "/home/featured/feature-5.webp",
+    "/home/featured/feature-6.webp",
+    "/home/featured/feature-7.webp",
+    "/home/featured/feature-8.webp",
   ],
   stories: [
-    "/home/stories/story-1.jpg",
-    "/home/stories/story-2.jpg",
-    "/home/stories/story-3.jpg",
-    "/home/stories/story-4.jpg",
-    "/home/stories/story-5.jpg",
-    "/home/stories/story-6.jpg",
-    "/home/stories/story-7.jpg",
+    "/home/stories/story-1.webp",
+    "/home/stories/story-2.webp",
+    "/home/stories/story-3.webp",
+    "/home/stories/story-4.webp",
+    "/home/stories/story-5.webp",
+    "/home/stories/story-6.webp",
+    "/home/stories/story-7.webp",
   ],
   contact: [
-    "/home/contact/contact-1.jpg",
-    "/home/contact/contact-2.jpg",
-    "/home/contact/contact-3.jpg",
-    "/home/contact/contact-4.jpg",
-    "/home/contact/contact-5.jpg",
-    "/home/contact/contact-6.jpg",
-    "/home/contact/contact-7.jpg",
+    "/home/contact/contact-1.webp",
+    "/home/contact/contact-2.webp",
+    "/home/contact/contact-3.webp",
+    "/home/contact/contact-4.webp",
+    "/home/contact/contact-5.webp",
+    "/home/contact/contact-6.webp",
+    "/home/contact/contact-7.webp",
   ],
-  interior: ["/Interior-kitchen/kitchen1.jpg", "/Interior-kitchen/kitchen2.jpg"],
-  showrooms: ["/home/about-1.jpg", "/home/about-2.jpg", "/home/about-3.jpg"],
+  interior: ["/Interior-kitchen/kitchen1.webp", "/Interior-kitchen/kitchen2.webp"],
+  showrooms: ["/home/about-1.webp", "/home/about-2.webp", "/home/about-3.webp"],
   qualitySupport: [
     "/quality-sale/support-illustration-1.png",
     "/quality-sale/support-illustration-2.png",
@@ -63,22 +63,28 @@ export const MEDIA = {
 /** Legacy CMS / seed paths → files under /public (see scripts/download-media.ps1). */
 const LOCAL_ALIASES: Record<string, string> = {
   "/home/catalog-1.jpg": MEDIA.catalogues[1],
-  "/home/product/product-3.jpg": MEDIA.products[2],
-  "/home/home-front-page.png": "/home/hero.jpg",
+  "/home/home-front-page.png": "/home/hero.webp",
   "/home/counting.png": MEDIA.stats,
   "/home/about-1.png": MEDIA.about[0],
   "/home/about-2.png": MEDIA.about[1],
   "/home/about-3.png": MEDIA.about[2],
   "/home/product/product-1.png": MEDIA.products[0],
+  "/home/product/product-1.jpg": MEDIA.products[0],
   "/home/product/product-2.png": MEDIA.products[1],
+  "/home/product/product-2.jpg": MEDIA.products[1],
+  "/home/product/product-3.jpg": MEDIA.products[2],
   "/home/catalog.png": MEDIA.catalogues[0],
   "/home/catalog-2.png": MEDIA.catalogues[1],
   "/home/catalog-3.png": MEDIA.catalogues[2],
   "/home/catalog-4.png": MEDIA.catalogues[3],
   "/team/team.png": MEDIA.team,
+  "/team/team.jpg": MEDIA.team,
   "/blog/blog1.png": MEDIA.blog,
+  "/blog/blog1.jpg": MEDIA.blog,
   "/Interior-kitchen/kitchen1.png": MEDIA.interior[0],
+  "/Interior-kitchen/kitchen1.jpg": MEDIA.interior[0],
   "/Interior-kitchen/kitchen2.png": MEDIA.interior[1],
+  "/Interior-kitchen/kitchen2.jpg": MEDIA.interior[1],
   "/partners/figma/fischer.png": "/partners/fischer-mask.svg",
   "/partners/figma/bostik.png": "/partners/bostik-mask.svg",
   "/partners/figma/egger.png": "/partners/egger-mask.svg",
@@ -113,6 +119,14 @@ for (let i = 1; i <= 6; i += 1) {
 for (let i = 1; i <= 7; i += 1) {
   const story = MEDIA.stories[i - 1] ?? MEDIA.stories[0];
   LOCAL_ALIASES[`/home/stories/story-${i}.jpg`] = story;
+  LOCAL_ALIASES[`/home/stories/story-${i}.webp`] = story;
+}
+
+// Add backward compatibility aliases for .jpg to .webp conversion
+for (const [jpgPath, resolvedPath] of Object.entries(LOCAL_ALIASES)) {
+  if (jpgPath.endsWith('.jpg')) {
+    LOCAL_ALIASES[jpgPath.replace(/\.jpg$/, '.webp')] = resolvedPath;
+  }
 }
 
 function isPrivateAssetHost(hostname: string): boolean {

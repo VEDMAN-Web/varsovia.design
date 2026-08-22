@@ -97,9 +97,9 @@ function LuxuryWheelProvider({ children }: { children: ReactNode }) {
         wrapper: window,
         smoothWheel: true,
         syncTouch: false,
-        lerp: 0.15,
-        duration: 1.2,
-        wheelMultiplier: 1,
+        lerp: 0.12, // Smooth yet responsive (was 0.15)
+        duration: 1.4, // Extended for luxury feel (was 1.2)
+        wheelMultiplier: 0.8, // Slightly reduce scroll speed for elegance
         touchMultiplier: 1,
         gestureOrientation: "vertical",
         anchors: { offset: -88 },
@@ -108,6 +108,7 @@ function LuxuryWheelProvider({ children }: { children: ReactNode }) {
         autoRaf: false,
         overscroll: true,
         allowNestedScroll: true,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Custom easing for luxury feel
       });
       instance.on("scroll", kickRaf);
       instanceRef.current = instance;
