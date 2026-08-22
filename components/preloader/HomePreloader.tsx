@@ -24,7 +24,8 @@ export const PRELOADER_HOLD = 1;
 export const PRELOADER_ZOOM = 0.8;
 
 const MASK_ID = "varsovia-wing-portal-mask";
-const OVERLAY = "#ffffff";
+const PAGE_BG = "#ffffff";
+const LOGO_COLOR = "#8B6F6F";
 const PORTAL_EASE = "cubic-bezier(0.76, 0, 0.2, 1)";
 const TRANSPARENT_PIXEL =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
@@ -125,9 +126,18 @@ function animateHeroKenBurns(
   durationMs: number,
   signal: AbortSignal,
 ) {
+  // Hero stays visible - no animation needed, just keep it visible
+  return Promise.resolve();
+}
+
+function animateOverlayFade(
+  overlayRect: SVGRectElement,
+  durationMs: number,
+  signal: AbortSignal,
+) {
   return new Promise<void>((resolve, reject) => {
-    const animation = hero.animate(
-      [{ transform: "scale(1)" }, { transform: "scale(1.12)" }],
+    const animation = overlayRect.animate(
+      [{ opacity: "1" }, { opacity: "0" }],
       { duration: durationMs, easing: PORTAL_EASE, fill: "forwards" },
     );
     signal.addEventListener("abort", () => {
@@ -136,6 +146,62 @@ function animateHeroKenBurns(
     });
     animation.onfinish = () => resolve();
     animation.oncancel = () => reject(new DOMException("Aborted", "AbortError"));
+  });
+}
+
+function animateLogoFade(
+  logoSvg: SVGPathElement,
+  durationMs: number,
+  signal: AbortSignal,
+) {
+  return new Promise<void>((resolve, reject) => {
+    const animation = logoSvg.animate(
+      [{ opacity: "1" }, { opacity: "0" }],
+      { duration: durationMs, easing: PORTAL_EASE, fill: "forwards" },
+    );
+    signal.addEventListener("abort", () => {
+      animation.cancel();
+      reject(new DOMException("Aborted", "AbortError"));
+    });
+    animation.onfinish = () => resolve();
+    animation.oncancel = () => reject(new DOMException("Aborted", "AbortError"));
+  });
+}
+
+function animateLogoZoom(
+  logoGroup: SVGGElement,
+  startScale: number,
+  targetScale: number,
+  durationMs: number,
+  signal: AbortSignal,
+) {
+  return new Promise<void>((resolve, reject) => {
+    const start = performance.now();
+    let frame = 0;
+
+    const tick = (now: number) => {
+      if (signal.aborted) {
+        reject(new DOMException("Aborted", "AbortError"));
+        return;
+      }
+      const t = Math.min(1, (now - start) / durationMs);
+      const scale = startScale + (targetScale - startScale) * easeOutCubic(t);
+      logoGroup.setAttribute("transform", `scale(${scale})`);
+
+      if (t < 1) {
+        frame = requestAnimationFrame(tick);
+      } else {
+        resolve();
+      }
+    };
+
+    signal.addEventListener("abort", () => {
+      cancelAnimationFrame(frame);
+      reject(new DOMException("Aborted", "AbortError"));
+    });
+
+    logoGroup.setAttribute("transform", `scale(${startScale})`);
+    frame = requestAnimationFrame(tick);
   });
 }
 
@@ -156,6 +222,9 @@ export default function HomePreloader({
   const portalRef = useRef<SVGGElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
+  const logoRef = useRef<SVGPathElement>(null);
+  const logoGroupRef = useRef<SVGGElement>(null);
+  const overlayRectRef = useRef<SVGRectElement>(null);
 
   onCompleteRef.current = onComplete;
   onPrepareRef.current = onPrepare;
@@ -201,9 +270,11 @@ export default function HomePreloader({
     if (!show || !ready || !heroReady) return;
 
     const portalLayout = wingPortalCenter(viewport.w, viewport.h);
-    const portal = portalRef.current;
     const hero = heroRef.current;
-    if (!portal || !hero) return;
+    const logo = logoRef.current;
+    const logoGroup = logoGroupRef.current;
+    const overlayRect = overlayRectRef.current;
+    if (!hero || !logo || !logoGroup || !overlayRect) return;
 
     const abort = new AbortController();
     const targetScale = portalEndScale(
@@ -215,8 +286,7 @@ export default function HomePreloader({
     const zoomMs = reducedMotion ? 320 : PRELOADER_ZOOM * 1000;
 
     hero.style.transformOrigin = "center center";
-    hero.style.transform = "scale(1)";
-    portal.setAttribute("transform", `scale(${PRELOADER_INITIAL_SCALE})`);
+    hero.style.opacity = "1"; // Hero visible immediately
 
     const applyLiveHero = async () => {
       const live = readMountedPageHeroSrc();
@@ -234,9 +304,10 @@ export default function HomePreloader({
 
     const run = async () => {
       try {
-        // Mount destination page under overlay so its first-screen photo can fill the wing
+        // Mount destination page under overlay
         onPrepareRef.current?.();
 
+        // Wait for fonts
         if (document.fonts?.ready) {
           try {
             await Promise.race([
@@ -251,32 +322,47 @@ export default function HomePreloader({
           if (abort.signal.aborted) return;
         }
 
-        const holdMs = reducedMotion ? 0 : PRELOADER_HOLD * 1000;
-        const stealDeadline = Math.max(120, Math.min(holdMs || 180, 420));
+        // Aggressively load hero image first - wait until fully loaded
+        const stealDeadline = 2000; // Wait up to 2 seconds for hero
         const stealUntil = performance.now() + stealDeadline;
-        while (performance.now() < stealUntil) {
+        let heroLoaded = false;
+        
+        while (performance.now() < stealUntil && !heroLoaded) {
           if (abort.signal.aborted) return;
-          if (readMountedPageHeroSrc()) {
+          const live = readMountedPageHeroSrc();
+          if (live) {
             await applyLiveHero();
+            heroLoaded = true;
             break;
           }
           await wait(32, abort.signal);
         }
 
-        const holdLeft = holdMs - stealDeadline;
-        if (holdLeft > 0) {
-          await wait(holdLeft, abort.signal);
+        // Ensure final hero is applied
+        if (!heroLoaded) {
+          await applyLiveHero();
+        }
+
+        // Hold time - logo visible, hero loaded in background
+        const holdMs = reducedMotion ? 0 : PRELOADER_HOLD * 1000;
+        if (holdMs > 0) {
+          await wait(holdMs, abort.signal);
         }
         if (abort.signal.aborted) return;
 
-        await applyLiveHero();
-
+        // Now start the animation - logo zooms and fades, overlay fades, NO portal zoom
         await Promise.all([
-          animatePortalHole(portal, PRELOADER_INITIAL_SCALE, targetScale, zoomMs, abort.signal),
-          animateHeroKenBurns(hero, zoomMs, abort.signal),
+          animateLogoZoom(logoGroup, PRELOADER_INITIAL_SCALE, targetScale, zoomMs, abort.signal),
+          animateLogoFade(logo, zoomMs, abort.signal),
+          animateOverlayFade(overlayRect, zoomMs, abort.signal),
         ]);
 
-        if (!abort.signal.aborted) finishOnce();
+        // Finish immediately when animation completes
+        if (!abort.signal.aborted) {
+          // Force hero to be fully visible
+          hero.style.opacity = "1";
+          finishOnce();
+        }
       } catch {
         /* aborted */
       }
@@ -314,7 +400,7 @@ export default function HomePreloader({
         />
       </div>
 
-      {/* White overlay — fixed; only the SVG mask hole expands (vector portal) */}
+      {/* White overlay with mask cutout */}
       <svg
         width={viewport.w}
         height={viewport.h}
@@ -332,13 +418,32 @@ export default function HomePreloader({
           >
             <rect width={viewport.w} height={viewport.h} fill="white" />
             <g transform={layout.portalTranslate}>
-              <g ref={portalRef}>
+              <g ref={portalRef} transform={`scale(${PRELOADER_INITIAL_SCALE})`}>
                 <path d={WING_PATH} fill="black" transform={layout.wingInnerTransform} />
               </g>
             </g>
           </mask>
         </defs>
-        <rect width={viewport.w} height={viewport.h} fill={OVERLAY} mask={`url(#${MASK_ID})`} />
+        <rect width={viewport.w} height={viewport.h} fill={PAGE_BG} mask={`url(#${MASK_ID})`} ref={overlayRectRef} />
+      </svg>
+
+      {/* Burgundy logo in center - visible through mask hole */}
+      <svg
+        width={viewport.w}
+        height={viewport.h}
+        className="pointer-events-none absolute inset-0"
+        aria-hidden="true"
+      >
+        <g transform={layout.portalTranslate}>
+          <g ref={logoGroupRef} transform={`scale(${PRELOADER_INITIAL_SCALE})`}>
+            <path
+              ref={logoRef}
+              d={WING_PATH}
+              fill={LOGO_COLOR}
+              transform={layout.wingInnerTransform}
+            />
+          </g>
+        </g>
       </svg>
     </div>
   );

@@ -47,11 +47,11 @@ export const WORDMARK_BLOCK_H = 58;
 
 /** Preloader ÔÇö wing size at rest (centered, before portal zoom) */
 export const PRELOADER_WING_SCALE = 4;
-/** Initial portal scale ÔÇö 30% smaller than rest size, then zooms out */
-export const PRELOADER_INITIAL_SCALE = 0.7;
+/** Initial portal scale ÔÇö smaller start (30% less = 0.49), then zooms out */
+export const PRELOADER_INITIAL_SCALE = 0.49;
 
 /** Extra multiplier so the wing portal overshoots viewport ÔÇö reveals more hero */
-export const PORTAL_END_BOOST = 1.6;
+export const PORTAL_END_BOOST = 1.1;
 
 /** Scale multiplier so wing cutout fully clears every viewport corner */
 export function portalEndScale(viewportW: number, viewportH: number, cx: number, cy: number) {
