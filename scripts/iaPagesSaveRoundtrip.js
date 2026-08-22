@@ -15,13 +15,18 @@ const CUSTOM = "CMS SAVE ROUNDTRIP TITLE";
 const CUSTOM_BODY = "CMS save roundtrip intro paragraph.";
 const CUSTOM_HEADING = "CMS save roundtrip block heading";
 const CUSTOM_CHILD = "CMS kitchens child heading";
+const CUSTOM_HERO_IMAGE =
+  "https://res.cloudinary.com/ayk7lgss/image/upload/v1787395924/thailand-kitchens/image/sqyofnezs6amrzdaxkg5.jpg";
 
 const stored = mergeSavedIaPages(
   {},
   {
     furniture: {
       slug: "furniture",
-      hero: { title: { en: CUSTOM, th: "", pl: "" } },
+      hero: {
+        title: { en: CUSTOM, th: "", pl: "" },
+        image: CUSTOM_HERO_IMAGE,
+      },
       body: { en: CUSTOM_BODY, th: "", pl: "" },
       sections: [
         { heading: { en: CUSTOM_HEADING, th: "", pl: "" }, text: { en: "Block copy", th: "", pl: "" } },
@@ -51,6 +56,11 @@ const stored = mergeSavedIaPages(
 const publicPages = mergeIaPages(stored);
 
 assert.strictEqual(loc(publicPages.furniture.hero.title), CUSTOM, "furniture hero title");
+assert.strictEqual(
+  String(publicPages.furniture.hero.image || ""),
+  CUSTOM_HERO_IMAGE,
+  "furniture hero image",
+);
 assert.strictEqual(loc(publicPages.furniture.body), CUSTOM_BODY, "furniture intro");
 assert.strictEqual(loc(publicPages.furniture.sections[0].heading), CUSTOM_HEADING, "furniture block");
 const kitchens = publicPages.furniture.children.find((c) => c.slug === "kitchens");

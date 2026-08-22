@@ -357,15 +357,10 @@ function mergeSavedIaPages(current, patch) {
         ? cur[hubKey]
         : {};
     const nextHub = { ...prev, ...patchHub };
-    if (
-      patchHub.hero &&
-      typeof patchHub.hero === "object" &&
-      !Array.isArray(patchHub.hero) &&
-      prev.hero &&
-      typeof prev.hero === "object" &&
-      !Array.isArray(prev.hero)
-    ) {
-      nextHub.hero = { ...prev.hero, ...patchHub.hero };
+    if (patchHub.hero && typeof patchHub.hero === "object" && !Array.isArray(patchHub.hero)) {
+      const prevHero =
+        prev.hero && typeof prev.hero === "object" && !Array.isArray(prev.hero) ? prev.hero : {};
+      nextHub.hero = { ...prevHero, ...patchHub.hero };
     }
     if (Array.isArray(patchHub.sections)) {
       nextHub.sections = patchHub.sections;

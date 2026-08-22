@@ -298,83 +298,43 @@ async function getFooterNavigationSpecHandler(req, res) {
   return sendSuccess(res, getFooterNavigationSpec(), { req });
 }
 
+function toPlainJson(value) {
+  if (value == null) return value;
+  if (typeof value.toObject === "function") return value.toObject();
+  try {
+    return JSON.parse(JSON.stringify(value));
+  } catch {
+    return value;
+  }
+}
+
 async function updateSite(req, res) {
   try {
-    const { mergeIaPages, mergeSavedIaPages } = require("../data/iaPagesDefaults");
+    const { mergeSavedIaPages } = require("../data/iaPagesDefaults");
     const { key: _key, _id: _id2, __v, pages: pagesPatch, ...rest } = req.body;
-    
-    console.log("[updateSite] ===== START =====");
-    console.log("[updateSite] Received request body keys:", Object.keys(req.body));
-    console.log("[updateSite] Has pagesPatch:", !!pagesPatch);
-    if (pagesPatch) {
-      console.log("[updateSite] PagesPatch keys:", Object.keys(pagesPatch));
-      if (pagesPatch.furniture) {
-        console.log("[updateSite] Furniture hub received");
-        console.log("[updateSite] Furniture children count:", Array.isArray(pagesPatch.furniture.children) ? pagesPatch.furniture.children.length : 0);
-        if (Array.isArray(pagesPatch.furniture.children) && pagesPatch.furniture.children[0]) {
-          console.log("[updateSite] First child slug:", pagesPatch.furniture.children[0].slug);
-          console.log("[updateSite] First child hero.image:", pagesPatch.furniture.children[0].hero?.image);
-        }
-      }
-    }
-    
-    let site = await SiteContent.findOne({ key: "main" });
-    if (!site) site = new SiteContent({ key: "main" });
 
-    for (const [field, value] of Object.entries(rest)) {
-      site.set(field, value);
-    }
+    const existing = await SiteContent.findOne({ key: "main" }).lean();
+    const currentPages = toPlainJson(existing?.pages) || {};
+    const update = toPlainJson(rest) || {};
 
     if (pagesPatch && typeof pagesPatch === "object" && !Array.isArray(pagesPatch)) {
-      console.log("[updateSite] Merging pages with mergeSavedIaPages...");
-      const merged = mergeSavedIaPages(site.pages, pagesPatch);
-      console.log("[updateSite] After merge, furniture children count:", Array.isArray(merged.furniture?.children) ? merged.furniture.children.length : 0);
-      if (Array.isArray(merged.furniture?.children) && merged.furniture.children[0]) {
-        console.log("[updateSite] After merge, first child hero.image:", merged.furniture.children[0].hero?.image);
-      }
-      site.set("pages", merged);
-      site.markModified("pages");
+      update.pages = mergeSavedIaPages(currentPages, toPlainJson(pagesPatch));
     }
 
-    console.log("[updateSite] Saving to MongoDB...");
-    console.log("[updateSite] About to save - furniture hero:", 
-      site.pages?.furniture?.hero?.image);
-    await site.save();
-    console.log("[updateSite] ✅ Saved to MongoDB successfully");
-    
-    // Verify what was actually written
-    const verification = await SiteContent.findOne({ key: "main" }).lean();
-    console.log("[updateSite] Verification read - furniture hero:",
-      verification?.pages?.furniture?.hero?.image);
-    
+    const site = await SiteContent.findOneAndUpdate(
+      { key: "main" },
+      {
+        $set: update,
+        $setOnInsert: { key: "main" },
+      },
+      { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true },
+    ).lean();
+
     invalidateInquiryFormCache();
 
-    // Force a fresh read from database to ensure consistency
-    const freshSite = await SiteContent.findOne({ key: "main" }).lean();
-    const payload = freshSite || (site.toObject ? site.toObject() : site);
-    
-    console.log("[updateSite] Fresh from DB, furniture children count:", Array.isArray(payload.pages?.furniture?.children) ? payload.pages.furniture.children.length : 0);
-    if (Array.isArray(payload.pages?.furniture?.children) && payload.pages.furniture.children[0]) {
-      console.log("[updateSite] Fresh from DB, first child hero.image:", payload.pages.furniture.children[0].hero?.image);
-    }
-    
-    if (!isAdminRequest(req)) {
-      console.log("[updateSite] Not admin request, merging with defaults");
-      payload.pages = mergeIaPages(payload.pages);
-    } else {
-      console.log("[updateSite] Admin request, returning raw MongoDB data");
-    }
-    
-    console.log("[updateSite] ===== FINAL PAYLOAD CHECK =====");
-    console.log("[updateSite] payload has pages:", !!payload.pages);
-    console.log("[updateSite] payload.pages has furniture:", !!payload.pages?.furniture);
-    console.log("[updateSite] Payload keys:", Object.keys(payload));
-    console.log("[updateSite] Pages keys:", payload.pages ? Object.keys(payload.pages) : "NO PAGES");
-    console.log("[updateSite] ===== END =====");
+    const payload = site || { key: "main", ...update };
     return sendSuccess(res, payload, { req });
   } catch (error) {
-    console.error("[updateSite] ❌ ERROR:", error.message);
-    console.error("[updateSite] Stack:", error.stack);
     return sendError(res, 400, { message: error.message });
   }
 }
