@@ -21,7 +21,7 @@ import {
 
 /** Hold on white + wing window, then portal zoom */
 export const PRELOADER_HOLD = 1;
-export const PRELOADER_ZOOM = 1.35;
+export const PRELOADER_ZOOM = 0.8;
 
 const MASK_ID = "varsovia-wing-portal-mask";
 const OVERLAY = "#ffffff";
