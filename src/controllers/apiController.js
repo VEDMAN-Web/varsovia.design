@@ -310,15 +310,17 @@ function toPlainJson(value) {
 
 async function updateSite(req, res) {
   try {
-    const { mergeSavedIaPages } = require("../data/iaPagesDefaults");
     const { key: _key, _id: _id2, __v, pages: pagesPatch, ...rest } = req.body;
 
-    const existing = await SiteContent.findOne({ key: "main" }).lean();
-    const currentPages = toPlainJson(existing?.pages) || {};
     const update = toPlainJson(rest) || {};
 
+    // Direct patch - merge pages with existing, NO defaults merge during save
     if (pagesPatch && typeof pagesPatch === "object" && !Array.isArray(pagesPatch)) {
-      update.pages = mergeSavedIaPages(currentPages, toPlainJson(pagesPatch));
+      const existing = await SiteContent.findOne({ key: "main" }).lean();
+      const currentPages = toPlainJson(existing?.pages) || {};
+      
+      // Simple object merge - just combine patch with existing pages
+      update.pages = { ...currentPages, ...toPlainJson(pagesPatch) };
     }
 
     const site = await SiteContent.findOneAndUpdate(
