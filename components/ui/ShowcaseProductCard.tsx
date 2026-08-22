@@ -58,11 +58,15 @@ function CardImage({
     <img
       src={current}
       alt={alt}
-      loading="lazy"
       decoding="async"
+      fetchPriority="low"
       className={`absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out ${
         zoomed ? "scale-110" : "scale-100"
       } ${loaded ? "opacity-100" : "opacity-0"}`}
+      style={{
+        // Predictive rendering optimization
+        contentVisibility: 'auto',
+      }}
       onLoad={() => setLoaded(true)}
       onError={() => {
         if (current !== fallback) {

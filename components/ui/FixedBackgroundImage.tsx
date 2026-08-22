@@ -122,8 +122,8 @@ export default function FixedBackgroundImage({
           alt=""
           aria-hidden="true"
           draggable={false}
-          loading="lazy"
           decoding="async"
+          fetchPriority="low"
           className="h-full w-full object-cover object-center select-none"
         />
       </div>
@@ -162,8 +162,8 @@ export default function FixedBackgroundImage({
           alt=""
           aria-hidden="true"
           draggable={false}
-          loading="lazy"
           decoding="async"
+          fetchPriority="low"
           className="h-full w-full object-cover object-center select-none"
           style={{
             // Force GPU compositing only on image

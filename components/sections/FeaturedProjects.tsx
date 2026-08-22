@@ -162,8 +162,8 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover"
                     draggable={false}
-                    loading="lazy"
                     decoding="async"
+                    fetchPriority="low"
                     animate={{ scale: isExpanded ? 1.04 : 1 }}
                     transition={{ duration: 0.55, ease: REVEAL_EASE }}
                     onError={() => {
