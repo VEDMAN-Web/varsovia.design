@@ -16,7 +16,13 @@ import { getIaPages } from "./iaPages";
 
 export type { ApiProject, SiteContent, HomeData };
 
-export const API_URL = getPublicApiUrl();
+/** Lazily resolved so module evaluation never throws during `next build`. */
+export function getApiUrl(): string {
+  return getPublicApiUrl();
+}
+
+/** @deprecated Use getApiUrl() — kept for any external consumers. */
+export const API_URL = getApiUrl;
 
 const LIST_PAGE_SIZE = 100;
 
@@ -43,7 +49,7 @@ async function fetchAllListItems(
   let page = 1;
 
   while (true) {
-    const url = withLocale(`${API_URL}${path}?page=${page}&limit=${LIST_PAGE_SIZE}`, locale);
+    const url = withLocale(`${getApiUrl()}${path}?page=${page}&limit=${LIST_PAGE_SIZE}`, locale);
     const res = await fetch(url, {
       ...init,
       headers: { ...localeHeaders(locale), ...(init?.headers ?? {}) },
@@ -649,7 +655,7 @@ function normalizeTestimonials(items: unknown[], locale?: Locale) {
 
 export async function fetchSite(locale?: Locale): Promise<SiteContent> {
   try {
-    const res = await fetch(withLocale(`${API_URL}/site`, locale), {
+    const res = await fetch(withLocale(`${getApiUrl()}/site`, locale), {
       headers: localeHeaders(locale),
       ...siteFetchInit(),
     });
@@ -719,7 +725,7 @@ export async function fetchProjects(locale?: Locale): Promise<ApiProject[]> {
 
 export async function fetchHomeData(locale?: Locale): Promise<HomeData> {
   try {
-    const res = await fetch(withLocale(`${API_URL}/home`, locale), {
+    const res = await fetch(withLocale(`${getApiUrl()}/home`, locale), {
       headers: localeHeaders(locale),
       next: { revalidate: 30 },
     });
@@ -784,7 +790,7 @@ export async function fetchBlogs(locale?: Locale): Promise<Record<string, unknow
 
 export async function fetchBlogById(id: string, locale?: Locale) {
   try {
-    const res = await fetch(withLocale(`${API_URL}/blogs/${id}`, locale), {
+    const res = await fetch(withLocale(`${getApiUrl()}/blogs/${id}`, locale), {
       headers: localeHeaders(locale),
       next: { revalidate: 10 },
     });
@@ -864,7 +870,7 @@ export async function fetchProjectById(idOrSlug: string, locale?: Locale) {
   const { interiorDetailSlug } = await import("./interiorRoutes");
 
   try {
-    const res = await fetch(withLocale(`${API_URL}/projects/${encodeURIComponent(idOrSlug)}`, locale), {
+    const res = await fetch(withLocale(`${getApiUrl()}/projects/${encodeURIComponent(idOrSlug)}`, locale), {
       headers: localeHeaders(locale),
       cache: "no-store",
     });
@@ -992,7 +998,7 @@ export async function fetchShowcaseById(id: string, locale?: Locale) {
   const loc = getLocaleOrDefault(locale);
 
   try {
-    const res = await fetch(withLocale(`${API_URL}/showcases/${encodeURIComponent(id)}`, locale), {
+    const res = await fetch(withLocale(`${getApiUrl()}/showcases/${encodeURIComponent(id)}`, locale), {
       headers: localeHeaders(locale),
       cache: "no-store",
     });
@@ -1024,7 +1030,7 @@ export async function fetchSearch(
   signal?: AbortSignal,
 ): Promise<SearchApiResponse> {
   const q = encodeURIComponent(query.trim());
-  const res = await fetch(withLocale(`${API_URL}/search?q=${q}&limit=12`, locale), {
+  const res = await fetch(withLocale(`${getApiUrl()}/search?q=${q}&limit=12`, locale), {
     headers: localeHeaders(locale),
     signal,
     cache: "no-store",
