@@ -425,7 +425,11 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
             : "border-b border-transparent bg-transparent shadow-none"
       }`}
     >
+<<<<<<< Updated upstream
       <nav className="mx-auto flex h-[102.33px] w-full max-w-[1440px] items-center px-[clamp(1.25rem,7vw,100px)]">
+=======
+      <nav className="mx-auto flex h-[60px] w-full max-w-[1440px] items-center gap-2 px-3 transition-[padding] duration-300 sm:gap-3 sm:px-4 md:h-[102.33px] md:gap-0 md:px-[clamp(1.25rem,4vw,100px)]">
+>>>>>>> Stashed changes
         <NavbarLogo />
 
         <ul
@@ -540,7 +544,16 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
           ) : null}
         </ul>
 
+<<<<<<< Updated upstream
         <div className="ml-auto flex shrink-0 items-center justify-end gap-2 sm:gap-3 2xl:gap-4">
+=======
+        <div className="hidden md:block md:min-w-0 md:flex-1" aria-hidden="true" />
+
+        {/* Mobile: push controls to the right. Desktop: handled by flex-1 spacer above */}
+        <div className="min-w-0 flex-1 md:hidden" aria-hidden="true" />
+
+        <div className="flex shrink-0 items-center justify-end gap-2 md:gap-3 2xl:gap-5">
+>>>>>>> Stashed changes
           <div
             ref={searchWrapRef}
             className="relative hidden sm:block"
@@ -670,17 +683,27 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
             </AnimatePresence>
           </div>
 
+          {/* One shared consultation button — responsive via Tailwind breakpoint classes only.
+               No second instance exists anywhere in this file for the top bar. */}
           <Link
             href="/contact"
+<<<<<<< Updated upstream
             className={`${headerBtnBase} hidden w-[150px] bg-[#6a414d] px-4 text-white hover:bg-[#5a3540] sm:inline-flex 2xl:w-[181px] 2xl:px-5`}
             onClick={() => trackCtaClick("free_consultation", "navbar_desktop")}
+=======
+            className="inline-flex shrink-0 items-center justify-center whitespace-nowrap bg-[#6a414d] font-outfit font-normal text-white transition duration-200 hover:bg-[#5a3540]
+              h-9 rounded-[4px] px-3 text-[12px] leading-none
+              min-[390px]:px-4 min-[390px]:text-[13px]
+              sm:h-[42px] sm:rounded-[5px] sm:px-5 sm:text-[15px]
+              md:h-[50px] md:w-[181px] md:rounded-[6px] md:px-5 md:text-[18px] md:leading-[23px]"
+>>>>>>> Stashed changes
           >
             {t("freeConsultation")}
           </Link>
 
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center text-maroon xl:hidden"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center text-maroon xl:hidden"
             aria-label={t("toggleMenu")}
             onClick={() => setMobileOpen((v) => !v)}
           >
@@ -691,7 +714,12 @@ export default function Navbar({ overlayHero = false }: { overlayHero?: boolean 
 
       {mobileOpen && (
         <div
+<<<<<<< Updated upstream
           className="scrollbar-brand max-h-[calc(100dvh-102px)] overflow-y-auto overscroll-contain border-t border-maroon/10 bg-white px-4 py-5 pr-3 [-webkit-overflow-scrolling:touch] xl:hidden"
+=======
+          className="scrollbar-brand max-h-[calc(100dvh-60px)] overflow-y-auto overscroll-contain border-t border-maroon/10 bg-white/96 px-4 py-5 pr-3 backdrop-blur-sm [-webkit-overflow-scrolling:touch] md:max-h-[calc(100dvh-102px)] xl:hidden"
+          data-lenis-prevent
+>>>>>>> Stashed changes
         >
           <div className="mb-4 flex items-center rounded-full border border-[#e5e5e5] bg-[#f7f5f2] pl-4 pr-1.5 shadow-sm">
             <input
