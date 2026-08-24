@@ -109,23 +109,8 @@ export default function BrandLogo({ variant = "header", className = "", link = t
     </div>
   );
 
-<<<<<<< Updated upstream
   const wrapped = link ? (
     <Link href="/" className={`shrink-0 ${className}`.trim()} aria-label={`${line1} ${line2} home`}>
-=======
-  if (!link) {
-    return <div className={className}>{inner}</div>;
-  }
-
-  return (
-    <a
-      href="/"
-      aria-label={`${line1} ${line2} home`}
-      className={`shrink-0 overflow-visible ${className}`.trim()}
-      onClick={handleLogoClick}
-      style={{ cursor: replaying ? "default" : "pointer" }}
-    >
->>>>>>> Stashed changes
       {inner}
     </Link>
   ) : (

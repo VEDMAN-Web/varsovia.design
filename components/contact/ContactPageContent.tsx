@@ -28,11 +28,8 @@ export default function ContactPageContent({
   site?: SiteContent | null;
   showrooms?: ShowroomRow[];
 }) {
-<<<<<<< Updated upstream
   const tNav = useTranslations("nav");
   const tSearch = useTranslations("search");
-=======
->>>>>>> Stashed changes
   const imgs = site?.contactImages;
   const images =
     Array.isArray(imgs) && imgs.length > 0 ? imgs : FALLBACK_IMAGES;
@@ -52,13 +49,8 @@ export default function ContactPageContent({
   return (
     <div className="bg-[#f7f3f2] pt-[72px] font-outfit">
       <CompanyHero
-<<<<<<< Updated upstream
         title={title}
         subtitle={subtitle}
-=======
-        title="Get In Touch"
-        subtitle="Your dream space begins with a simple conversation"
->>>>>>> Stashed changes
         subtitleSentenceCase={false}
         compact
         sectionClassName="!pb-0"
@@ -73,7 +65,6 @@ export default function ContactPageContent({
         </PagePanelReveal>
       </section>
 
-<<<<<<< Updated upstream
       <ContactOurLocationSection site={site} />
 
       {showrooms.length > 0 && (
@@ -93,14 +84,6 @@ export default function ContactPageContent({
             </PagePanelReveal>
           </div>
         </section>
-=======
-      <ContactOurLocationSection />
-
-      {showrooms.length > 0 && (
-        <PagePanelReveal delay={0.08}>
-          <Showrooms showrooms={showrooms} />
-        </PagePanelReveal>
->>>>>>> Stashed changes
       )}
     </div>
   );

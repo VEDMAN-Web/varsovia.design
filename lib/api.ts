@@ -950,7 +950,6 @@ export async function fetchCatalogues(locale?: Locale): Promise<Record<string, u
 
 export async function fetchShowrooms(locale?: Locale) {
   try {
-<<<<<<< Updated upstream
     const rows = onlyVisibleRows(await fetchAllListItems("/showrooms", locale, { next: { revalidate: 30 } }));
     return rows.map((row, index) => {
       const item = row as Record<string, unknown>;
@@ -962,17 +961,6 @@ export async function fetchShowrooms(locale?: Locale) {
         image: resolveMediaUrl(item.image as string | undefined, MEDIA.showrooms[index % 3]),
       };
     });
-=======
-    const raw = await fetchAllListItems("/showrooms", locale, { next: { revalidate: 30 } });
-    const rows = (raw as Record<string, unknown>[]).filter((row) => row && row.visible !== false);
-    return rows.map((item, index) => ({
-      _id: String(item._id ?? index),
-      name: pickLocalized(item.name, getLocaleOrDefault(locale)) || String(item.name ?? ""),
-      location:
-        pickLocalized(item.location, getLocaleOrDefault(locale)) || String(item.location ?? ""),
-      image: resolveMediaUrl(item.image as string | undefined, MEDIA.showrooms[index % 3]),
-    }));
->>>>>>> Stashed changes
   } catch {
     const { fallbackHomeData } = await import("./fallbackData");
     return fallbackHomeData.showrooms;
