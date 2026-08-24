@@ -176,24 +176,31 @@ function crud(Model, modelName) {
     },
     update: async (req, res) => {
       try {
+        console.log(`[${modelName} update] ID:`, req.params.id);
+        console.log(`[${modelName} update] Body:`, JSON.stringify(req.body, null, 2));
+        
         // Explicit $set so boolean false (e.g. visible:false) always persists
+        // CRITICAL: Add write concern to ensure durable writes
         const item = await Model.findByIdAndUpdate(
           req.params.id,
           { $set: req.body },
           {
-            new: true,
+            new: true,  // Return the UPDATED document
             runValidators: true,
-            // Ensure we bypass any Mongoose cache
-            rawResult: false,
+            lean: true,  // Return plain object, bypass Mongoose cache
+            // EXPLICIT write concern: wait for majority + journal commit
+            writeConcern: { w: 'majority', j: true, wtimeout: 5000 },
           },
         );
+        
         if (!item) return sendError(res, 404, { message: "Not found" });
         
-        // Force a fresh read from database to ensure consistency
-        const freshItem = await Model.findById(req.params.id).lean();
+        console.log(`[${modelName} update] Fresh saved document after journal commit:`, JSON.stringify(item, null, 2));
         
-        return sendSuccess(res, freshItem || item, { req });
+        // Return the FRESH saved document from MongoDB after journal commit
+        return sendSuccess(res, item, { req });
       } catch (error) {
+        console.error(`[${modelName} update] Error:`, error);
         if (error.name === "CastError") return sendError(res, 404, { message: "Not found" });
         return sendError(res, 400, { message: error.message });
       }
@@ -319,6 +326,9 @@ async function updateSite(req, res) {
       const existing = await SiteContent.findOne({ key: "main" }).lean();
       const currentPages = toPlainJson(existing?.pages) || {};
       
+      console.log('[updateSite] Current pages in DB:', JSON.stringify(currentPages, null, 2));
+      console.log('[updateSite] Incoming pagesPatch:', JSON.stringify(pagesPatch, null, 2));
+      
       // Deep merge each hub key in the patch with existing hub data
       const mergedPages = { ...currentPages };
       for (const [hubKey, hubPatch] of Object.entries(toPlainJson(pagesPatch))) {
@@ -327,9 +337,11 @@ async function updateSite(req, res) {
           if (existingHub && typeof existingHub === "object" && !Array.isArray(existingHub)) {
             // Deep merge: preserve existing hub fields not in patch
             mergedPages[hubKey] = { ...existingHub, ...hubPatch };
+            console.log(`[updateSite] Merged ${hubKey}:`, JSON.stringify(mergedPages[hubKey], null, 2));
           } else {
             // New hub or non-object: use patch directly
             mergedPages[hubKey] = hubPatch;
+            console.log(`[updateSite] New ${hubKey}:`, JSON.stringify(mergedPages[hubKey], null, 2));
           }
         } else {
           // Non-object patch: direct replacement
@@ -338,22 +350,45 @@ async function updateSite(req, res) {
       }
       
       update.pages = mergedPages;
+      console.log('[updateSite] Final merged pages to save:', JSON.stringify(update.pages, null, 2));
     }
 
+    // CRITICAL: Use findOneAndUpdate with EXPLICIT write concern to ensure durability
+    // This ensures MongoDB writes to disk and journals BEFORE returning
     const site = await SiteContent.findOneAndUpdate(
       { key: "main" },
       {
         $set: update,
         $setOnInsert: { key: "main" },
       },
-      { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true },
-    ).lean();
+      { 
+        upsert: true, 
+        new: true,  // Return the UPDATED document, not the old one
+        runValidators: true, 
+        setDefaultsOnInsert: true,
+        // EXPLICIT write concern: wait for majority + journal commit
+        writeConcern: { w: 'majority', j: true, wtimeout: 5000 },
+        // Bypass Mongoose cache to ensure fresh data
+        lean: true,
+      },
+    );
+
+    console.log('[updateSite] Fresh document from MongoDB after journal commit:', JSON.stringify(site, null, 2));
+
+    // Verify the write was successful by checking the returned document
+    if (!site) {
+      console.error('[updateSite] ERROR: MongoDB returned null after update!');
+      return sendError(res, 500, { message: 'Database write failed' });
+    }
 
     invalidateInquiryFormCache();
 
-    const payload = site || { key: "main", ...update };
+    // Return the FRESH saved data from MongoDB after journal commit
+    const payload = site;
+    console.log('[updateSite] Returning payload to client:', JSON.stringify(payload, null, 2));
     return sendSuccess(res, payload, { req });
   } catch (error) {
+    console.error('[updateSite] Error:', error);
     return sendError(res, 400, { message: error.message });
   }
 }
