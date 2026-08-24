@@ -314,13 +314,30 @@ async function updateSite(req, res) {
 
     const update = toPlainJson(rest) || {};
 
-    // Direct patch - merge pages with existing, NO defaults merge during save
+    // Deep merge pages to prevent data loss on partial updates
     if (pagesPatch && typeof pagesPatch === "object" && !Array.isArray(pagesPatch)) {
       const existing = await SiteContent.findOne({ key: "main" }).lean();
       const currentPages = toPlainJson(existing?.pages) || {};
       
-      // Simple object merge - just combine patch with existing pages
-      update.pages = { ...currentPages, ...toPlainJson(pagesPatch) };
+      // Deep merge each hub key in the patch with existing hub data
+      const mergedPages = { ...currentPages };
+      for (const [hubKey, hubPatch] of Object.entries(toPlainJson(pagesPatch))) {
+        if (hubPatch && typeof hubPatch === "object" && !Array.isArray(hubPatch)) {
+          const existingHub = currentPages[hubKey];
+          if (existingHub && typeof existingHub === "object" && !Array.isArray(existingHub)) {
+            // Deep merge: preserve existing hub fields not in patch
+            mergedPages[hubKey] = { ...existingHub, ...hubPatch };
+          } else {
+            // New hub or non-object: use patch directly
+            mergedPages[hubKey] = hubPatch;
+          }
+        } else {
+          // Non-object patch: direct replacement
+          mergedPages[hubKey] = hubPatch;
+        }
+      }
+      
+      update.pages = mergedPages;
     }
 
     const site = await SiteContent.findOneAndUpdate(
