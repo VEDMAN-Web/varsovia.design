@@ -40,7 +40,7 @@ export default function BrandLogo({ variant = "header", className = "", link = t
       alt={`${line1} ${line2}`}
       className={
         variant === "header"
-          ? "h-[44px] w-auto max-w-[160px] object-contain object-left md:h-[74px] md:max-w-[200px]"
+          ? "h-[48px] w-auto max-w-[180px] object-contain object-left md:h-[74px] md:max-w-[200px]"
           : variant === "footer"
             ? "mx-auto h-[72px] w-auto max-w-[220px] object-contain"
             : "h-8 w-auto max-w-[120px] object-contain"
@@ -51,7 +51,7 @@ export default function BrandLogo({ variant = "header", className = "", link = t
     <div
       className={
         variant === "header"
-          ? "flex w-[72px] flex-col items-center gap-[3px] md:w-[82.703px] md:gap-[4px]"
+          ? "flex w-[82px] flex-col items-center gap-[3px] md:w-[82.703px] md:gap-[4px]"
           : variant === "footer"
             ? "flex shrink-0 flex-col items-center gap-2 sm:gap-[7.534px]"
             : "flex flex-col items-center gap-1"
@@ -65,7 +65,7 @@ export default function BrandLogo({ variant = "header", className = "", link = t
           aria-hidden
           className={
             variant === "header"
-              ? "h-[30px] w-auto object-contain md:h-[43.625px]"
+              ? "h-[36px] w-auto object-contain md:h-[43.625px]"
               : variant === "footer"
                 ? "mx-auto h-[56px] w-auto object-contain sm:h-[68px] lg:h-[82px]"
                 : "h-7 w-auto object-contain"
@@ -76,7 +76,7 @@ export default function BrandLogo({ variant = "header", className = "", link = t
         <LogoWingSvg
           className={
             variant === "header"
-              ? "h-[30px] w-[19px] md:h-[43.625px] md:w-[27.818px]"
+              ? "h-[36px] w-[23px] md:h-[43.625px] md:w-[27.818px]"
               : variant === "footer"
                 ? "mx-auto h-[56px] w-[36px] sm:h-[68px] sm:w-[43px] lg:h-[82.169px] lg:w-[52.396px]"
                 : "h-7 w-7"
@@ -89,7 +89,7 @@ export default function BrandLogo({ variant = "header", className = "", link = t
           <p
             className={
               variant === "header"
-                ? "font-display text-[12px] font-bold leading-[17px] tracking-[0.02em] md:text-[16.68px] md:leading-[23px]"
+                ? "font-display text-[13px] font-bold leading-[18px] tracking-[0.02em] md:text-[16.68px] md:leading-[23px]"
                 : "font-display text-[1.5rem] font-bold leading-tight sm:text-[26px] sm:leading-[34px] lg:text-[31.413px] lg:leading-[42.835px]"
             }
           >
@@ -98,7 +98,7 @@ export default function BrandLogo({ variant = "header", className = "", link = t
           <p
             className={
               variant === "header"
-                ? "font-outfit text-center text-[6px] font-normal tracking-[7px] md:text-[8px] md:tracking-[9.5px]"
+                ? "font-outfit text-center text-[7px] font-normal tracking-[7.5px] md:text-[8px] md:tracking-[9.5px]"
                 : "font-outfit text-center text-[11px] font-normal tracking-[0.38em] sm:text-[12.138px] sm:tracking-[16.9934px]"
             }
           >

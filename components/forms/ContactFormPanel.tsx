@@ -113,7 +113,7 @@ export default function ContactFormPanel({
         ref={panelRowRef}
         className="relative flex min-w-0 flex-col md:min-h-[min(846px,52vw)] md:flex-row md:items-stretch"
       >
-        <ContactCollageMobileSlider images={images} className="shrink-0 md:hidden" />
+        <ContactCollageMobileSlider images={images} className="shrink-0 pt-[clamp(1.5rem,4vw,2.5rem)] md:hidden" />
 
         <motion.div
           className={`${CONTACT_MOSAIC_BAND} hidden min-h-0 overflow-hidden md:flex md:self-stretch`}

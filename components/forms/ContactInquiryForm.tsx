@@ -353,7 +353,7 @@ export default function ContactInquiryForm({
         className={
           isModal
             ? "mt-auto flex w-full shrink-0 flex-col items-stretch pt-2 sm:items-end"
-            : `mt-auto flex w-full shrink-0 flex-col items-center pt-4 sm:pt-5 ${stretchSection ? "md:pt-3" : ""}`
+            : `mt-auto flex w-full shrink-0 flex-col items-stretch pt-4 sm:pt-5 ${stretchSection ? "md:pt-3" : ""}`
         }
       >
         {message ? (
@@ -368,7 +368,7 @@ export default function ContactInquiryForm({
           className={`font-outfit rounded-[6px] bg-[#6a414d] font-normal text-white transition hover:bg-[#5a3640] disabled:opacity-70 ${
             isModal
               ? "h-[44px] w-full px-6 text-[16px] sm:w-auto sm:min-w-[200px] sm:text-[17px]"
-              : "h-[48px] w-full max-w-[320px] px-6 text-[16px] sm:h-[50px] sm:px-5 sm:text-[18px] min-[520px]:w-auto min-[520px]:max-w-none"
+              : "h-[48px] w-full px-6 text-[16px] sm:h-[50px] sm:px-5 sm:text-[18px]"
           }`}
         >
           {status === "loading" ? tCommon("submitting") : submitLabel}

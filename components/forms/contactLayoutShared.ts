@@ -9,7 +9,7 @@ export const CONTACT_FORM_BAND =
   "w-full min-w-0 md:w-[52.5%] md:max-w-[52.5%] md:shrink-0 md:grow-0 @container/contact-form";
 
 export const CONTACT_FORM_PADDING =
-  "px-[clamp(0.75rem,3.2vw,2.5rem)] pb-[clamp(1.5rem,4vw,2.5rem)] pt-[clamp(1rem,2.5vw,1.75rem)] md:box-border md:py-[4.73%] md:pl-[clamp(0.625rem,1.2vw,1.5rem)] md:pr-[clamp(0.875rem,2vw,2rem)]";
+  "px-[clamp(0.75rem,3.2vw,2.5rem)] pb-[clamp(1.5rem,4vw,2.5rem)] pt-[clamp(1.5rem,4vw,2.5rem)] md:box-border md:py-[4.73%] md:pl-[clamp(0.625rem,1.2vw,1.5rem)] md:pr-[clamp(0.875rem,2vw,2rem)]";
 
 export const CONTACT_ROW =
   "grid grid-cols-1 gap-[11px] @[26rem]:grid-cols-2 @[26rem]:gap-x-[11px]";
