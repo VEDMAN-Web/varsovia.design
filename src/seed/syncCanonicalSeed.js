@@ -26,7 +26,9 @@ const {
 } = require("./seedData");
 
 async function replaceAll(Model, docs) {
-  await Model.deleteMany({});
+  // Startup repair must never replace a non-empty collection: one missing
+  // seed record must not erase unrelated CMS edits.
+  if ((await Model.countDocuments()) > 0) return;
   if (docs.length > 0) await Model.insertMany(docs);
 }
 
@@ -34,9 +36,12 @@ async function replaceAll(Model, docs) {
 async function syncCanonicalSeed() {
   const site = siteContentDoc();
   const { key, ...siteFields } = site;
+  // Use $setOnInsert so seed data is only written when the document is first created.
+  // If a document with key "main" already exists (admin has saved CMS content), this
+  // is a no-op and the admin's edits are preserved.
   await SiteContent.findOneAndUpdate(
     { key: "main" },
-    { $set: siteFields, $setOnInsert: { key: "main" } },
+    { $setOnInsert: { key: "main", ...siteFields } },
     { upsert: true },
   );
 
@@ -51,16 +56,28 @@ async function syncCanonicalSeed() {
 
   for (const doc of productsDocs()) {
     const { slug, ...rest } = doc;
-    await Product.findOneAndUpdate({ slug }, { $set: { slug, ...rest } }, { upsert: true });
+    await Product.findOneAndUpdate(
+      { slug },
+      { $setOnInsert: { slug, ...rest } },
+      { upsert: true },
+    );
   }
 
   for (const doc of projectsDocs()) {
     const { slug, ...rest } = doc;
-    await Project.findOneAndUpdate({ slug }, { $set: { slug, ...rest } }, { upsert: true });
+    await Project.findOneAndUpdate(
+      { slug },
+      { $setOnInsert: { slug, ...rest } },
+      { upsert: true },
+    );
   }
 
   for (const doc of blogsDocs()) {
-    await Blog.findOneAndUpdate({ title: doc.title }, { $set: doc }, { upsert: true });
+    await Blog.findOneAndUpdate(
+      { title: doc.title },
+      { $setOnInsert: doc },
+      { upsert: true },
+    );
   }
 
   console.log("Canonical seed sync complete");

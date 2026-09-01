@@ -88,6 +88,10 @@ async function migrateProjectFilterMetadata() {
 }
 
 async function needsCanonicalSync() {
+  // Only check resource collections that syncCanonicalSeed fully replaces.
+  // Deliberately does NOT check SiteContent — syncCanonicalSeed now uses
+  // $setOnInsert for that document, so it is safe to call even when the
+  // SiteContent document already exists with admin-edited values.
   if ((await Product.countDocuments()) === 0) return true;
   if ((await CoreStrength.countDocuments()) === 0) return true;
   const badPartners = await Partner.countDocuments({

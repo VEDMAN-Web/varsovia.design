@@ -315,6 +315,25 @@ function toPlainJson(value) {
   }
 }
 
+function mergeCmsObjects(current, patch) {
+  if (!current || typeof current !== "object" || Array.isArray(current)) {
+    return toPlainJson(patch);
+  }
+  if (!patch || typeof patch !== "object" || Array.isArray(patch)) {
+    return toPlainJson(patch);
+  }
+  const merged = { ...toPlainJson(current) };
+  for (const [key, value] of Object.entries(toPlainJson(patch))) {
+    const previous = merged[key];
+    merged[key] =
+      value && typeof value === "object" && !Array.isArray(value) &&
+      previous && typeof previous === "object" && !Array.isArray(previous)
+        ? mergeCmsObjects(previous, value)
+        : toPlainJson(value);
+  }
+  return merged;
+}
+
 async function updateSite(req, res) {
   try {
     const { key: _key, _id: _id2, __v, pages: pagesPatch, ...rest } = req.body;
@@ -336,7 +355,7 @@ async function updateSite(req, res) {
           const existingHub = currentPages[hubKey];
           if (existingHub && typeof existingHub === "object" && !Array.isArray(existingHub)) {
             // Deep merge: preserve existing hub fields not in patch
-            mergedPages[hubKey] = { ...existingHub, ...hubPatch };
+            mergedPages[hubKey] = mergeCmsObjects(existingHub, hubPatch);
             console.log(`[updateSite] Merged ${hubKey}:`, JSON.stringify(mergedPages[hubKey], null, 2));
           } else {
             // New hub or non-object: use patch directly
